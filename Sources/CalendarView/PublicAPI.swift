@@ -20,8 +20,7 @@ extension CalendarView {
             print("Please specify hoursToFit's value less or equal to 24")
             return self
         }
-        var calendar = self
-        calendar.hoursToFit = hoursToFit
-        return calendar
+        self.customizationParams.hoursToFit = hoursToFit
+        return self
     }
 }

@@ -8,11 +8,11 @@
 import SwiftUI
 
 public struct MonthView<MonthDay: View>: View {
-    var events: [CalendarEvent]
     @Binding var selectedDate: Date
     @Binding var calendarDisplayMode: CalendarDisplayMode
+    var events: [CalendarEvent]
     var updateID: UUID
-    @ViewBuilder var monthDayBuilder: (Date, [CalendarEvent]) -> MonthDay
+    @ViewBuilder var monthDayBuilder: (MonthDayBuilderParams) -> MonthDay
 
     let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
 
@@ -43,7 +43,7 @@ public struct MonthView<MonthDay: View>: View {
                         selectedDate = date
                         calendarDisplayMode = .day
                     } label: {
-                        monthDayBuilder(date, eventsFor(date))
+                        monthDayBuilder(MonthDayBuilderParams(date: date, events: eventsFor(date)))
                             .frame(height: g.size.height/6)
                     }
                 }

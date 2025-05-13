@@ -16,6 +16,7 @@ class CalendarViewModel: ObservableObject {
     func fetch(_ interval: DateInterval) async {
         var result = [CalendarEvent]()
         for eventProvider in eventProviders {
+            print(interval)
             if let providerResult = try? await eventProvider.getEvents(from: interval.start, to: interval.end) {
                 result.append(contentsOf: providerResult)
             }

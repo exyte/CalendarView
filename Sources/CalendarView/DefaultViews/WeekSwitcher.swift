@@ -11,7 +11,7 @@ struct WeekDaysSwitcher<WeekSwitcherDay: View>: View {
     @Binding var selectedDate: Date
     @State var anchorDate: Date
     var calendarDisplayMode: CalendarDisplayMode
-    @ViewBuilder var weekSwitcherDayBuilder: (Date, Bool, Bool) -> WeekSwitcherDay
+    @ViewBuilder var weekSwitcherDayBuilder: (WeekSwitcherDayBuilderParams) -> WeekSwitcherDay
 
     private var calendar: Calendar { Calendar.current }
 
@@ -87,7 +87,7 @@ struct WeekDaysSwitcher<WeekSwitcherDay: View>: View {
                     selectedDate = day
                 }
             } label: {
-                weekSwitcherDayBuilder(day, isSelected, isToday)
+                weekSwitcherDayBuilder(WeekSwitcherDayBuilderParams(day: day, isSelected: isSelected, isToday: isToday))
             }
         }
     }
