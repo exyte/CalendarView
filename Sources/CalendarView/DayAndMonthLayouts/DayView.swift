@@ -54,11 +54,12 @@ public struct DayView<Content: View>: View {
                 ScrollViewReader { proxy in
                     ScrollView {
                         HStack {
-                            VStack {
+                            VStack(alignment: .trailing) {
                                 ForEach(0..<25, id: \.self) { i in
                                     Text("\(i):00")
                                         .frame(height: global.size.height / CGFloat(customizationParams.hoursToFit), alignment: .top)
                                         .id(i)
+                                        .padding(.leading, 9)
                                 }
                             }
 
@@ -68,6 +69,7 @@ public struct DayView<Content: View>: View {
                                     let date = selectedDate.adding(.day, value: i)
                                     DayEventsLayout(events: eventsByDay[date] ?? [], size: g.size, horSpacing: customizationParams.horSpacing, verSpacing: customizationParams.verSpacing, dayEventBuilder: dayEventBuilder)
                                 }
+                                .padding(.trailing, 9)
                             }
                         }
                     }

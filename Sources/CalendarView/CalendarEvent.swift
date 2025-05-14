@@ -13,11 +13,12 @@ public struct CalendarEvent: Identifiable, Sendable {
         case low, normal, high
     }
 
-    public init(id: String = UUID().uuidString, calendarID: String = "local", title: String, description: String? = nil, startDate: Date, endDate: Date? = nil, isAllDay: Bool = false, priority: Priority = .normal, vibration: UIImpactFeedbackGenerator.FeedbackStyle = .light, isDetached: Bool = false, payload: [String : Codable] = [:]) {
+    public init(id: String = UUID().uuidString, calendarID: String = "local", title: String, description: String? = nil, calendarColor: Color = .gray, startDate: Date, endDate: Date? = nil, isAllDay: Bool = false, priority: Priority = .normal, vibration: UIImpactFeedbackGenerator.FeedbackStyle = .light, isDetached: Bool = false, payload: [String : Codable] = [:]) {
         self.id = id
         self.calendarID = calendarID
         self.title = title
         self.description = description
+        self.calendarColor = calendarColor
         self.startDate = startDate
         self.endDate = endDate ?? startDate.adding(.hour, value: 1)
         self.isAllDay = isAllDay
@@ -32,6 +33,7 @@ public struct CalendarEvent: Identifiable, Sendable {
 
     public var title: String
     public var description: String?
+    public var calendarColor: Color
     public var startDate: Date
     public var endDate: Date
     public var isAllDay: Bool

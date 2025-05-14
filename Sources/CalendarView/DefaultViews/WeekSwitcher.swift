@@ -106,10 +106,11 @@ public struct DefaultWeekSwitcherDayView: View {
 
     public var body: some View {
         VStack {
-            Text(day.formatted("EEE"))
-            Text(day.formatted("d"))
+            Text(day.formatted("EEE")).font(.system(size: 15))
+                .lineLimit(1)
+            Text(day.formatted("d")).font(.system(size: 17, weight: .semibold))
         }
-        .padding(8)
+        .padding(4, 8)
         .background(isSelected ? Color.accentColor :
                         isToday ? Color.clear :
                         Color.clear)

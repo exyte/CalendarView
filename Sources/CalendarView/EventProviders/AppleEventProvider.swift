@@ -25,6 +25,7 @@ final class AppleEventProvider: CalendarEventProvider {
                 calendarID: $0.calendar.calendarIdentifier,
                 title: $0.title ?? "Untitled",
                 description: $0.description,
+                calendarColor: Color(cgColor: $0.calendar.cgColor ?? UIColor.systemGray.cgColor),
                 startDate: $0.startDate,
                 endDate: $0.endDate,
                 isAllDay: $0.isAllDay,
