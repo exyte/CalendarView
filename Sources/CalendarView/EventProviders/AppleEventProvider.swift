@@ -12,10 +12,11 @@ import SwiftUI
 final class AppleEventProvider: CalendarEventProvider {
     private let eventStore = EKEventStore()
 
-    func getEvents(from startDate: Date, to endDate: Date) async throws -> [CalendarEvent] {
+    func getEvents(from startDate: Date, to endDate: Date, selectedCalendarIDs: Set<String>) async throws -> [CalendarEvent] {
         try await requestAccessIfNeeded()
 
-        let predicate = eventStore.predicateForEvents(withStart: startDate, end: endDate, calendars: nil)
+        let calendars = eventStore.calendars(for: .event).filter { selectedCalendarIDs.contains($0.calendarIdentifier) }
+        let predicate = eventStore.predicateForEvents(withStart: startDate, end: endDate, calendars: calendars)
         let ekEvents = eventStore.events(matching: predicate)
 
         return ekEvents.map {
@@ -37,12 +38,19 @@ final class AppleEventProvider: CalendarEventProvider {
         try await requestAccessIfNeeded()
 
         return eventStore.calendars(for: .event).map {
-            //$0.source.title
-            ProviderCalendar(
+            let source = $0.type == .calDAV ? ($0.source?.title ?? "") : "Other"
+            return ProviderCalendar(
                 id: $0.calendarIdentifier,
-                name: $0.title,
+                title: $0.title,
+                source: source,
                 color: Color(cgColor: $0.cgColor ?? UIColor.systemGray.cgColor)
             )
+        }
+    }
+
+    func addCalendar() {
+        DispatchQueue.main.async {
+            UIApplication.shared.open(URL(string: "App-Prefs:root=CALENDARS")!)
         }
     }
 

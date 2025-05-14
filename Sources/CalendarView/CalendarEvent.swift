@@ -49,9 +49,10 @@ public struct CalendarEvent: Identifiable, Sendable {
     }
 }
 
-struct ProviderCalendar {
+struct ProviderCalendar: Identifiable, Sendable {
     let id: String
-    let name: String
+    let title: String
+    let source: String
     let color: Color
 }
 

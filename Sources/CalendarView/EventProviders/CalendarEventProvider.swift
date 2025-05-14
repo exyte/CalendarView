@@ -8,6 +8,8 @@
 import SwiftUI
 
 protocol CalendarEventProvider: Sendable {
-    func getEvents(from startDate: Date, to endDate: Date) async throws -> [CalendarEvent]
+    func getEvents(from startDate: Date, to endDate: Date, selectedCalendarIDs: Set<String>) async throws -> [CalendarEvent]
+
     func getCalendars() async throws -> [ProviderCalendar]
+    func addCalendar()
 }

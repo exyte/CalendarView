@@ -9,7 +9,8 @@ import SwiftUI
 
 /// Fetches events from Apple's Calendar App. Will only fetch events from accounts which Calendar App has access to. If you'd like to add more accounts, add them in Calendar App.
 final class LocalEventsProvider: CalendarEventProvider {
-    func getEvents(from startDate: Date, to endDate: Date) async throws -> [CalendarEvent] {
+    
+    func getEvents(from startDate: Date, to endDate: Date, selectedCalendarIDs: Set<String>) async throws -> [CalendarEvent] {
         Array([
             CalendarEvent(title: "Mom's BD", description: "Don't forget to get her something nice", startDate: startDate.setTime(to: "10:00")!, endDate: startDate.setTime(to: "20:30")!),
             CalendarEvent(title: "Restaurant", startDate: startDate.setTime(to: "14:00")!, endDate: startDate.setTime(to: "16:00")!),
@@ -23,12 +24,10 @@ final class LocalEventsProvider: CalendarEventProvider {
     }
 
     func getCalendars() async throws -> [ProviderCalendar] {
-        [ProviderCalendar(id: "local", name: "local", color: .green)]
+        [ProviderCalendar(id: "local", title: "local", source: "local", color: .gray)]
     }
 
     func addCalendar() {
-        DispatchQueue.main.async {
-            UIApplication.shared.open(URL(string: "App-Prefs:root=CALENDARS")!)
-        }
+        
     }
 }

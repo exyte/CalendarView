@@ -60,7 +60,7 @@ extension View {
 }
 
 extension Shape {
-    func styled(_ foregroundColor: Color, border borderColor: Color = .clear, _ borderWidth: CGFloat = 0) -> some View {
+    func colored(_ foregroundColor: Color, border borderColor: Color = .clear, _ borderWidth: CGFloat = 0) -> some View {
         self.foregroundStyle(foregroundColor)
             .overlay(
                 self
@@ -69,9 +69,11 @@ extension Shape {
     }
 }
 
-func styledRoundedRectangle(_ cornerRadius: CGFloat, _ color: Color) -> some View {
-    RoundedRectangle(cornerRadius: cornerRadius)
-        .foregroundStyle(color)
+extension RoundedRectangle {
+    static func styled(_ cornerRadius: CGFloat, _ color: Color) -> some View {
+        RoundedRectangle(cornerRadius: cornerRadius)
+            .foregroundStyle(color)
+    }
 }
 
 extension View {
@@ -86,5 +88,17 @@ extension View {
 extension Image {
     func recolor(_ color: Color) -> some View {
         self.renderingMode(.template).foregroundStyle(color)
+    }
+}
+
+extension View {
+    func systemFont(_ size: CGFloat, _ weight: Font.Weight = .regular, _ color: Color = .black) -> some View {
+        self.font(.system(size: size, weight: weight))
+            .foregroundStyle(color)
+    }
+
+    func systemFont(_ size: CGFloat, _ color: Color = .black) -> some View {
+        self.font(.system(size: size))
+            .foregroundStyle(color)
     }
 }

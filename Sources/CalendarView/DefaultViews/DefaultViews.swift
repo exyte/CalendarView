@@ -62,7 +62,7 @@ public struct DefaultDayEventView: View {
 
     public var body: some View {
         ZStack(alignment: .top) {
-            styledRoundedRectangle(8, .gray.opacity(0.3))
+            RoundedRectangle.styled(8, .gray.opacity(0.3))
                 .layoutPriority(1)
 
             ViewThatFits {

@@ -22,6 +22,7 @@ public struct WeekSwitcherDayBuilderParams {
 public struct HeaderBuilderParams {
     public var selectedDate: Binding<Date>
     public var displayMode: Binding<CalendarDisplayMode>
+    public var showCalendarFilters: Binding<Bool>
     public var tapSelectDisplayModeClosure: ()->()
     public var tapFilterCalendarsClosure: ()->()
 }
@@ -50,7 +51,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
             DefaultWeekSwitcherDayView(day: $0.day, isSelected: $0.isSelected, isToday: $0.isToday)
         },
         headerBuilder: @escaping (HeaderBuilderParams) -> Header = {
-            DefaultHeaderView(selectedDate: $0.selectedDate, displayMode: $0.displayMode)
+            DefaultHeaderView(selectedDate: $0.selectedDate, displayMode: $0.displayMode, showCalendarFilters: $0.showCalendarFilters)
         }
     ) {
         self.dayEventBuilder = dayEventBuilder
@@ -63,6 +64,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
 
     @State var selectedDate: Date = .now.startOfDay
     @State var displayMode: CalendarDisplayMode = .day
+    @State var showCalendarFilters = false
     @State var updateID = UUID() // triggers downstream updates
 
     @State var customizationParams = CalendarViewCustomizationParams()
@@ -72,6 +74,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
             headerBuilder(HeaderBuilderParams(
                 selectedDate: $selectedDate,
                 displayMode: $displayMode,
+                showCalendarFilters: $showCalendarFilters,
                 tapSelectDisplayModeClosure: {
                     AnchoredPopup.launchGrowingAnimation(id: "displayMode")
                 },
@@ -94,6 +97,11 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         }
         .onChange(of: displayMode) {
             updateData()
+        }
+        .sheet(isPresented: $showCalendarFilters) {
+            updateData() // onDismiss
+        } content: {
+            SelectCalendarsView(viewModel: viewModel)
         }
     }
 

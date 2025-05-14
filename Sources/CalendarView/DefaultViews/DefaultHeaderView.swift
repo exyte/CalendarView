@@ -11,41 +11,16 @@ import AnchoredPopup
 public struct DefaultHeaderView: View {
     @Binding var selectedDate: Date
     @Binding var displayMode: CalendarDisplayMode
+    @Binding var showCalendarFilters: Bool
 
-    public init(selectedDate: Binding<Date>, displayMode: Binding<CalendarDisplayMode>) {
+    public init(selectedDate: Binding<Date>, displayMode: Binding<CalendarDisplayMode>, showCalendarFilters: Binding<Bool>) {
         self._selectedDate = selectedDate
         self._displayMode = displayMode
+        self._showCalendarFilters = showCalendarFilters
     }
 
     public var body: some View {
         HStack {
-            ZStack {
-                switch displayMode {
-                case .day:
-                    Image(.day)
-                case .threeDays:
-                    Image(.three)
-                case .month:
-                    Image(.month)
-                }
-            }
-            .padding(5)
-            .background(Circle().foregroundStyle(.white.opacity(0.2)))
-            .useAsPopupAnchor(id: "displayMode") {
-                VStack(alignment: .leading) {
-                    makeButton("Month", .month, .month)
-                    makeButton("Day", .day, .day)
-                    makeButton("3 Day", .three, .threeDays)
-                }
-                .padding(18, 10)
-                .background(styledRoundedRectangle(20, .white))
-            } customize: {
-                $0.position(.anchorRelative(.topLeading))
-                    .background(.none)
-            }
-
-            Spacer()
-
             DatePicker(
                 "Start Date",
                 selection: $selectedDate,
@@ -55,19 +30,46 @@ public struct DefaultHeaderView: View {
 
             Spacer()
 
-            Button {
+            displayModeSwitcher
 
+            Button {
+                showCalendarFilters = true
             } label: {
                 Image(.filters)
             }
-            .padding(5)
-            .background(Circle().foregroundStyle(.white.opacity(0.2)))
+            .styleLikeButton()
         }
         .padding(10)
         .background(Color.green.opacity(0.5))
     }
 
-    func makeButton(_ title: String, _ image: ImageResource, _ mode: CalendarDisplayMode) -> some View {
+    var displayModeSwitcher: some View {
+        ZStack {
+            switch displayMode {
+            case .day:
+                Image(.day)
+            case .threeDays:
+                Image(.three)
+            case .month:
+                Image(.month)
+            }
+        }
+        .styleLikeButton()
+        .useAsPopupAnchor(id: "displayMode") {
+            VStack(alignment: .leading) {
+                makeModeSwitcherButton("Month", .month, .month)
+                makeModeSwitcherButton("Day", .day, .day)
+                makeModeSwitcherButton("3 Day", .three, .threeDays)
+            }
+            .padding(18, 10)
+            .background(RoundedRectangle.styled(20, .white))
+        } customize: {
+            $0.position(.anchorRelative(.topLeading))
+                .background(.none)
+        }
+    }
+
+    func makeModeSwitcherButton(_ title: String, _ image: ImageResource, _ mode: CalendarDisplayMode) -> some View {
         Button {
             displayMode = mode
         } label: {
@@ -77,5 +79,12 @@ public struct DefaultHeaderView: View {
             }
         }
         .foregroundStyle(displayMode == mode ? Color("appBlack", bundle: .module) : Color("appGrey", bundle: .module))
+    }
+}
+
+fileprivate extension View {
+    func styleLikeButton() -> some View {
+        self.padding(5)
+            .background(Circle().foregroundStyle(.white.opacity(0.2)))
     }
 }
