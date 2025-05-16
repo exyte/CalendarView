@@ -87,9 +87,9 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
 
             switch displayMode {
             case .day, .threeDays:
-                DayView(selectedDate: $selectedDate, daysCount: displayMode == .day ? 1 : 3, events: viewModel.events, updateID: updateID, customizationParams: customizationParams, dayEventBuilder: dayEventBuilder)
+                DayLayout(selectedDate: $selectedDate, daysCount: displayMode == .day ? 1 : 3, events: viewModel.events, updateID: updateID, customizationParams: customizationParams, dayEventBuilder: dayEventBuilder)
             case .month:
-                MonthView(selectedDate: $selectedDate, calendarDisplayMode: $displayMode, events: viewModel.events, updateID: updateID, monthDayBuilder: monthDayBuilder)
+                MonthLayout(selectedDate: $selectedDate, calendarDisplayMode: $displayMode, events: viewModel.events, updateID: updateID, monthDayBuilder: monthDayBuilder)
             }
         }
         .onChange(of: selectedDate, initial: true) {

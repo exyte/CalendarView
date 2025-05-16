@@ -19,14 +19,19 @@ public struct DefaultHeaderView: View {
         self._showCalendarFilters = showCalendarFilters
     }
 
+    @State private var showMonthPicker = false
+
     public var body: some View {
         HStack {
-            DatePicker(
-                "Start Date",
-                selection: $selectedDate,
-                displayedComponents: [.date]
-            )
-            //Text(selectedDate.formatted("MMMM, yyyy"))
+            Button {
+                showMonthPicker = true
+            } label: {
+                HStack {
+                    Text(selectedDate.formatted("MMMM, yyyy"))
+                    Image(systemName: "chevron.down")
+                }
+            }
+            .foregroundStyle(.white)
 
             Spacer()
 
@@ -41,6 +46,13 @@ public struct DefaultHeaderView: View {
         }
         .padding(10)
         .background(Color.green.opacity(0.5))
+        .sheet(isPresented: $showMonthPicker) {
+            MonthSwitcher(date: selectedDate.startOfYear) { month in
+                selectedDate = month
+                displayMode = .month
+                showMonthPicker = false
+            }
+        }
     }
 
     var displayModeSwitcher: some View {
@@ -85,6 +97,6 @@ public struct DefaultHeaderView: View {
 fileprivate extension View {
     func styleLikeButton() -> some View {
         self.padding(5)
-            .background(Circle().foregroundStyle(.white.opacity(0.2)))
+            .background(Circle().colored(.white.opacity(0.12), border: .white.opacity(0.4), 0.5))
     }
 }

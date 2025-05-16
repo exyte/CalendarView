@@ -1,5 +1,5 @@
 //
-//  MonthView.swift
+//  MonthLayout.swift
 //  CalendarView
 //
 //  Created by Alisa Mylnikova on 24.04.2025.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-public struct MonthView<MonthDay: View>: View {
+public struct MonthLayout<MonthDay: View>: View {
     @Binding var selectedDate: Date
     @Binding var calendarDisplayMode: CalendarDisplayMode
     var events: [CalendarEvent]

@@ -9,11 +9,11 @@ import SwiftUI
 import EventKit
 
 public struct CalendarEvent: Identifiable, Sendable {
-    public enum Priority: String {
+    public enum Priority: String, Sendable {
         case low, normal, high
     }
 
-    public init(id: String = UUID().uuidString, calendarID: String = "local", title: String, description: String? = nil, calendarColor: Color = .gray, startDate: Date, endDate: Date? = nil, isAllDay: Bool = false, priority: Priority = .normal, vibration: UIImpactFeedbackGenerator.FeedbackStyle = .light, isDetached: Bool = false, payload: [String : Codable] = [:]) {
+    public init(id: String = UUID().uuidString, calendarID: String = "local", title: String, description: String? = nil, calendarColor: Color = .gray, startDate: Date, endDate: Date? = nil, isAllDay: Bool = false, priority: Priority = .normal, vibration: UIImpactFeedbackGenerator.FeedbackStyle = .light, isDetached: Bool = false, payload: [String : Sendable] = [:]) {
         self.id = id
         self.calendarID = calendarID
         self.title = title
@@ -40,7 +40,7 @@ public struct CalendarEvent: Identifiable, Sendable {
     public var priority: Priority
     public var vibration: UIImpactFeedbackGenerator.FeedbackStyle
     public var isDetached: Bool
-    public var payload: [String: Codable]
+    public var payload: [String: Sendable]
 
     var duration: CGFloat { // in seconds
         endDate.timeIntervalSinceNow - startDate.timeIntervalSinceNow

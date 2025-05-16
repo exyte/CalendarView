@@ -23,9 +23,7 @@ public extension Date {
     }
 
     func formatted(_ format: String) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = format
-        formatter.locale = Locale(identifier: "en_US_POSIX")
+        let formatter = DateFormatterCache.formatter(for: format)
         return formatter.string(from: self)
     }
 
@@ -50,8 +48,19 @@ public extension Date {
         return calendar.date(from: components)!.startOfDay
     }
 
+    var startOfYear: Date {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year], from: self)
+        return calendar.date(from: components)!.startOfDay
+    }
+
     var daysInMonth: Int {
         Calendar.current.range(of: .day, in: .month, for: self)?.count ?? 0
+    }
+
+    var maxMonthDay: Int {
+        let calendar = Calendar.current
+        return calendar.range(of: .day, in: .month, for: self)?.count ?? 30
     }
 
     // MARK: - Set Full Time or Date
@@ -119,33 +128,33 @@ public extension Date {
 
     // MARK: - Set Individual Components
 
-    func setYear(to year: Int) -> Date? {
+    func setYear(to year: Int) -> Date {
         updateComponent(.year, value: year)
     }
 
-    func setMonth(to month: Int) -> Date? {
+    func setMonth(to month: Int) -> Date {
         updateComponent(.month, value: month)
     }
 
-    func setDayOfMonth(to day: Int) -> Date? {
+    func setDayOfMonth(to day: Int) -> Date {
         updateComponent(.day, value: day)
     }
 
-    func setHour(to hour: Int) -> Date? {
+    func setHour(to hour: Int) -> Date {
         updateComponent(.hour, value: hour)
     }
 
-    func setMinute(to minute: Int) -> Date? {
+    func setMinute(to minute: Int) -> Date {
         updateComponent(.minute, value: minute)
     }
 
-    func setSecond(to second: Int) -> Date? {
+    func setSecond(to second: Int) -> Date {
         updateComponent(.second, value: second)
     }
 
     // MARK: - Internal Helper
 
-    private func updateComponent(_ component: Calendar.Component, value: Int) -> Date? {
+    private func updateComponent(_ component: Calendar.Component, value: Int) -> Date {
         var calendar = Calendar.current
         calendar.timeZone = TimeZone.current
         var components = calendar.dateComponents(
@@ -161,6 +170,22 @@ public extension Date {
         case .second: components.second = value
         default: break
         }
-        return calendar.date(from: components)
+        return calendar.date(from: components) ?? Date()
+    }
+}
+
+enum DateFormatterCache {
+    static var formatters: [String: DateFormatter] = [:]
+
+    static func formatter(for format: String) -> DateFormatter {
+        if let existing = formatters[format] {
+            return existing
+        } else {
+            let formatter = DateFormatter()
+            formatter.dateFormat = format
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatters[format] = formatter
+            return formatter
+        }
     }
 }

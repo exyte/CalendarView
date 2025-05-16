@@ -1,5 +1,5 @@
 //
-//  DayView.swift
+//  DayLayout.swift
 //  CalendarView
 //
 //  Created by Alisa Mylnikova on 14.04.2025.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-public struct DayView<Content: View>: View {
+public struct DayLayout<Content: View>: View {
     @Binding var selectedDate: Date
     var daysCount: Int
     var events: [CalendarEvent]
@@ -47,6 +47,7 @@ public struct DayView<Content: View>: View {
                     }
                 }
                 .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 9)
             }
 
             // events by hour
