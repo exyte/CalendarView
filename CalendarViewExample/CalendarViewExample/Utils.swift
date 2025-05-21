@@ -67,9 +67,11 @@ extension Shape {
     }
 }
 
-func styledRoundedRectangle(_ cornerRadius: CGFloat, _ color: Color) -> some View {
-    RoundedRectangle(cornerRadius: cornerRadius)
-        .foregroundStyle(color)
+extension RoundedRectangle {
+    static func styled(_ cornerRadius: CGFloat, _ color: Color) -> some View {
+        RoundedRectangle(cornerRadius: cornerRadius)
+            .foregroundStyle(color)
+    }
 }
 
 extension View {

@@ -1,0 +1,210 @@
+//
+//  CalendarTheme.swift
+//  CalendarView
+//
+//  Created by Alisa Mylnikova on 19.05.2025.
+//
+
+import SwiftUI
+
+@MainActor
+public struct CalendarTheme: Sendable {
+    public let main: Main
+    public let header: Header
+    public let week: Week
+    public let day: Day
+    public let month: Month
+    public let year: Year
+
+    public init(
+        main: Main = .init(),
+        header: Header = .init(),
+        week: Week = .init(),
+        day: Day = .init(),
+        month: Month = .init(),
+        year: Year = .init()
+    ) {
+        self.main = main
+        self.header = header.resolved(using: main)
+        self.week = week.resolved(using: main)
+        self.day = day.resolved(using: main)
+        self.month = month.resolved(using: main)
+        self.year = year.resolved(using: main)
+    }
+
+    public struct Main: Sendable {
+        public let text: Color
+        public let accent: Color
+        public let background: Color
+
+        public init(
+            text: Color = .named("appBlack"),
+            accent: Color = .named("AccentColor"),
+            background: Color = .white
+        ) {
+            self.text = text
+            self.accent = accent
+            self.background = background
+        }
+    }
+
+    public struct Header: Sendable {
+        public var text: Color
+
+        func resolved(using main: Main) -> Header {
+            .init(
+                text: text.resolve(main.text)
+            )
+        }
+
+        public init(text: Color = .unset) {
+            self.text = text
+        }
+    }
+
+    public struct Week: Sendable {
+        public var text: Color
+        public var todayText: Color
+        public var selectedText: Color
+        public var todaySelectedText: Color
+        public var background: Color
+        public var todayBackground: Color
+        public var selectedBackground: Color
+        public var todaySelectedBackground: Color
+
+        func resolved(using main: Main) -> Week {
+            .init(
+                text: text.resolve(main.text),
+                todayText: todayText.resolve(main.accent),
+                selectedText: selectedText.resolve(main.background),
+                todaySelectedText: todaySelectedText.resolve(main.background),
+                background: background.resolve(.clear),
+                todayBackground: todayBackground.resolve(.clear),
+                selectedBackground: selectedBackground.resolve(main.accent),
+                todaySelectedBackground: todaySelectedBackground.resolve(main.accent)
+            )
+        }
+
+        public init(
+            text: Color = .unset,
+            todayText: Color = .unset,
+            selectedText: Color = .unset,
+            todaySelectedText: Color = .unset,
+            background: Color = .unset,
+            todayBackground: Color = .unset,
+            selectedBackground: Color = .unset,
+            todaySelectedBackground: Color = .unset
+        ) {
+            self.text = text
+            self.todayText = todayText
+            self.selectedText = selectedText
+            self.todaySelectedText = todaySelectedText
+            self.background = background
+            self.todayBackground = todayBackground
+            self.selectedBackground = selectedBackground
+            self.todaySelectedBackground = todaySelectedBackground
+        }
+    }
+
+    public struct Day: Sendable {
+        public var hourText: Color
+        public var eventText: Color
+        public var background: Color
+        public var separators: Color
+
+        func resolved(using main: Main) -> Day {
+            .init(
+                hourText: hourText.resolve(.named("appDarkGrey")),
+                eventText: eventText.resolve(main.text),
+                background: background.resolve(main.background),
+                separators: separators.resolve(.named("appLightGrey"))
+            )
+        }
+
+        public init(
+            hourText: Color = .unset,
+            eventText: Color = .unset,
+            background: Color = .unset,
+            separators: Color = .unset
+        ) {
+            self.hourText = hourText
+            self.eventText = eventText
+            self.background = background
+            self.separators = separators
+        }
+    }
+
+    public struct Month: Sendable {
+        public var dateText: Color
+        public var eventText: Color
+        public var background: Color
+        public var separators: Color
+
+        func resolved(using main: Main) -> Month {
+            .init(
+                dateText: dateText.resolve(main.text),
+                eventText: eventText.resolve(main.text),
+                background: background.resolve(main.background),
+                separators: separators.resolve(.named("appLightGrey"))
+            )
+        }
+
+        public init(
+            dateText: Color = .unset,
+            eventText: Color = .unset,
+            background: Color = .unset,
+            separators: Color = .unset
+        ) {
+            self.dateText = dateText
+            self.eventText = eventText
+            self.background = background
+            self.separators = separators
+        }
+    }
+
+    public struct Year: Sendable {
+        public var dateText: Color
+        public var monthText: Color
+        public var todayText: Color
+        public var background: Color
+
+        func resolved(using main: Main) -> Year {
+            .init(
+                dateText: dateText.resolve(main.text),
+                monthText: monthText.resolve(main.text),
+                todayText: todayText.resolve(main.accent),
+                background: background.resolve(main.background)
+            )
+        }
+
+        public init(
+            dateText: Color = .unset,
+            monthText: Color = .unset,
+            todayText: Color = .unset,
+            background: Color = .unset
+        ) {
+            self.dateText = dateText
+            self.monthText = monthText
+            self.todayText = todayText
+            self.background = background
+        }
+    }
+}
+
+public extension Color {
+    static func named(_ name: String) -> Color {
+        Color(name, bundle: .module)
+    }
+}
+
+public extension Color {
+    static let unset = Color.clear
+
+    var isUnset: Bool {
+        self == .unset
+    }
+
+    func resolve(_ fallback: Color) -> Color {
+        isUnset ? fallback : self
+    }
+}

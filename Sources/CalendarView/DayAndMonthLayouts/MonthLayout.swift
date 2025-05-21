@@ -8,6 +8,8 @@
 import SwiftUI
 
 public struct MonthLayout<MonthDay: View>: View {
+    @Environment(\.calendarTheme) private var theme
+
     @Binding var selectedDate: Date
     @Binding var calendarDisplayMode: CalendarDisplayMode
     var events: [CalendarEvent]

@@ -60,7 +60,7 @@ extension View {
 }
 
 extension Shape {
-    func colored(_ foregroundColor: Color, border borderColor: Color = .clear, _ borderWidth: CGFloat = 0) -> some View {
+    func styled(_ foregroundColor: Color, border borderColor: Color = .clear, _ borderWidth: CGFloat = 0) -> some View {
         self.foregroundStyle(foregroundColor)
             .overlay(
                 self
@@ -73,15 +73,6 @@ extension RoundedRectangle {
     static func styled(_ cornerRadius: CGFloat, _ color: Color) -> some View {
         RoundedRectangle(cornerRadius: cornerRadius)
             .foregroundStyle(color)
-    }
-}
-
-extension View {
-    func roundedRectangleBackground(_ horPadding: CGFloat, _ verPadding: CGFloat, cornerRadius: CGFloat, _ color: Color) -> some View {
-        self.padding(horPadding, verPadding)
-            .background(RoundedRectangle(cornerRadius: cornerRadius)
-                .foregroundStyle(color)
-            )
     }
 }
 

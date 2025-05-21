@@ -8,6 +8,8 @@
 import SwiftUI
 
 public struct DefaultMonthDayView: View {
+    @Environment(\.calendarTheme) private var theme
+
     public var date: Date
     public var events: [CalendarEvent]
 
@@ -20,11 +22,11 @@ public struct DefaultMonthDayView: View {
 
     public var body: some View {
         VStack {
-            Color("appLightGrey", bundle: .module).frame(height: 1)
+            theme.month.separators.frame(height: 1)
                 .padding(.vertical, 10)
 
-            Text(date.formatted("d"))
-                .foregroundStyle(Color("appBlack", bundle: .module))
+            Text("\(date.getDay())")
+                .systemFont(17, .semibold, theme.month.dateText)
 
             if events.count <= maxEvents {
                 ForEach(events) { event in
@@ -42,13 +44,16 @@ public struct DefaultMonthDayView: View {
 }
 
 public struct DefaultMonthEventView: View {
+    @Environment(\.calendarTheme) private var theme
+
     public var event: CalendarEvent
 
     public var body: some View {
         VStack {
             Text(event.title)
+                .systemFont(11, .semibold, theme.month.eventText)
                 .lineLimit(1)
-                .background(Color.green.opacity(0.3).cornerRadius(2))
+                .background(event.calendarColor.opacity(0.3).cornerRadius(2))
         }
     }
 }

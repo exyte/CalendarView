@@ -9,6 +9,8 @@ import SwiftUI
 import AnchoredPopup
 
 public struct DefaultHeaderView: View {
+    @Environment(\.calendarTheme) private var theme
+
     @Binding var selectedDate: Date
     @Binding var displayMode: CalendarDisplayMode
     @Binding var showCalendarFilters: Bool
@@ -28,10 +30,11 @@ public struct DefaultHeaderView: View {
             } label: {
                 HStack {
                     Text(selectedDate.formatted("MMMM, yyyy"))
+                        .systemFont(15, .semibold, theme.header.text)
                     Image(systemName: "chevron.down")
+                        .foregroundStyle(theme.header.text)
                 }
             }
-            .foregroundStyle(.white)
 
             Spacer()
 
@@ -44,8 +47,7 @@ public struct DefaultHeaderView: View {
             }
             .styleLikeButton()
         }
-        .padding(10)
-        .background(Color.green.opacity(0.5))
+        .padding(.horizontal, 10)
         .sheet(isPresented: $showMonthPicker) {
             MonthSwitcher(date: selectedDate.startOfYear) { month in
                 selectedDate = month
@@ -97,6 +99,6 @@ public struct DefaultHeaderView: View {
 fileprivate extension View {
     func styleLikeButton() -> some View {
         self.padding(5)
-            .background(Circle().colored(.white.opacity(0.12), border: .white.opacity(0.4), 0.5))
+            .background(Circle().styled(.white.opacity(0.12), border: .white.opacity(0.4), 0.5))
     }
 }

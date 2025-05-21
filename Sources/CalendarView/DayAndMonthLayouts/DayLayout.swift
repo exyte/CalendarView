@@ -8,6 +8,8 @@
 import SwiftUI
 
 public struct DayLayout<Content: View>: View {
+    @Environment(\.calendarTheme) private var theme
+    
     @Binding var selectedDate: Date
     var daysCount: Int
     var events: [CalendarEvent]
@@ -42,6 +44,7 @@ public struct DayLayout<Content: View>: View {
             if !allDayEvents.isEmpty {
                 HStack {
                     Text("all-day")
+                        .systemFont(13, theme.day.hourText)
                     ForEach(allDayEvents) { event in
                         dayEventBuilder(event)
                     }
@@ -58,6 +61,7 @@ public struct DayLayout<Content: View>: View {
                             VStack(alignment: .trailing) {
                                 ForEach(0..<25, id: \.self) { i in
                                     Text("\(i):00")
+                                        .systemFont(13, theme.day.hourText)
                                         .frame(height: global.size.height / CGFloat(customizationParams.hoursToFit), alignment: .top)
                                         .id(i)
                                         .padding(.leading, 9)
@@ -65,7 +69,7 @@ public struct DayLayout<Content: View>: View {
                             }
 
                             ForEach(0..<daysCount, id: \.self) { i in
-                                Color("appLightGrey", bundle: .module).frame(width: 1)
+                                theme.day.separators.frame(width: 1)
                                 GeometryReader { g in
                                     let date = selectedDate.adding(.day, value: i)
                                     DayEventsLayout(events: eventsByDay[date] ?? [], size: g.size, horSpacing: customizationParams.horSpacing, verSpacing: customizationParams.verSpacing, dayEventBuilder: dayEventBuilder)

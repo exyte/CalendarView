@@ -100,7 +100,7 @@ struct InfiniteTableView<Data, Content>: UIViewRepresentable where Data: Identif
             if let item = data[safe: indexPath.row] {
                 cell.contentConfiguration = UIHostingConfiguration {
                     parent.content(item)
-                }
+                }.margins(.all, 0)
             }
 
             return cell
@@ -108,12 +108,9 @@ struct InfiniteTableView<Data, Content>: UIViewRepresentable where Data: Identif
 
         func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
             let count = data.count
-            print("count: \(count) index: \(indexPath.row) top: \(count - parent.threshold) bottom: \(parent.threshold)")
             if indexPath.row >= count - parent.threshold {
-                print("load more bottom")
                 parent.loadMore?(.bottom, parent.threshold)
             } else if indexPath.row <= parent.threshold {
-                print("load more top")
                 parent.loadMore?(.top, parent.threshold)
             }
         }

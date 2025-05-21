@@ -27,10 +27,11 @@ public struct HeaderBuilderParams {
     public var tapFilterCalendarsClosure: ()->()
 }
 
-public struct CalendarViewCustomizationParams {
+public class CalendarViewCustomizationParams {
     public var hoursToFit: Int = 12
     public var horSpacing: CGFloat = 4
     public var verSpacing: CGFloat = 4
+    public var headerBackground: HeaderBackground = .none
 }
 
 public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View, Header: View>: View {
@@ -60,36 +61,48 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         self.headerBuilder = headerBuilder
     }
 
-    @StateObject var viewModel = CalendarViewModel()
+    @Environment(\.calendarTheme) private var theme
+
+    @State var viewModel = CalendarViewModel()
 
     @State var selectedDate: Date = .now.startOfDay
     @State var displayMode: CalendarDisplayMode = .day
     @State var showCalendarFilters = false
     @State var updateID = UUID() // triggers downstream updates
 
-    @State var customizationParams = CalendarViewCustomizationParams()
+    var customizationParams = CalendarViewCustomizationParams()
 
     public var body: some View {
-        VStack {
-            headerBuilder(HeaderBuilderParams(
-                selectedDate: $selectedDate,
-                displayMode: $displayMode,
-                showCalendarFilters: $showCalendarFilters,
-                tapSelectDisplayModeClosure: {
-                    AnchoredPopup.launchGrowingAnimation(id: "displayMode")
-                },
-                tapFilterCalendarsClosure: {
+        VStack(spacing: 0) {
+            VStack(spacing: 0) {
+                headerBuilder(HeaderBuilderParams(
+                    selectedDate: $selectedDate,
+                    displayMode: $displayMode,
+                    showCalendarFilters: $showCalendarFilters,
+                    tapSelectDisplayModeClosure: {
+                        AnchoredPopup.launchGrowingAnimation(id: "displayMode")
+                    },
+                    tapFilterCalendarsClosure: {
 
-                })
-            )
+                    })
+                )
 
-            WeekDaysSwitcher(selectedDate: $selectedDate, anchorDate: selectedDate, calendarDisplayMode: displayMode, weekSwitcherDayBuilder: weekSwitcherDayBuilder)
+                WeekDaysSwitcher(selectedDate: $selectedDate, calendarDisplayMode: displayMode, weekSwitcherDayBuilder: weekSwitcherDayBuilder)
+                    .padding(8)
+            }
+            .background {
+                HeaderBackgroundView(background: customizationParams.headerBackground)
+            }
 
             switch displayMode {
             case .day, .threeDays:
                 DayLayout(selectedDate: $selectedDate, daysCount: displayMode == .day ? 1 : 3, events: viewModel.events, updateID: updateID, customizationParams: customizationParams, dayEventBuilder: dayEventBuilder)
+                    .padding(.top, 8)
+                    .background(theme.day.background)
             case .month:
                 MonthLayout(selectedDate: $selectedDate, calendarDisplayMode: $displayMode, events: viewModel.events, updateID: updateID, monthDayBuilder: monthDayBuilder)
+                    .padding(.top, 8)
+                    .background(theme.month.background)
             }
         }
         .onChange(of: selectedDate, initial: true) {

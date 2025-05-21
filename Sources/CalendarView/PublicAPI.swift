@@ -23,4 +23,46 @@ extension CalendarView {
         self.customizationParams.hoursToFit = hoursToFit
         return self
     }
+
+    /// Background for header and week picker
+    public func headerBackground(_ background: HeaderBackground) -> CalendarView {
+        print(self.customizationParams.headerBackground, background)
+        self.customizationParams.headerBackground = background
+        print(self.customizationParams.headerBackground, background)
+        return self
+    }
+
+    public func headerBackground<Content: View>(viewBuilder: @escaping () -> Content) -> CalendarView {
+        self.customizationParams.headerBackground = HeaderBackground(viewBuilder: viewBuilder)
+        return self
+    }
+}
+
+public enum HeaderBackground {
+    case none
+    case color(Color)
+    case view(AnyView)
+
+    // Convenience initializer for `view` that automatically wraps the content in `AnyView`
+    public init<Content: View>(viewBuilder: @escaping () -> Content) {
+        self = .view(AnyView(viewBuilder()))
+    }
+}
+
+struct HeaderBackgroundView: View {
+    var background: HeaderBackground
+
+    var body: some View {
+        Group {
+            switch background {
+            case .none:
+                EmptyView()
+            case .color(let color):
+                color
+            case .view(let anyView):
+                anyView
+            }
+        }
+        .ignoresSafeArea()
+    }
 }

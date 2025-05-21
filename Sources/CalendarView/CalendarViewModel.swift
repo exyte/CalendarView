@@ -5,13 +5,15 @@
 //  Created by Alisa Mylnikova on 22.04.2025.
 //
 
-import SwiftUI
+import Observation
+import Foundation
 
+@Observable
 @MainActor
-class CalendarViewModel: ObservableObject {
-    @Published public var events: [CalendarEvent] = []
-    @Published public var calendars: [ProviderCalendar] = []
-    @Published public var selectedCalendarIDs: Set<String> = []
+class CalendarViewModel {
+    public var events: [CalendarEvent] = []
+    public var calendars: [ProviderCalendar] = []
+    public var selectedCalendarIDs: Set<String> = []
 
     private let eventProviders: [CalendarEventProvider] = [AppleEventProvider(), LocalEventsProvider()]
     private var calendarStore = CalendarSelectionStore()

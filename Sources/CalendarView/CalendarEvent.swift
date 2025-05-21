@@ -46,6 +46,10 @@ public struct CalendarEvent: Identifiable, Sendable {
         endDate.timeIntervalSinceNow - startDate.timeIntervalSinceNow
     }
 
+    var isLocal: Bool {
+        calendarID == "local"
+    }
+
     func toString() -> String {
         title + startDate.formatted(" HH:mm") + endDate.formatted(" - HH:mm")
     }
