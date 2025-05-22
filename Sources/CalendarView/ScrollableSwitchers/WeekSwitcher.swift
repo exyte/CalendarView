@@ -128,15 +128,15 @@ public struct DefaultWeekSwitcherDayView: View {
         isToday ? theme.week.todayBackground :
         theme.week.background
 
-        VStack {
+        VStack(spacing: 10) {
             Text(day.formatted("EEE")).font(.system(size: 15))
                 .systemFont(15, theme.week.text)
                 .lineLimit(1)
             Text(day.formatted("d")).font(.system(size: 17, weight: .semibold))
                 .systemFont(17, .semibold, textColor)
+                .padding(8)
+                .background(bgColor)
+                .clipShape(Circle())
         }
-        .padding(4, 8)
-        .background(bgColor)
-        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 }

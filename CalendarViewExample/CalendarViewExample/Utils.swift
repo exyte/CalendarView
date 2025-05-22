@@ -74,11 +74,16 @@ extension RoundedRectangle {
     }
 }
 
-extension View {
-    func roundedRectangleBackground(_ horPadding: CGFloat, _ verPadding: CGFloat, cornerRadius: CGFloat, _ color: Color) -> some View {
-        self.padding(horPadding, verPadding)
-            .background(RoundedRectangle(cornerRadius: cornerRadius)
-                .foregroundStyle(color)
-            )
+struct RoundedCorner: Shape {
+    var radius: CGFloat = .infinity
+    var corners: UIRectCorner = .allCorners
+
+    func path(in rect: CGRect) -> Path {
+        let path = UIBezierPath(
+            roundedRect: rect,
+            byRoundingCorners: corners,
+            cornerRadii: CGSize(width: radius, height: radius)
+        )
+        return Path(path.cgPath)
     }
 }

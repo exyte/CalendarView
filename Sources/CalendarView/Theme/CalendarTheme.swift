@@ -53,7 +53,7 @@ public struct CalendarTheme: Sendable {
 
         func resolved(using main: Main) -> Header {
             .init(
-                text: text.resolve(main.text)
+                text: text.resolve(main.background)
             )
         }
 
@@ -74,7 +74,7 @@ public struct CalendarTheme: Sendable {
 
         func resolved(using main: Main) -> Week {
             .init(
-                text: text.resolve(main.text),
+                text: text.resolve(main.background),
                 todayText: todayText.resolve(main.accent),
                 selectedText: selectedText.resolve(main.background),
                 todaySelectedText: todaySelectedText.resolve(main.background),
@@ -111,13 +111,15 @@ public struct CalendarTheme: Sendable {
         public var eventText: Color
         public var background: Color
         public var separators: Color
+        public var todayLine: Color
 
         func resolved(using main: Main) -> Day {
             .init(
                 hourText: hourText.resolve(.named("appDarkGrey")),
                 eventText: eventText.resolve(main.text),
                 background: background.resolve(main.background),
-                separators: separators.resolve(.named("appLightGrey"))
+                separators: separators.resolve(.named("appLightGrey")),
+                todayLine: todayLine.resolve(.red)
             )
         }
 
@@ -125,12 +127,14 @@ public struct CalendarTheme: Sendable {
             hourText: Color = .unset,
             eventText: Color = .unset,
             background: Color = .unset,
-            separators: Color = .unset
+            separators: Color = .unset,
+            todayLine: Color = .unset
         ) {
             self.hourText = hourText
             self.eventText = eventText
             self.background = background
             self.separators = separators
+            self.todayLine = todayLine
         }
     }
 

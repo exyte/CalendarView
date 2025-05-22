@@ -26,9 +26,7 @@ extension CalendarView {
 
     /// Background for header and week picker
     public func headerBackground(_ background: HeaderBackground) -> CalendarView {
-        print(self.customizationParams.headerBackground, background)
         self.customizationParams.headerBackground = background
-        print(self.customizationParams.headerBackground, background)
         return self
     }
 

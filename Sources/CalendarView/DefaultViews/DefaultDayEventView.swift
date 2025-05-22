@@ -28,7 +28,8 @@ public struct DefaultDayEventView: View {
             }
         } else {
             ZStack(alignment: .top) {
-                RoundedRectangle.styled(8, event.calendarColor.opacity(0.3))
+                let color = event.calendarColor.blended(opacity: 0.3)
+                RoundedRectangle.styled(8, color)
                     .layoutPriority(1)
 
                 HStack(alignment: .top) {

@@ -31,6 +31,8 @@ public struct DayLayout<Content: View>: View {
         self.eventsByDay = daysCount == 1 ? [selectedDate.wrappedValue: nonAllDayEvents] : nonAllDayEvents.groupedByDay()
     }
 
+    @State private var hourTextSize: CGSize = .zero
+
     var firstOccupiedHour: Int {
         events.map { $0.startDate.getHour() } .min { $0 < $1 } ?? 0
     }
@@ -58,24 +60,16 @@ public struct DayLayout<Content: View>: View {
                 ScrollViewReader { proxy in
                     ScrollView {
                         HStack {
-                            VStack(alignment: .trailing) {
-                                ForEach(0..<25, id: \.self) { i in
-                                    Text("\(i):00")
-                                        .systemFont(13, theme.day.hourText)
-                                        .frame(height: global.size.height / CGFloat(customizationParams.hoursToFit), alignment: .top)
-                                        .id(i)
-                                        .padding(.leading, 9)
-                                }
-                            }
+                            let oneHourHeight = global.size.height / CGFloat(customizationParams.hoursToFit)
 
-                            ForEach(0..<daysCount, id: \.self) { i in
-                                theme.day.separators.frame(width: 1)
-                                GeometryReader { g in
-                                    let date = selectedDate.adding(.day, value: i)
-                                    DayEventsLayout(events: eventsByDay[date] ?? [], size: g.size, horSpacing: customizationParams.horSpacing, verSpacing: customizationParams.verSpacing, dayEventBuilder: dayEventBuilder)
-                                }
-                                .padding(.trailing, 9)
+                            hourLabels(oneHourHeight)
+
+                            ZStack(alignment: .top) {
+                                separatorsView(oneHourHeight)
+                                nowLine(oneHourHeight)
+                                dayEventsView
                             }
+                            .padding(.top, hourTextSize.height)
                         }
                     }
                     .onChange(of: updateID) {
@@ -84,6 +78,57 @@ public struct DayLayout<Content: View>: View {
                 }
             }
         }
+    }
+
+    func hourLabels(_ oneHourHeight: CGFloat) -> some View {
+        VStack(alignment: .trailing, spacing: 0) {
+            ForEach(0..<25, id: \.self) { i in
+                Text("\(i):00")
+                    .systemFont(13, theme.day.hourText)
+                    .sizeGetter($hourTextSize)
+                    .frame(height: oneHourHeight, alignment: .top)
+                    .id(i)
+                    .padding(.leading, 9)
+            }
+        }
+    }
+
+    func separatorsView(_ oneHourHeight: CGFloat) -> some View {
+        VStack(spacing: 0) {
+            ForEach(0..<25, id: \.self) { i in
+                VStack(spacing: 0) {
+                    theme.day.separators.frame(height: 1)
+                    Spacer()
+                }
+                .frame(height: oneHourHeight, alignment: .top)
+            }
+        }
+    }
+
+    func nowLine(_ oneHourHeight: CGFloat) -> some View {
+        theme.day.todayLine.frame(height: 2)
+            .overlay(alignment: .leading) {
+                theme.day.todayLine.frame(width: 2, height: 12)
+                    .padding(.leading, 1)
+            }
+            .offset(y: oneHourHeight * startCoeff(Date()))
+    }
+
+    var dayEventsView: some View {
+        HStack {
+            ForEach(0..<daysCount, id: \.self) { i in
+                theme.day.separators.frame(width: 1)
+                GeometryReader { g in
+                    let date = selectedDate.adding(.day, value: i)
+                    DayEventsLayout(events: eventsByDay[date] ?? [], size: g.size, horSpacing: customizationParams.horSpacing, verSpacing: customizationParams.verSpacing, dayEventBuilder: dayEventBuilder)
+                }
+                .padding(.trailing, 9)
+            }
+        }
+    }
+
+    func startCoeff(_ date: Date) -> CGFloat {
+        CGFloat((date.getHour() * 60 + date.getMinute())) / CGFloat(60)
     }
 }
 

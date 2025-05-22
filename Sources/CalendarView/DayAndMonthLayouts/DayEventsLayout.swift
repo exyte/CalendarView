@@ -77,16 +77,13 @@ fileprivate struct PartiallyOccupiedSpace {
 
     mutating func occupyFirstFreeSpace(with event: CalendarEvent) -> Int {
         for index in occupiedColumns.indices {
-            //print(event.title, "check column", index)
             if occupiedColumns[index].occupyFirstFreeSpace(with: event) {
-                //print(event.title, index)
                 return index
             }
         }
 
         let newColumn = PartiallyOccupiedColumn(occupiedRanges: [NSRange(event)])
         occupiedColumns.append(newColumn)
-        //print(event.title, "new column success", occupiedColumns.count - 1)
         return occupiedColumns.count - 1
     }
 }
@@ -97,12 +94,10 @@ fileprivate struct PartiallyOccupiedColumn {
     mutating func occupyFirstFreeSpace(with event: CalendarEvent) -> Bool {
         let eventRange = NSRange(event)
         for occupied in occupiedRanges {
-            //print(event.title, eventRange, occupied, occupied.intersects(eventRange) ? "intersects return" : "continue")
             if occupied.intersects(eventRange) {
                 return false
             }
         }
-        //print(event.title, eventRange, "fits success")
         occupiedRanges.append(eventRange)
         return true
     }
