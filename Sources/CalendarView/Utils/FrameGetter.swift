@@ -68,7 +68,7 @@ struct SizeGetter: ViewModifier {
                 }
             )
             .onPreferenceChange(SizePreferenceKey.self) { newSize in
-                if size == .zero {
+                if size != newSize {
                     size = newSize
                 }
             }

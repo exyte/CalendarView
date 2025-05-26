@@ -42,6 +42,7 @@ struct YearLayout: View {
 
 struct YearMonthLayout: View {
     @Environment(\.calendarTheme) private var theme
+    @Environment(\.calendarCustomizationParams) var customizationParams
 
     var date: Date // 1st of some month
 
@@ -49,7 +50,7 @@ struct YearMonthLayout: View {
 
     // count of empty spaces for days of week before 1st of the month
     var inset: Int {
-        let startOfWeek = date.startOfWeek
+        let startOfWeek = date.startOfWeek(customizationParams.firstDayOfWeek)
         var count = date.getWeekday() - startOfWeek.getWeekday()
         if count < 0 {
             count += 7
@@ -77,6 +78,7 @@ struct YearMonthLayout: View {
 
 struct YearCurrentMonthLayout: View {
     @Environment(\.calendarTheme) private var theme
+    @Environment(\.calendarCustomizationParams) var customizationParams
 
     var date: Date // 1st of some month
 
@@ -85,7 +87,7 @@ struct YearCurrentMonthLayout: View {
 
     // count of empty spaces for days of week before 1st of the month
     var inset: Int {
-        let startOfWeek = date.startOfWeek
+        let startOfWeek = date.startOfWeek(customizationParams.firstDayOfWeek)
         var count = date.getWeekday() - startOfWeek.getWeekday()
         if count < 0 {
             count += 7

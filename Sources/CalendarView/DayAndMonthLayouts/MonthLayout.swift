@@ -9,6 +9,7 @@ import SwiftUI
 
 public struct MonthLayout<MonthDay: View>: View {
     @Environment(\.calendarTheme) private var theme
+    @Environment(\.calendarCustomizationParams) var customizationParams
 
     @Binding var selectedDate: Date
     @Binding var calendarDisplayMode: CalendarDisplayMode
@@ -24,7 +25,7 @@ public struct MonthLayout<MonthDay: View>: View {
 
     // count of empty spaces for days of week before 1st of the month
     var inset: Int {
-        let startOfWeek = startOfMonth.startOfWeek
+        let startOfWeek = startOfMonth.startOfWeek(customizationParams.firstDayOfWeek)
         var count = startOfMonth.getWeekday() - startOfWeek.getWeekday()
         if count < 0 {
             count += 7

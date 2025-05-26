@@ -9,9 +9,11 @@ import SwiftUI
 
 struct WeekDaysSwitcher<WeekSwitcherDay: View>: View {
     @Environment(\.calendarTheme) private var theme
+    @Environment(\.calendarCustomizationParams) var customizationParams
 
     @Binding var selectedDate: Date
     var calendarDisplayMode: CalendarDisplayMode
+    var hoursLabelsInset: CGFloat
     @ViewBuilder var weekSwitcherDayBuilder: (WeekSwitcherDayBuilderParams) -> WeekSwitcherDay
 
     @State private var anchorDate: Date = Date()
@@ -28,14 +30,14 @@ struct WeekDaysSwitcher<WeekSwitcherDay: View>: View {
                 weekdaysOnlyView
             }
         }
-        .onChange(of: selectedDate) {
+        .onChange(of: selectedDate, initial: true) {
             anchorDate = selectedDate
         }
     }
 
     @ViewBuilder
     var fullWeekView: some View {
-        let startOfWeek = anchorDate.startOfWeek
+        let startOfWeek = anchorDate.startOfWeek(customizationParams.firstDayOfWeek)
 
         HStack(spacing: 8) {
             Button {
@@ -56,6 +58,8 @@ struct WeekDaysSwitcher<WeekSwitcherDay: View>: View {
 
     var threeDayWeekView: some View {
         HStack(spacing: 8) {
+            Color.clear.frame(width: hoursLabelsInset, height: 1)
+
             Button {
                 anchorDate = anchorDate.adding(.day, value: -1)
             } label: {
@@ -74,7 +78,7 @@ struct WeekDaysSwitcher<WeekSwitcherDay: View>: View {
 
     @ViewBuilder
     var weekdaysOnlyView: some View {
-        let startOfWeek = anchorDate.startOfWeek
+        let startOfWeek = anchorDate.startOfWeek(customizationParams.firstDayOfWeek)
         HStack(spacing: 8) {
             ForEach(0..<7, id: \.self) { i in
                 let day = startOfWeek.adding(.day, value: i)
@@ -109,6 +113,8 @@ public struct DefaultWeekSwitcherDayView: View {
     var isSelected: Bool
     var isToday: Bool
 
+    var isWeekend: Bool { day.isWeekend }
+
     public init(day: Date, isSelected: Bool, isToday: Bool) {
         self.day = day
         self.isSelected = isSelected
@@ -120,6 +126,7 @@ public struct DefaultWeekSwitcherDayView: View {
         isSelected && isToday ? theme.week.todaySelectedText :
         isSelected ? theme.week.selectedText :
         isToday ? theme.week.todayText :
+        isWeekend ? theme.week.weekendText :
         theme.week.text
 
         let bgColor =
@@ -130,10 +137,11 @@ public struct DefaultWeekSwitcherDayView: View {
 
         VStack(spacing: 10) {
             Text(day.formatted("EEE")).font(.system(size: 15))
-                .systemFont(15, theme.week.text)
+                .systemFont(15, isWeekend ? theme.week.weekendText : theme.week.text)
                 .lineLimit(1)
             Text(day.formatted("d")).font(.system(size: 17, weight: .semibold))
                 .systemFont(17, .semibold, textColor)
+                .lineLimit(1)
                 .padding(8)
                 .background(bgColor)
                 .clipShape(Circle())

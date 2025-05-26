@@ -65,10 +65,12 @@ public struct CalendarTheme: Sendable {
     public struct Week: Sendable {
         public var text: Color
         public var todayText: Color
+        public var weekendText: Color
         public var selectedText: Color
         public var todaySelectedText: Color
         public var background: Color
         public var todayBackground: Color
+        public var weekendBackground: Color
         public var selectedBackground: Color
         public var todaySelectedBackground: Color
 
@@ -76,10 +78,12 @@ public struct CalendarTheme: Sendable {
             .init(
                 text: text.resolve(main.background),
                 todayText: todayText.resolve(main.accent),
+                weekendText: todayText.resolve(main.background.opacity(0.5)),
                 selectedText: selectedText.resolve(main.background),
                 todaySelectedText: todaySelectedText.resolve(main.background),
                 background: background.resolve(.clear),
                 todayBackground: todayBackground.resolve(.clear),
+                weekendBackground: todayBackground.resolve(.clear),
                 selectedBackground: selectedBackground.resolve(main.accent),
                 todaySelectedBackground: todaySelectedBackground.resolve(main.accent)
             )
@@ -88,19 +92,23 @@ public struct CalendarTheme: Sendable {
         public init(
             text: Color = .unset,
             todayText: Color = .unset,
+            weekendText: Color = .unset,
             selectedText: Color = .unset,
             todaySelectedText: Color = .unset,
             background: Color = .unset,
             todayBackground: Color = .unset,
+            weekendBackground: Color = .unset,
             selectedBackground: Color = .unset,
             todaySelectedBackground: Color = .unset
         ) {
             self.text = text
             self.todayText = todayText
+            self.weekendText = weekendText
             self.selectedText = selectedText
             self.todaySelectedText = todaySelectedText
             self.background = background
             self.todayBackground = todayBackground
+            self.weekendBackground = weekendBackground
             self.selectedBackground = selectedBackground
             self.todaySelectedBackground = todaySelectedBackground
         }

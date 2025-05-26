@@ -20,7 +20,6 @@ public struct DefaultDayEventView: View {
         if event.isAllDay {
             ZStack(alignment: .leading) {
                 RoundedRectangle.styled(8, event.calendarColor.opacity(0.3))
-                    .layoutPriority(1)
 
                 Text(event.title)
                     .systemFont(13, .semibold, theme.day.eventText)

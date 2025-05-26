@@ -24,6 +24,18 @@ extension CalendarView {
         return self
     }
 
+    /// default is "h a"
+    public func hourLabelFormat(_ hourLabelFormat: String) -> CalendarView {
+        self.customizationParams.hourLabelFormat = hourLabelFormat
+        return self
+    }
+
+    /// what day to start the week from, 1 - Sunday, 2 - Monday
+    public func firstDayOfWeek(_ firstDayOfWeek: Int) -> CalendarView {
+        self.customizationParams.firstDayOfWeek = firstDayOfWeek
+        return self
+    }
+
     /// Background for header and week picker
     public func headerBackground(_ background: HeaderBackground) -> CalendarView {
         self.customizationParams.headerBackground = background
@@ -33,34 +45,5 @@ extension CalendarView {
     public func headerBackground<Content: View>(viewBuilder: @escaping () -> Content) -> CalendarView {
         self.customizationParams.headerBackground = HeaderBackground(viewBuilder: viewBuilder)
         return self
-    }
-}
-
-public enum HeaderBackground {
-    case none
-    case color(Color)
-    case view(AnyView)
-
-    // Convenience initializer for `view` that automatically wraps the content in `AnyView`
-    public init<Content: View>(viewBuilder: @escaping () -> Content) {
-        self = .view(AnyView(viewBuilder()))
-    }
-}
-
-struct HeaderBackgroundView: View {
-    var background: HeaderBackground
-
-    var body: some View {
-        Group {
-            switch background {
-            case .none:
-                EmptyView()
-            case .color(let color):
-                color
-            case .view(let anyView):
-                anyView
-            }
-        }
-        .ignoresSafeArea()
     }
 }

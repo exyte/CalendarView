@@ -29,6 +29,9 @@ public struct HeaderBuilderParams {
 
 public class CalendarViewCustomizationParams {
     public var hoursToFit: Int = 12
+    public var hourLabelFormat: String = "h a"
+    public var firstDayOfWeek: Int?
+
     public var horSpacing: CGFloat = 4
     public var verSpacing: CGFloat = 4
     public var headerBackground: HeaderBackground = .color(.named("headerBG"))
@@ -65,10 +68,13 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
 
     @State var viewModel = CalendarViewModel()
 
-    @State var selectedDate: Date = .now.startOfDay
+    @State var selectedDate: Date = Date().setMonth(to: 6).setDayOfMonth(to: 18) //.now.startOfDay
     @State var displayMode: CalendarDisplayMode = .day
     @State var showCalendarFilters = false
     @State var updateID = UUID() // triggers downstream updates
+
+    // layout helpers
+    @State var hoursLabelsInset: CGFloat = 0
 
     var customizationParams = CalendarViewCustomizationParams()
 
@@ -87,7 +93,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                     })
                 )
 
-                WeekDaysSwitcher(selectedDate: $selectedDate, calendarDisplayMode: displayMode, weekSwitcherDayBuilder: weekSwitcherDayBuilder)
+                WeekDaysSwitcher(selectedDate: $selectedDate, calendarDisplayMode: displayMode, hoursLabelsInset: hoursLabelsInset, weekSwitcherDayBuilder: weekSwitcherDayBuilder)
                     .padding(8)
             }
             .background {
@@ -96,7 +102,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
 
             switch displayMode {
             case .day, .threeDays:
-                DayLayout(selectedDate: $selectedDate, daysCount: displayMode == .day ? 1 : 3, events: viewModel.events, updateID: updateID, customizationParams: customizationParams, dayEventBuilder: dayEventBuilder)
+                DayLayout(selectedDate: $selectedDate, hoursLabelsInset: $hoursLabelsInset, daysCount: displayMode == .day ? 1 : 3, events: viewModel.events, updateID: updateID, dayEventBuilder: dayEventBuilder)
                     .padding(.top, 8)
                     .background(theme.day.background)
             case .month:
@@ -105,6 +111,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                     .background(theme.month.background)
             }
         }
+        .environment(\.calendarCustomizationParams, customizationParams)
         .onChange(of: selectedDate, initial: true) {
             updateData()
         }
@@ -145,5 +152,16 @@ public enum CalendarDisplayMode {
         case .month:
             DateInterval(start: start.startOfMonth, end: start.adding(.month, value: 1))
         }
+    }
+}
+
+private struct CalendarCustomizationParamsKey: EnvironmentKey {
+    static let defaultValue = CalendarViewCustomizationParams()
+}
+
+extension EnvironmentValues {
+    var calendarCustomizationParams: CalendarViewCustomizationParams {
+        get { self[CalendarCustomizationParamsKey.self] }
+        set { self[CalendarCustomizationParamsKey.self] = newValue }
     }
 }

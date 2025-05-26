@@ -61,6 +61,7 @@ struct DayEventsLayout<Content: View>: View {
                     .frame(width: frame.width, height: frame.height)
             }
         }
+        .transaction { $0.disablesAnimations = true }
     }
 
     func durationCoeff(_ event: CalendarEvent) -> CGFloat {

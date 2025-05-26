@@ -12,6 +12,8 @@ struct ContentView: View {
 
     var body: some View {
         CalendarView()
+            .firstDayOfWeek(2)
+            .hourLabelFormat("HH:mm")
             .headerBackground {
                 GeometryReader { geo in
                     ZStack(alignment: .top) {

@@ -34,7 +34,7 @@ struct MonthSwitcher: View {
             YearLayout(date: yearDate) { month in
                 didSelectMonth(yearDate.setMonth(to: month))
             }
-            .padding(.bottom, 30)
+            .padding(16)
             .background(theme.year.background)
         }
         .background(theme.year.background)

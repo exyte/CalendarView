@@ -35,10 +35,11 @@ public extension Date {
         Calendar.current.startOfDay(for: self)
     }
 
-    var startOfWeek: Date {
+    func startOfWeek(_ firstDayOfWeek: Int?) -> Date {
         let calendar = Calendar.current
         let weekday = calendar.component(.weekday, from: self)
-        let daysToSubtract = (7 + weekday - calendar.firstWeekday) % 7
+        let firstDayOfWeek = firstDayOfWeek ?? calendar.firstWeekday
+        let daysToSubtract = (7 + weekday - firstDayOfWeek) % 7
         return calendar.date(byAdding: .day, value: -daysToSubtract, to: self.startOfDay)!
     }
 
@@ -61,6 +62,10 @@ public extension Date {
     var maxMonthDay: Int {
         let calendar = Calendar.current
         return calendar.range(of: .day, in: .month, for: self)?.count ?? 30
+    }
+
+    var isWeekend: Bool {
+        Calendar.current.isDateInWeekend(self)
     }
 
     // MARK: - Set Full Time or Date
