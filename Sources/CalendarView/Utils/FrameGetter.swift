@@ -68,15 +68,17 @@ struct SizeGetter: ViewModifier {
                 }
             )
             .onPreferenceChange(SizePreferenceKey.self) { newSize in
-                if size != newSize {
-                    size = newSize
+                DispatchQueue.main.async {
+                    if size != newSize {
+                        size = newSize
+                    }
                 }
             }
     }
 }
 
 private struct SizePreferenceKey: PreferenceKey {
-    static var defaultValue: CGSize = .zero
+    nonisolated(unsafe) static var defaultValue: CGSize = .zero
 
     static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
         value = nextValue()

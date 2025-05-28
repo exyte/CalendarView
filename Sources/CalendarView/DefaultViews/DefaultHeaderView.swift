@@ -13,12 +13,12 @@ public struct DefaultHeaderView: View {
 
     @Binding var selectedDate: Date
     @Binding var displayMode: CalendarDisplayMode
-    @Binding var showCalendarFilters: Bool
+    var tapFilterCalendarsClosure: ()->()
 
-    public init(selectedDate: Binding<Date>, displayMode: Binding<CalendarDisplayMode>, showCalendarFilters: Binding<Bool>) {
+    public init(selectedDate: Binding<Date>, displayMode: Binding<CalendarDisplayMode>, tapFilterCalendarsClosure: @escaping ()->()) {
         self._selectedDate = selectedDate
         self._displayMode = displayMode
-        self._showCalendarFilters = showCalendarFilters
+        self.tapFilterCalendarsClosure = tapFilterCalendarsClosure
     }
 
     @State private var showMonthPicker = false
@@ -41,7 +41,7 @@ public struct DefaultHeaderView: View {
             displayModeSwitcher
 
             Button {
-                showCalendarFilters = true
+                tapFilterCalendarsClosure()
             } label: {
                 Image(.filters)
             }

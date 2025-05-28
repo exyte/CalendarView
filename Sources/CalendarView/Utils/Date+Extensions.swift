@@ -179,7 +179,7 @@ public extension Date {
     }
 }
 
-enum DateFormatterCache {
+actor DateFormatterCache {
     static var formatters: [String: DateFormatter] = [:]
 
     static func formatter(for format: String) -> DateFormatter {

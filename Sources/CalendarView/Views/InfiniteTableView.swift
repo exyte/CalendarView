@@ -14,8 +14,11 @@ enum InfiniteDirection {
 struct InfiniteTableView<Data, Content>: UIViewRepresentable where Data: Identifiable, Content: View {
     var data: [Data]
     var threshold: Int = 3
+    var tableUpdateID: UUID // use to perform a full reload with re-centering
     var loadMore: ((InfiniteDirection, Int) -> Void)?
     @ViewBuilder var content: (Data) -> Content
+
+    @State private var prevTableUpdateID: UUID?
 
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
@@ -38,11 +41,13 @@ struct InfiniteTableView<Data, Content>: UIViewRepresentable where Data: Identif
         let oldData = context.coordinator.data
         let newData = data
 
-        if oldData.isEmpty {
+        // completly new data, just reload the whole table and scroll to the middle
+        if prevTableUpdateID != tableUpdateID {
             DispatchQueue.main.async {
+                self.prevTableUpdateID = tableUpdateID
                 context.coordinator.data = newData
                 uiView.reloadData()
-                uiView.scrollToRow(at: IndexPath(row: data.count/2, section: 0), at: .middle, animated: false)
+                uiView.scrollToRow(at: IndexPath(row: newData.count/2, section: 0), at: .middle, animated: false)
             }
             return
         }

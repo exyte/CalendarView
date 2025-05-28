@@ -22,7 +22,6 @@ public struct WeekSwitcherDayBuilderParams {
 public struct HeaderBuilderParams {
     public var selectedDate: Binding<Date>
     public var displayMode: Binding<CalendarDisplayMode>
-    public var showCalendarFilters: Binding<Bool>
     public var tapSelectDisplayModeClosure: ()->()
     public var tapFilterCalendarsClosure: ()->()
 }
@@ -45,17 +44,17 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     @ViewBuilder var headerBuilder: (HeaderBuilderParams) -> Header
 
     public init(
-        dayEventBuilder: @escaping (CalendarEvent) -> DayEvent = {
+        dayEventBuilder: @escaping (_ calendarEvent: CalendarEvent) -> DayEvent = {
             DefaultDayEventView($0)
         },
-        monthDayBuilder: @escaping (MonthDayBuilderParams) -> MonthDay = {
+        monthDayBuilder: @escaping (_ params: MonthDayBuilderParams) -> MonthDay = {
             DefaultMonthDayView(date: $0.date, events: $0.events)
         },
-        weekSwitcherDayBuilder: @escaping (WeekSwitcherDayBuilderParams) -> WeekSwitcherDay = {
+        weekSwitcherDayBuilder: @escaping (_ params: WeekSwitcherDayBuilderParams) -> WeekSwitcherDay = {
             DefaultWeekSwitcherDayView(day: $0.day, isSelected: $0.isSelected, isToday: $0.isToday)
         },
-        headerBuilder: @escaping (HeaderBuilderParams) -> Header = {
-            DefaultHeaderView(selectedDate: $0.selectedDate, displayMode: $0.displayMode, showCalendarFilters: $0.showCalendarFilters)
+        headerBuilder: @escaping (_ params: HeaderBuilderParams) -> Header = {
+            DefaultHeaderView(selectedDate: $0.selectedDate, displayMode: $0.displayMode, tapFilterCalendarsClosure: $0.tapFilterCalendarsClosure)
         }
     ) {
         self.dayEventBuilder = dayEventBuilder
@@ -64,12 +63,13 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         self.headerBuilder = headerBuilder
     }
 
-    @Environment(\.calendarTheme) private var theme
+    @Environment(\.calendarTheme) var theme
 
     @State var viewModel = CalendarViewModel()
 
-    @State var selectedDate: Date = Date().setMonth(to: 6).setDayOfMonth(to: 18) //.now.startOfDay
-    @State var displayMode: CalendarDisplayMode = .day
+    @BindableValue var selectedDate: Date = Date()
+    @BindableValue var displayMode: CalendarDisplayMode = .day
+
     @State var showCalendarFilters = false
     @State var updateID = UUID() // triggers downstream updates
 
@@ -84,12 +84,11 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                 headerBuilder(HeaderBuilderParams(
                     selectedDate: $selectedDate,
                     displayMode: $displayMode,
-                    showCalendarFilters: $showCalendarFilters,
                     tapSelectDisplayModeClosure: {
                         AnchoredPopup.launchGrowingAnimation(id: "displayMode")
                     },
                     tapFilterCalendarsClosure: {
-
+                        showCalendarFilters = true
                     })
                 )
 
@@ -132,11 +131,18 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         }
     }
 
-//        public func selectedDate(_ selectedDate: Binding<Date>) -> CalendarView {
-//            var calendar = self
-//            calendar._selectedDate = selectedDate
-//            return calendar
-//        }
+    // can't move this one to an extension, because _selectedDate is always private
+    public func selectedDate(_ binding: Binding<Date>) -> CalendarView {
+        var copy = self
+        copy._selectedDate.bind(binding)
+        return copy
+    }
+
+    public func displayMode(_ binding: Binding<CalendarDisplayMode>) -> CalendarView {
+        var copy = self
+        copy._displayMode.bind(binding)
+        return copy
+    }
 }
 
 public enum CalendarDisplayMode {
@@ -152,16 +158,5 @@ public enum CalendarDisplayMode {
         case .month:
             DateInterval(start: start.startOfMonth, end: start.adding(.month, value: 1))
         }
-    }
-}
-
-private struct CalendarCustomizationParamsKey: EnvironmentKey {
-    static let defaultValue = CalendarViewCustomizationParams()
-}
-
-extension EnvironmentValues {
-    var calendarCustomizationParams: CalendarViewCustomizationParams {
-        get { self[CalendarCustomizationParamsKey.self] }
-        set { self[CalendarCustomizationParamsKey.self] = newValue }
     }
 }

@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-@MainActor
 public struct CalendarTheme: Sendable {
     public let main: Main
     public let header: Header

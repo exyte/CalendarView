@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+// MARK: - Theme
+
 public extension EnvironmentValues {
     #if swift(>=6.0)
     @Entry var calendarTheme = CalendarTheme()
@@ -29,3 +31,22 @@ public extension View {
         self.environment(\.calendarTheme, theme)
     }
 }
+
+// MARK: - CustomizationParams
+
+public extension EnvironmentValues {
+    #if swift(>=6.0)
+    @Entry var calendarCustomizationParams = CalendarViewCustomizationParams()
+    #else
+    var calendarCustomizationParams: CalendarViewCustomizationParams {
+        get { self[CalendarCustomizationParamsKey.self] }
+        set { self[CalendarCustomizationParamsKey.self] = newValue }
+    }
+    #endif
+}
+
+#if swift(<6.0)
+@preconcurrency public struct CalendarCustomizationParamsKey: EnvironmentKey {
+    nonisolated(unsafe) public static let defaultValue = CalendarViewCustomizationParams()
+}
+#endif
