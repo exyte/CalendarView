@@ -19,9 +19,15 @@ class CalendarViewModel {
     private var calendarStore = CalendarSelectionStore()
 
     func fetch(_ interval: DateInterval) async {
+        // user explicitly deselected all of his calendards
+        if calendarStore.selectedIDsExists && calendarStore.selectedIDs.isEmpty {
+            events = []
+            return
+        }
+
         var result = [CalendarEvent]()
         for eventProvider in eventProviders {
-            if let providerResult = try? await eventProvider.getEvents(from: interval.start, to: interval.end, selectedCalendarIDs: selectedCalendarIDs) {
+            if let providerResult = try? await eventProvider.getEvents(from: interval.start, to: interval.end, selectedCalendarIDs: calendarStore.selectedIDs) {
                 result.append(contentsOf: providerResult)
             }
         }
@@ -36,12 +42,17 @@ class CalendarViewModel {
             }
         }
         calendars = result
+        calendarStore.initializeIfNeeded(with: calendars.map(\.id))
         selectedCalendarIDs = calendarStore.selectedIDs
     }
 
     func toggleCalendar(_ calendar: ProviderCalendar) {
         calendarStore.toggle(calendar.id)
         selectedCalendarIDs = calendarStore.selectedIDs
+    }
+
+    func isCalendarSelected(_ calendar: ProviderCalendar) -> Bool {
+        selectedCalendarIDs.contains(calendar.id)
     }
 }
 
@@ -58,6 +69,15 @@ final class CalendarSelectionStore {
         }
     }
 
+    var selectedIDsExists: Bool {
+        UserDefaults.standard.array(forKey: key) != nil
+    }
+
+    func initializeIfNeeded(with calendarIDs: [String]) {
+        guard !selectedIDsExists else { return }
+        selectedIDs = Set(calendarIDs)
+    }
+
     func toggle(_ id: String) {
         var ids = selectedIDs
         if selectedIDs.contains(id) {
@@ -68,4 +88,3 @@ final class CalendarSelectionStore {
         selectedIDs = ids
     }
 }
-

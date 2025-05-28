@@ -92,7 +92,7 @@ public struct DefaultHeaderView: View {
                 Text(title)
             }
         }
-        .foregroundStyle(displayMode == mode ? Color("appBlack", bundle: .module) : Color("appGrey", bundle: .module))
+        .foregroundStyle(displayMode == mode ? theme.main.text : theme.main.secondaryText)
     }
 }
 

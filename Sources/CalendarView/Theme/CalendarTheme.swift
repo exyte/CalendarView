@@ -33,15 +33,18 @@ public struct CalendarTheme: Sendable {
 
     public struct Main: Sendable {
         public let text: Color
+        public let secondaryText: Color
         public let accent: Color
         public let background: Color
 
         public init(
             text: Color = .named("appBlack"),
+            secondaryText: Color = .named("appGrey"),
             accent: Color = .named("AccentColor"),
             background: Color = .white
         ) {
             self.text = text
+            self.secondaryText = secondaryText
             self.accent = accent
             self.background = background
         }
