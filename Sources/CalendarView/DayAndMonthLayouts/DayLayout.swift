@@ -15,14 +15,16 @@ public struct DayLayout<Content: View>: View {
     @Binding var hoursLabelsInset: CGFloat
     var daysCount: Int
     var events: [CalendarEvent]
+    var reminders: [CalendarReminder]
     var updateID: UUID
-    @ViewBuilder var dayEventBuilder: (CalendarEvent)->Content
+    @ViewBuilder var dayEventBuilder: (any CalendarEntity)->Content
 
-    init(selectedDate: Binding<Date>, hoursLabelsInset: Binding<CGFloat>, daysCount: Int, events: [CalendarEvent], updateID: UUID, dayEventBuilder: @escaping (CalendarEvent) -> Content) {
+    init(selectedDate: Binding<Date>, hoursLabelsInset: Binding<CGFloat>, daysCount: Int, events: [CalendarEvent], reminders: [CalendarReminder], updateID: UUID, dayEventBuilder: @escaping (any CalendarEntity) -> Content) {
         self._selectedDate = selectedDate
         self._hoursLabelsInset = hoursLabelsInset
         self.daysCount = daysCount
         self.events = events
+        self.reminders = reminders
         self.updateID = updateID
         self.dayEventBuilder = dayEventBuilder
 
@@ -68,7 +70,7 @@ public struct DayLayout<Content: View>: View {
                             ZStack(alignment: .top) {
                                 separatorsView(oneHourHeight)
                                 nowLine(oneHourHeight)
-                                dayEventsView
+                                dayEventsAndRemindersView
                             }
                             .padding(.top, hourTextSize.height)
                         }
@@ -147,20 +149,20 @@ public struct DayLayout<Content: View>: View {
         }
     }
 
-    var dayEventsView: some View {
+    var dayEventsAndRemindersView: some View {
         HStack(spacing: customizationParams.horSpacing) {
             ForEach(0..<daysCount, id: \.self) { i in
                 theme.day.separators.frame(width: 1)
                 GeometryReader { g in
                     let date = selectedDate.adding(.day, value: i).startOfDay
-                    DayEventsLayout(events: nonAllDayEventsByDay[date] ?? [], size: g.size, horSpacing: customizationParams.horSpacing, verSpacing: customizationParams.verSpacing, dayEventBuilder: dayEventBuilder)
+                    DayEventsLayout(events: nonAllDayEventsByDay[date] ?? [], reminders: reminders, size: g.size, horSpacing: customizationParams.horSpacing, verSpacing: customizationParams.verSpacing, dayEventBuilder: dayEventBuilder)
                 }
             }
         }
         .padding(.trailing, customizationParams.horSpacing)
     }
 
-    func startCoeff(_ date: Date) -> CGFloat {
+    private func startCoeff(_ date: Date) -> CGFloat {
         CGFloat((date.getHour() * 60 + date.getMinute())) / CGFloat(60)
     }
 }

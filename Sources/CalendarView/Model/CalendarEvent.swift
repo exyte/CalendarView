@@ -6,18 +6,17 @@
 //
 
 import SwiftUI
-import EventKit
 
-public struct CalendarEvent: Identifiable, Sendable {
+public struct CalendarEvent: CalendarEntity {
     public enum Priority: String, Sendable {
         case low, normal, high
     }
 
-    public init(id: String = UUID().uuidString, calendarID: String = "local", title: String, description: String? = nil, calendarColor: Color = .gray, startDate: Date, endDate: Date? = nil, isAllDay: Bool = false, priority: Priority = .normal, vibration: UIImpactFeedbackGenerator.FeedbackStyle = .light, isDetached: Bool = false, payload: [String : Sendable] = [:]) {
+    public init(id: String = UUID().uuidString, calendarID: String = "local", title: String, notes: String? = nil, calendarColor: Color = .gray, startDate: Date, endDate: Date? = nil, isAllDay: Bool = false, priority: Priority = .normal, vibration: UIImpactFeedbackGenerator.FeedbackStyle = .light, isDetached: Bool = false, payload: [String : Sendable] = [:]) {
         self.id = id
         self.calendarID = calendarID
         self.title = title
-        self.description = description
+        self.notes = notes
         self.calendarColor = calendarColor
         self.startDate = startDate
         self.endDate = endDate ?? startDate.adding(.hour, value: 1)
@@ -32,7 +31,7 @@ public struct CalendarEvent: Identifiable, Sendable {
     public let calendarID: String
 
     public var title: String
-    public var description: String?
+    public var notes: String?
     public var calendarColor: Color
     public var startDate: Date
     public var endDate: Date
@@ -42,27 +41,13 @@ public struct CalendarEvent: Identifiable, Sendable {
     public var isDetached: Bool
     public var payload: [String: Sendable]
 
-    var duration: CGFloat { // in seconds
-        endDate.timeIntervalSinceNow - startDate.timeIntervalSinceNow
-    }
+    public var entityType: EntityType { .event }
 
-    var isLocal: Bool {
-        calendarID == "local"
+    public var duration: CGFloat { // in seconds
+        endDate.timeIntervalSinceNow - startDate.timeIntervalSinceNow
     }
 
     func toString() -> String {
         title + startDate.formatted(" HH:mm") + endDate.formatted(" - HH:mm")
     }
-}
-
-struct ProviderCalendar: Identifiable, Sendable {
-    let id: String
-    let title: String
-    let source: String
-    let color: Color
-}
-
-struct DateInterval {
-    var start: Date
-    var end: Date
 }

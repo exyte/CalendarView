@@ -110,7 +110,7 @@ extension Color {
 }
 
 @propertyWrapper
-public struct BindableValue<Value>: DynamicProperty {
+public struct BindableValue<Value: Sendable>: DynamicProperty, Sendable {
     @State private var internalValue: Value
     private var externalBinding: Binding<Value>?
 

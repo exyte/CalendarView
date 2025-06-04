@@ -14,6 +14,7 @@ public struct MonthLayout<MonthDay: View>: View {
     @Binding var selectedDate: Date
     @Binding var calendarDisplayMode: CalendarDisplayMode
     var events: [CalendarEvent]
+    var reminders: [CalendarReminder]
     var updateID: UUID
     @ViewBuilder var monthDayBuilder: (MonthDayBuilderParams) -> MonthDay
 

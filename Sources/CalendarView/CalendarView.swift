@@ -38,14 +38,14 @@ public class CalendarViewCustomizationParams {
 
 public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View, Header: View>: View {
 
-    @ViewBuilder var dayEventBuilder: (CalendarEvent) -> DayEvent
+    @ViewBuilder var dayEventBuilder: (any CalendarEntity) -> DayEvent
     @ViewBuilder var monthDayBuilder: (MonthDayBuilderParams) -> MonthDay
     @ViewBuilder var weekSwitcherDayBuilder: (WeekSwitcherDayBuilderParams) -> WeekSwitcherDay
     @ViewBuilder var headerBuilder: (HeaderBuilderParams) -> Header
 
     public init(
-        dayEventBuilder: @escaping (_ calendarEvent: CalendarEvent) -> DayEvent = {
-            DefaultDayEventView($0)
+        dayEventBuilder: @escaping (_ calendarEvent: any CalendarEntity) -> DayEvent = {
+            DefaultDayEventView(entity: $0)
         },
         monthDayBuilder: @escaping (_ params: MonthDayBuilderParams) -> MonthDay = {
             DefaultMonthDayView(date: $0.date, events: $0.events)
@@ -101,11 +101,11 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
 
             switch displayMode {
             case .day, .threeDays:
-                DayLayout(selectedDate: $selectedDate, hoursLabelsInset: $hoursLabelsInset, daysCount: displayMode == .day ? 1 : 3, events: viewModel.events, updateID: updateID, dayEventBuilder: dayEventBuilder)
+                DayLayout(selectedDate: $selectedDate, hoursLabelsInset: $hoursLabelsInset, daysCount: displayMode == .day ? 1 : 3, events: viewModel.events, reminders: viewModel.reminders, updateID: updateID, dayEventBuilder: dayEventBuilder)
                     .padding(.top, 8)
                     .background(theme.day.background)
             case .month:
-                MonthLayout(selectedDate: $selectedDate, calendarDisplayMode: $displayMode, events: viewModel.events, updateID: updateID, monthDayBuilder: monthDayBuilder)
+                MonthLayout(selectedDate: $selectedDate, calendarDisplayMode: $displayMode, events: viewModel.events, reminders: viewModel.reminders, updateID: updateID, monthDayBuilder: monthDayBuilder)
                     .padding(.top, 8)
                     .background(theme.month.background)
             }
@@ -145,7 +145,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     }
 }
 
-public enum CalendarDisplayMode {
+public enum CalendarDisplayMode: Sendable {
     case day, threeDays, month
 
     func interval(_ start: Date) -> DateInterval {

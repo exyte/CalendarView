@@ -9,31 +9,40 @@ import SwiftUI
 
 struct DayEventsLayout<Content: View>: View {
     var events: [CalendarEvent] = []
+    var reminders: [CalendarReminder] = []
     var size: CGSize
     var horSpacing: CGFloat
     var verSpacing: CGFloat
-    @ViewBuilder var dayEventBuilder: (CalendarEvent)->Content
+    @ViewBuilder var dayEventBuilder: (any CalendarEntity)->Content
 
-    var frames: [CGRect] = []
+    private var eventFrames: [CGRect] = []
+    private var reminderFrames: [CGRect] = []
 
-    init(events: [CalendarEvent], size: CGSize, horSpacing: CGFloat, verSpacing: CGFloat, dayEventBuilder: @escaping (CalendarEvent) -> Content) {
+    init(events: [CalendarEvent], reminders: [CalendarReminder], size: CGSize, horSpacing: CGFloat, verSpacing: CGFloat, dayEventBuilder: @escaping (any CalendarEntity) -> Content) {
         self.events = events.sorted(by: \.duration)
+        self.reminders = reminders
         self.size = size
         self.horSpacing = horSpacing
         self.verSpacing = verSpacing
         self.dayEventBuilder = dayEventBuilder
 
-        self.frames = recalculateFrames()
+        (self.eventFrames, self.reminderFrames) = recalculateFrames()
     }
 
-    public func recalculateFrames() -> [CGRect] {
-        var frames = [CGRect]()
-        var columns = [Int]()
+    public func recalculateFrames() -> ([CGRect], [CGRect]) {
+        var eventFrames = [CGRect]()
+        var reminderFrames = [CGRect]()
+        var eventColumns = [Int]()
+        var reminderColumns = [Int]()
 
         var space = PartiallyOccupiedSpace()
         for event in events {
-            let column = space.occupyFirstFreeSpace(with: event)
-            columns.append(column)
+            let column = space.occupyFirstFreeSpace(with: NSRange(event))
+            eventColumns.append(column)
+        }
+        for reminder in reminders {
+            let column = space.occupyFirstFreeSpace(with: NSRange(reminder))
+            reminderColumns.append(column)
         }
 
         let columnsCount = CGFloat(space.occupiedColumns.count)
@@ -44,19 +53,32 @@ struct DayEventsLayout<Content: View>: View {
 
         for i in 0..<events.count {
             let event = events[i]
-            //print(event.title, deltaY, deltaY * event.startCoeff, deltaY * event.durationCoeff - verSpacing)
-            let column = CGFloat(columns[i])
-            frames.append(CGRect(x: deltaX * column, y: deltaY * startCoeff(event), width: columnWidth, height: deltaY * durationCoeff(event) - verSpacing))
+            let column = CGFloat(eventColumns[i])
+            eventFrames.append(CGRect(x: deltaX * column, y: deltaY * startCoeff(event), width: columnWidth, height: deltaY * durationCoeff(event) - verSpacing))
         }
-        return frames
+
+        for i in 0..<reminders.count {
+            let reminder = reminders[i]
+            let column = CGFloat(reminderColumns[i])
+            reminderFrames.append(CGRect(x: deltaX * column, y: deltaY * startCoeff(reminder), width: columnWidth, height: deltaY - verSpacing))
+        }
+        return (eventFrames, reminderFrames)
     }
 
     public var body: some View {
         ZStack(alignment: .topLeading) {
-            ForEach(frames.indices, id: \.self) { i in
+            ForEach(eventFrames.indices, id: \.self) { i in
                 let event = events[i]
-                let frame = frames[i]
+                let frame = eventFrames[i]
                 dayEventBuilder(event)
+                    .position(x: frame.midX, y: frame.midY)
+                    .frame(width: frame.width, height: frame.height)
+            }
+
+            ForEach(reminderFrames.indices, id: \.self) { i in
+                let reminder = reminders[i]
+                let frame = reminderFrames[i]
+                dayEventBuilder(reminder)
                     .position(x: frame.midX, y: frame.midY)
                     .frame(width: frame.width, height: frame.height)
             }
@@ -71,19 +93,23 @@ struct DayEventsLayout<Content: View>: View {
     func startCoeff(_ event: CalendarEvent) -> CGFloat {
         CGFloat((event.startDate.getHour() * 60 + event.startDate.getMinute())) / CGFloat(60)
     }
+
+    func startCoeff(_ reminder: CalendarReminder) -> CGFloat {
+        CGFloat((reminder.dueDate.getHour() * 60 + reminder.dueDate.getMinute())) / CGFloat(60)
+    }
 }
 
 fileprivate struct PartiallyOccupiedSpace {
     var occupiedColumns: [PartiallyOccupiedColumn] = []
 
-    mutating func occupyFirstFreeSpace(with event: CalendarEvent) -> Int {
+    mutating func occupyFirstFreeSpace(with range: NSRange) -> Int {
         for index in occupiedColumns.indices {
-            if occupiedColumns[index].occupyFirstFreeSpace(with: event) {
+            if occupiedColumns[index].occupyFirstFreeSpace(with: range) {
                 return index
             }
         }
 
-        let newColumn = PartiallyOccupiedColumn(occupiedRanges: [NSRange(event)])
+        let newColumn = PartiallyOccupiedColumn(occupiedRanges: [range])
         occupiedColumns.append(newColumn)
         return occupiedColumns.count - 1
     }
@@ -92,14 +118,13 @@ fileprivate struct PartiallyOccupiedSpace {
 fileprivate struct PartiallyOccupiedColumn {
     var occupiedRanges: [NSRange]
 
-    mutating func occupyFirstFreeSpace(with event: CalendarEvent) -> Bool {
-        let eventRange = NSRange(event)
+    mutating func occupyFirstFreeSpace(with range: NSRange) -> Bool {
         for occupied in occupiedRanges {
-            if occupied.intersects(eventRange) {
+            if occupied.intersects(range) {
                 return false
             }
         }
-        occupiedRanges.append(eventRange)
+        occupiedRanges.append(range)
         return true
     }
 }
@@ -107,6 +132,10 @@ fileprivate struct PartiallyOccupiedColumn {
 extension NSRange {
     init(_ event: CalendarEvent) {
         self.init(event.startDate, event.endDate)
+    }
+
+    init(_ reminder: CalendarReminder) {
+        self.init(reminder.dueDate, reminder.dueDate.adding(.hour, value: 1))
     }
 
     init(_ startDate: Date, _ endDate: Date) {
