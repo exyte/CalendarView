@@ -28,7 +28,36 @@ CalendarView()
 `hoursToFit` - How many hours will fit vertically in a day displayMode    
 `hourLabelFormat` - Hour format in a day displayMode    
 `firstDayOfWeek` - What day to start a week from in all views, default is taken from current locale    
-`headerBackground` - Background for header including week switcher: `none`, `color`, `view`          
+`headerBackground` - Background for header including week switcher: `none`, `color`, `view`      
+
+### UI Customization
+`dayEventBuilder` - in a .day `displayMode`, a rectangle view for one event. Has to have a greedy size to strech according to space available. Height available depends on event's duration and width on how many events there are in this day. So using `ViewThatFits` could be a good approach here. Also a good idea - applying `.clipped()` when even the smallest option doesn't fit, so the events don't intersect.     
+`monthDayBuilder` - in a .month `displayMode`, a view to show for each day. It should be something like a month number with day's events list.   
+`weekSwitcherDayBuilder` - in week picker in the header, a view for one day of week    
+`headerBuilder` - this will be displayed above the week picker
+
+```swift
+CalendarView { calendarEvent in
+    ZStack {
+        Rectangle().foregroundStyle(.red.opacity(0.1))
+        Text(calendarEvent.title)
+    }
+} monthDayBuilder: { params in
+    Text(params.date.formatted(date: .abbreviated, time: .omitted))
+} weekSwitcherDayBuilder: { params in
+    Text(params.day.formatted("d.MM"))
+        .foregroundStyle(params.isToday ? .blue : .black)
+} headerBuilder: { params in
+    HStack {
+        Button("Show calendars") {
+            params.tapFilterCalendarsClosure()
+        }
+        Button("Toggle mode") {
+            params.displayMode.wrappedValue = params.displayMode.wrappedValue == .month ? .day : .month
+        }
+    }
+}
+```
 
 ## Examples
 

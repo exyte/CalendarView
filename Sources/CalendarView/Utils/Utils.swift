@@ -57,6 +57,15 @@ extension View {
             self
         }
     }
+
+    @ViewBuilder
+    func applyIfLet<T>(_ value: T?, transform: (Self, T) -> some View) -> some View {
+        if let v = value {
+            transform(self, v)
+        } else {
+            self
+        }
+    }
 }
 
 extension Shape {
@@ -136,5 +145,11 @@ public struct BindableValue<Value: Sendable>: DynamicProperty, Sendable {
 
     public mutating func bind(_ binding: Binding<Value>) {
         self.externalBinding = binding
+    }
+}
+
+extension Collection {
+    subscript(safe index: Index) -> Element? {
+        indices.contains(index) ? self[index] : nil
     }
 }

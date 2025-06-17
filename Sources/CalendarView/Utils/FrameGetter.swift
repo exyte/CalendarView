@@ -84,3 +84,24 @@ private struct SizePreferenceKey: PreferenceKey {
         value = nextValue()
     }
 }
+
+struct MeasuringTrickView<Content: View>: View {
+    @Binding var size: CGSize?
+    let content: () -> Content
+
+    var body: some View {
+        content()
+            .background(
+                GeometryReader { geo in
+                    Color.clear
+                        .onAppear {
+                            // Only assign once
+                            if size == nil {
+                                size = geo.size
+                            }
+                        }
+                }
+            )
+            .hidden() // Completely exclude from layout and drawing
+    }
+}

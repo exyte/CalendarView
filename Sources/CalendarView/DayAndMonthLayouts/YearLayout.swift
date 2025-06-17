@@ -19,7 +19,7 @@ struct YearLayout: View {
     var body: some View {
         VStack(alignment: .leading) {
             let isCurrentYear = date.getYear() == today.getYear()
-            Text(date.formatted("yyyy")).systemFont(32, .semibold, isCurrentYear ? theme.year.todayText : theme.year.monthText)
+            Text(date.formatted("y")).systemFont(32, .semibold, isCurrentYear ? theme.year.todayText : theme.year.monthText)
 
             LazyVGrid(columns: columns, spacing: 16) {
                 ForEach(0..<12) { i in

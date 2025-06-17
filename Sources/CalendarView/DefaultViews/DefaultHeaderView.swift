@@ -11,14 +11,10 @@ import AnchoredPopup
 public struct DefaultHeaderView: View {
     @Environment(\.calendarTheme) private var theme
 
-    @Binding var selectedDate: Date
-    @Binding var displayMode: CalendarDisplayMode
-    var tapFilterCalendarsClosure: ()->()
+    var params: HeaderBuilderParams
 
-    public init(selectedDate: Binding<Date>, displayMode: Binding<CalendarDisplayMode>, tapFilterCalendarsClosure: @escaping ()->()) {
-        self._selectedDate = selectedDate
-        self._displayMode = displayMode
-        self.tapFilterCalendarsClosure = tapFilterCalendarsClosure
+    public init(params: HeaderBuilderParams) {
+        self.params = params
     }
 
     @State private var showMonthPicker = false
@@ -29,7 +25,7 @@ public struct DefaultHeaderView: View {
                 showMonthPicker = true
             } label: {
                 HStack {
-                    Text(selectedDate.formatted("MMMM, yyyy"))
+                    Text(params.anchorDate.formatted("MMMM, yyyy"))
                         .systemFont(15, .semibold, theme.header.text)
                     Image(systemName: "chevron.down")
                         .foregroundStyle(theme.header.text)
@@ -41,7 +37,7 @@ public struct DefaultHeaderView: View {
             displayModeSwitcher
 
             Button {
-                tapFilterCalendarsClosure()
+                params.tapFilterCalendarsClosure()
             } label: {
                 Image(.filters)
             }
@@ -49,9 +45,9 @@ public struct DefaultHeaderView: View {
         }
         .padding(.horizontal, 10)
         .sheet(isPresented: $showMonthPicker) {
-            MonthSwitcher(date: selectedDate.startOfYear) { month in
-                selectedDate = month
-                displayMode = .month
+            MonthSwitcher(date: params.selectedDate.wrappedValue.startOfYear) { month in
+                params.selectedDate.wrappedValue = month
+                params.displayMode.wrappedValue = .month
                 showMonthPicker = false
             }
         }
@@ -59,7 +55,7 @@ public struct DefaultHeaderView: View {
 
     var displayModeSwitcher: some View {
         ZStack {
-            switch displayMode {
+            switch params.displayMode.wrappedValue {
             case .day:
                 Image(.day)
             case .threeDays:
@@ -85,14 +81,14 @@ public struct DefaultHeaderView: View {
 
     func makeModeSwitcherButton(_ title: String, _ image: ImageResource, _ mode: CalendarDisplayMode) -> some View {
         Button {
-            displayMode = mode
+            params.displayMode.wrappedValue = mode
         } label: {
             HStack {
                 Image(image).renderingMode(.template)
                 Text(title)
             }
         }
-        .foregroundStyle(displayMode == mode ? theme.main.text : theme.main.secondaryText)
+        .foregroundStyle(params.displayMode.wrappedValue == mode ? theme.main.text : theme.main.secondaryText)
     }
 }
 

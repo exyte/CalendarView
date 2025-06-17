@@ -25,14 +25,14 @@ struct MonthSwitcher: View {
             headerView
                 .padding(16, 8)
 
-            InfiniteTableView(data: items, threshold: 2, tableUpdateID: tableUpdateID) { direction, threshold in
+            InfiniteTableView(data: items) { direction, threshold in
                 DispatchQueue.main.async {
                     switch direction {
-                    case .top:
+                    case .backward:
                         for _ in 0..<threshold {
                             items.insert(items.first! - 1, at: 0)
                         }
-                    case .bottom:
+                    case .forward:
                         for _ in 0..<threshold {
                             items.append(items.last! + 1)
                         }
@@ -46,6 +46,8 @@ struct MonthSwitcher: View {
                 .padding(16)
                 .background(theme.year.background)
             }
+            .loadMoreParameters(threshold: 2, pageSize: 4)
+            .reloadTrigger(updateID: tableUpdateID)
         }
         .background(theme.year.background)
     }

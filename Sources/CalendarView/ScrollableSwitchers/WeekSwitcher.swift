@@ -12,15 +12,24 @@ struct WeekDaysSwitcher<WeekSwitcherDay: View>: View {
     @Environment(\.calendarCustomizationParams) var customizationParams
 
     @Binding var selectedDate: Date
+    @Binding var anchorDate: Date // first day of currently on screen week. selectedData could be off screen, so need to track this through another variable
+
     var calendarDisplayMode: CalendarDisplayMode
     var hoursLabelsInset: CGFloat
     @ViewBuilder var weekSwitcherDayBuilder: (WeekSwitcherDayBuilderParams) -> WeekSwitcherDay
 
-    @State private var anchorDate: Date = Date()
     private var calendar: Calendar { Calendar.current }
+
+    @State private var daySize: CGSize?
+    @State private var items = Array(-5...5)
+    @State private var tableUpdateID = UUID() // triggers table update
 
     var body: some View {
         ZStack {
+            MeasuringTrickView(size: $daySize) {
+                weekSwitcherDayBuilder(WeekSwitcherDayBuilderParams(day: selectedDate, isSelected: true, isToday: true))
+            }
+
             switch calendarDisplayMode {
             case .day:
                 fullWeekView
@@ -31,54 +40,53 @@ struct WeekDaysSwitcher<WeekSwitcherDay: View>: View {
             }
         }
         .onChange(of: selectedDate, initial: true) {
-            anchorDate = selectedDate
+            anchorDate = selectedDate.startOfWeek(customizationParams.firstDayOfWeek)
         }
     }
 
     @ViewBuilder
     var fullWeekView: some View {
-        let startOfWeek = anchorDate.startOfWeek(customizationParams.firstDayOfWeek)
-
-        HStack(spacing: 8) {
-            Button {
-                anchorDate = anchorDate.adding(.day, value: -7)
-            } label: {
-                Image(systemName: "arrow.left")
+        GeometryReader { g in
+            createSimpleTableView(items: $items) { item in
+                HStack(spacing: 0) {
+                    let startOfWeek = selectedDate.startOfWeek(customizationParams.firstDayOfWeek).startOfDay.adding(.day, value: item*7)
+                    ForEach(0..<7, id: \.self) { i in
+                        dayView(startDay: startOfWeek, index: i)
+                    }
+                }
             }
-
-            daysView(startDay: startOfWeek, length: 7)
-
-            Button {
-                anchorDate = anchorDate.adding(.day, value: 7)
-            } label: {
-                Image(systemName: "arrow.right")
+            .scrollLayout(.horizontal)
+            .scrollMode(scrollMode: .paged(g.size.width))
+            .willDisplayItem { item in
+                anchorDate = selectedDate.startOfWeek(customizationParams.firstDayOfWeek).startOfDay.adding(.day, value: item*7)
             }
+            .reloadTrigger(updateID: tableUpdateID) // trigger new table recentering when new date is selected...
+            .id(tableUpdateID) // ...+ have to rerender the whole thing to pass updated selectedDate into otherwise cached cells
         }
+        .frame(height: daySize?.height)
     }
 
     var threeDayWeekView: some View {
-        HStack(spacing: 8) {
-            Color.clear.frame(width: hoursLabelsInset, height: 1)
-
-            Button {
-                anchorDate = anchorDate.adding(.day, value: -1)
-            } label: {
-                Image(systemName: "arrow.left")
+        GeometryReader { g in
+            createSimpleTableView(items: $items) { item in
+                dayView(startDay: anchorDate, index: item)
             }
-
-            daysView(startDay: anchorDate, length: 3)
-
-            Button {
-                anchorDate = anchorDate.adding(.day, value: 1)
-            } label: {
-                Image(systemName: "arrow.right")
+            .scrollLayout(.horizontal)
+            .scrollMode(scrollMode: .paged(g.size.width / 3))
+            .loadMoreParameters(threshold: 0, pageSize: 5)
+            .willDisplayItem { item in
+                //anchorDate = selectedDate.startOfWeek(customizationParams.firstDayOfWeek).startOfDay.adding(.day, value: item*7)
             }
+            .reloadTrigger(updateID: tableUpdateID) // trigger new table recentering when new date is selected...
+            .id(tableUpdateID) // ...+ have to rerender the whole thing to pass updated selectedDate into otherwise cached cells
         }
+        .frame(height: daySize?.height)
+        .padding(.leading, hoursLabelsInset)
     }
 
     @ViewBuilder
     var weekdaysOnlyView: some View {
-        let startOfWeek = anchorDate.startOfWeek(customizationParams.firstDayOfWeek)
+        let startOfWeek = Date().startOfWeek(customizationParams.firstDayOfWeek)
         HStack(spacing: 8) {
             ForEach(0..<7, id: \.self) { i in
                 let day = startOfWeek.adding(.day, value: i)
@@ -87,21 +95,23 @@ struct WeekDaysSwitcher<WeekSwitcherDay: View>: View {
                     .greedyWidth()
             }
         }
+        .frame(height: daySize?.height)
     }
 
-    private func daysView(startDay: Date, length: Int) -> some View {
-        ForEach(0..<length, id: \.self) { i in
-            let day = startDay.adding(.day, value: i)
-            let isSelected = calendar.isDate(day, inSameDayAs: selectedDate)
-            let isToday = calendar.isDateInToday(day)
-            Button {
-                withAnimation {
-                    selectedDate = day
+    @ViewBuilder
+    private func dayView(startDay: Date, index: Int) -> some View {
+        let day = startDay.adding(.day, value: index)
+        let isSelected = calendar.isDate(day, inSameDayAs: selectedDate)
+        let isToday = calendar.isDateInToday(day)
+
+        weekSwitcherDayBuilder(WeekSwitcherDayBuilderParams(day: day, isSelected: isSelected, isToday: isToday))
+            .simultaneousGesture(
+                TapGesture().onEnded {
+                    self.selectedDate = day
+                    self.items = Array(-5...5)
+                    self.tableUpdateID = UUID()
                 }
-            } label: {
-                weekSwitcherDayBuilder(WeekSwitcherDayBuilderParams(day: day, isSelected: isSelected, isToday: isToday))
-            }
-        }
+            )
         .greedyWidth()
     }
 }

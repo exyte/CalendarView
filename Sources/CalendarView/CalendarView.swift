@@ -22,6 +22,7 @@ public struct WeekSwitcherDayBuilderParams {
 public struct HeaderBuilderParams {
     public var selectedDate: Binding<Date>
     public var displayMode: Binding<CalendarDisplayMode>
+    public var anchorDate: Date
     public var tapSelectDisplayModeClosure: ()->()
     public var tapFilterCalendarsClosure: ()->()
 }
@@ -54,7 +55,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
             DefaultWeekSwitcherDayView(day: $0.day, isSelected: $0.isSelected, isToday: $0.isToday)
         },
         headerBuilder: @escaping (_ params: HeaderBuilderParams) -> Header = {
-            DefaultHeaderView(selectedDate: $0.selectedDate, displayMode: $0.displayMode, tapFilterCalendarsClosure: $0.tapFilterCalendarsClosure)
+            DefaultHeaderView(params: $0)
         }
     ) {
         self.dayEventBuilder = dayEventBuilder
@@ -67,9 +68,11 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
 
     @State var viewModel = CalendarViewModel()
 
-    @BindableValue var selectedDate: Date = Date()
+    //@BindableValue var selectedDate: Date = Date()
+    @State var selectedDate: Date = Date()
     @BindableValue var displayMode: CalendarDisplayMode = .day
 
+    @State var anchorDate: Date = Date()
     @State var showCalendarFilters = false
     @State var updateID = UUID() // triggers downstream updates
 
@@ -84,6 +87,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                 headerBuilder(HeaderBuilderParams(
                     selectedDate: $selectedDate,
                     displayMode: $displayMode,
+                    anchorDate: anchorDate,
                     tapSelectDisplayModeClosure: {
                         AnchoredPopup.launchGrowingAnimation(id: "displayMode")
                     },
@@ -92,7 +96,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                     })
                 )
 
-                WeekDaysSwitcher(selectedDate: $selectedDate, calendarDisplayMode: displayMode, hoursLabelsInset: hoursLabelsInset, weekSwitcherDayBuilder: weekSwitcherDayBuilder)
+                WeekDaysSwitcher(selectedDate: $selectedDate, anchorDate: $anchorDate, calendarDisplayMode: displayMode, hoursLabelsInset: hoursLabelsInset, weekSwitcherDayBuilder: weekSwitcherDayBuilder)
                     .padding(8)
             }
             .background {
@@ -132,11 +136,11 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     }
 
     // can't move this one to an extension, because _selectedDate is always private
-    public func selectedDate(_ binding: Binding<Date>) -> CalendarView {
-        var copy = self
-        copy._selectedDate.bind(binding)
-        return copy
-    }
+//    public func selectedDate(_ binding: Binding<Date>) -> CalendarView {
+//        var copy = self
+//        copy._selectedDate.bind(binding)
+//        return copy
+//    }
 
     public func displayMode(_ binding: Binding<CalendarDisplayMode>) -> CalendarView {
         var copy = self
