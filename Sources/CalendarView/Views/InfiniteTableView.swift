@@ -195,12 +195,9 @@ struct InfiniteTableView<Data, Content>: UIViewRepresentable where Data: Identif
                 scrollView.setContentOffset(CGPoint(x: 0, y: newOffsetY), animated: true)
                 self.isBusy = false
 
-                if let tableView = scrollView as? UITableView, let indexPath = tableView.indexPathsForVisibleRows?.first, let item = self.data[safe: indexPath.row] {
-//                    print(indexPath, item)
-//                    print(Int(newOffsetY/cellSize), self.data[safe: Int(newOffsetY/cellSize)])
-                    if let item = self.data[safe: Int(newOffsetY/cellSize)] {
-                        self.parent.willDisplayItem(item)
-                    }
+                let targetIndex = Int(newOffsetY/cellSize + 0.5)
+                if let item = self.data[safe: targetIndex] {
+                    self.parent.willDisplayItem(item)
                 }
             }
         }

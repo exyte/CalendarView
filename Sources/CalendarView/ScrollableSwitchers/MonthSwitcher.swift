@@ -88,9 +88,3 @@ struct MonthSwitcher: View {
         tableUpdateID = UUID()
     }
 }
-
-extension Int: @retroactive Identifiable {
-    public var id: Int {
-        self
-    }
-}

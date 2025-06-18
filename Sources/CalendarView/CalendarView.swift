@@ -68,8 +68,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
 
     @State var viewModel = CalendarViewModel()
 
-    //@BindableValue var selectedDate: Date = Date()
-    @State var selectedDate: Date = Date()
+    @BindableValue var selectedDate: Date = Date()
     @BindableValue var displayMode: CalendarDisplayMode = .day
 
     @State var anchorDate: Date = Date()
@@ -116,6 +115,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         }
         .environment(\.calendarCustomizationParams, customizationParams)
         .onChange(of: selectedDate, initial: true) {
+            anchorDate = selectedDate
             updateData()
         }
         .onChange(of: displayMode) {

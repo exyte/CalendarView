@@ -39,9 +39,6 @@ struct WeekDaysSwitcher<WeekSwitcherDay: View>: View {
                 weekdaysOnlyView
             }
         }
-        .onChange(of: selectedDate, initial: true) {
-            anchorDate = selectedDate.startOfWeek(customizationParams.firstDayOfWeek)
-        }
     }
 
     @ViewBuilder
@@ -69,16 +66,14 @@ struct WeekDaysSwitcher<WeekSwitcherDay: View>: View {
     var threeDayWeekView: some View {
         GeometryReader { g in
             createSimpleTableView(items: $items) { item in
-                dayView(startDay: anchorDate, index: item)
+                dayView(startDay: selectedDate, index: item)
             }
             .scrollLayout(.horizontal)
             .scrollMode(scrollMode: .paged(g.size.width / 3))
-            .loadMoreParameters(threshold: 0, pageSize: 5)
             .willDisplayItem { item in
-                //anchorDate = selectedDate.startOfWeek(customizationParams.firstDayOfWeek).startOfDay.adding(.day, value: item*7)
+                anchorDate = selectedDate.startOfDay.adding(.day, value: item)
             }
-            .reloadTrigger(updateID: tableUpdateID) // trigger new table recentering when new date is selected...
-            .id(tableUpdateID) // ...+ have to rerender the whole thing to pass updated selectedDate into otherwise cached cells
+            .reloadTrigger(updateID: tableUpdateID)
         }
         .frame(height: daySize?.height)
         .padding(.leading, hoursLabelsInset)

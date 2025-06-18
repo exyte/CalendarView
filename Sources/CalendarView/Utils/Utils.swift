@@ -153,3 +153,9 @@ extension Collection {
         indices.contains(index) ? self[index] : nil
     }
 }
+
+extension Int: @retroactive Identifiable {
+    public var id: Int {
+        self
+    }
+}
