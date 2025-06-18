@@ -25,20 +25,7 @@ struct MonthSwitcher: View {
             headerView
                 .padding(16, 8)
 
-            InfiniteTableView(data: items) { direction, threshold in
-                DispatchQueue.main.async {
-                    switch direction {
-                    case .backward:
-                        for _ in 0..<threshold {
-                            items.insert(items.first! - 1, at: 0)
-                        }
-                    case .forward:
-                        for _ in 0..<threshold {
-                            items.append(items.last! + 1)
-                        }
-                    }
-                }
-            } content: { item in
+            createSimpleTableView(items: $items) { item in
                 let yearDate = date.startOfYear.adding(.year, value: item)
                 YearLayout(date: yearDate) { month in
                     didSelectMonth(yearDate.setMonth(to: month))

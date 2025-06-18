@@ -54,7 +54,6 @@ struct InfiniteTableView<Data, Content>: UIViewRepresentable where Data: Identif
     var data: [Data]
     var loadMore: ((InfiniteScrollDirection, Int) -> Void)?
     var willDisplayItem: (Data)->() = {_ in}
-    var didSelectItem: (Data)->() = {_ in}
     @ViewBuilder var content: (Data) -> Content
 
     @State var prevUpdateID: UUID?
@@ -183,8 +182,8 @@ struct InfiniteTableView<Data, Content>: UIViewRepresentable where Data: Identif
         }
 
         func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
-            isBusy = true
             guard case let .paged(cellSize) = parent.params.scrollMode else { return }
+            isBusy = true
             let targetY = targetContentOffset.pointee.y
 
             // Compute the intended offset
@@ -207,12 +206,6 @@ struct InfiniteTableView<Data, Content>: UIViewRepresentable where Data: Identif
     func willDisplayItem(closure: @escaping (Data)->()) -> InfiniteTableView {
         var view = self
         view.willDisplayItem = closure
-        return view
-    }
-
-    func didSelectItem(closure: @escaping (Data)->()) -> InfiniteTableView {
-        var view = self
-        view.didSelectItem = closure
         return view
     }
 }
