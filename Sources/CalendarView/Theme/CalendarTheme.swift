@@ -150,28 +150,36 @@ public struct CalendarTheme: Sendable {
 
     public struct Month: Sendable {
         public var dateText: Color
+        public var todayText: Color
         public var eventText: Color
         public var background: Color
+        public var todayBackground: Color
         public var separators: Color
 
         func resolved(using main: Main) -> Month {
             .init(
                 dateText: dateText.resolve(main.text),
+                todayText: todayText.resolve(main.background),
                 eventText: eventText.resolve(main.text),
                 background: background.resolve(main.background),
+                todayBackground: todayBackground.resolve(main.accent),
                 separators: separators.resolve(.named("appLightGrey"))
             )
         }
 
         public init(
             dateText: Color = .unset,
+            todayText: Color = .unset,
             eventText: Color = .unset,
             background: Color = .unset,
+            todayBackground: Color = .unset,
             separators: Color = .unset
         ) {
             self.dateText = dateText
+            self.todayText = todayText
             self.eventText = eventText
             self.background = background
+            self.todayBackground = todayBackground
             self.separators = separators
         }
     }

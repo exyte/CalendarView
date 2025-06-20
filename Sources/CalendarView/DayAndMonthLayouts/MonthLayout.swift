@@ -11,17 +11,17 @@ public struct MonthLayout<MonthDay: View>: View {
     @Environment(\.calendarTheme) private var theme
     @Environment(\.calendarCustomizationParams) var customizationParams
 
-    @Binding var selectedDate: Date
-    @Binding var calendarDisplayMode: CalendarDisplayMode
+    var date: Date
     var events: [CalendarEvent]
     var reminders: [CalendarReminder]
-    var updateID: UUID
     @ViewBuilder var monthDayBuilder: (MonthDayBuilderParams) -> MonthDay
+    var didSelectDay: (Date)->()
 
     let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
+    let today = Date()
 
     var startOfMonth: Date {
-        selectedDate.startOfMonth
+        date.startOfMonth
     }
 
     // count of empty spaces for days of week before 1st of the month
@@ -44,8 +44,7 @@ public struct MonthLayout<MonthDay: View>: View {
                 ForEach(0..<startOfMonth.daysInMonth, id: \.self) { index in
                     let date = startOfMonth.adding(.day, value: index)
                     Button {
-                        selectedDate = date
-                        calendarDisplayMode = .day
+                        didSelectDay(date)
                     } label: {
                         monthDayBuilder(MonthDayBuilderParams(date: date, events: eventsFor(date)))
                             .frame(height: g.size.height/6)

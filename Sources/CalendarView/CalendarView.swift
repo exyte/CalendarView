@@ -17,6 +17,7 @@ public struct WeekSwitcherDayBuilderParams {
     public var day: Date
     public var isSelected: Bool
     public var isToday: Bool
+    public var monthDisplayMode: Bool
 }
 
 public struct HeaderBuilderParams {
@@ -52,7 +53,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
             DefaultMonthDayView(date: $0.date, events: $0.events)
         },
         weekSwitcherDayBuilder: @escaping (_ params: WeekSwitcherDayBuilderParams) -> WeekSwitcherDay = {
-            DefaultWeekSwitcherDayView(day: $0.day, isSelected: $0.isSelected, isToday: $0.isToday)
+            DefaultDayInWeekView(params: $0)
         },
         headerBuilder: @escaping (_ params: HeaderBuilderParams) -> Header = {
             DefaultHeaderView(params: $0)
@@ -95,7 +96,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                     })
                 )
 
-                WeekDaysSwitcher(selectedDate: $selectedDate, anchorDate: $anchorDate, calendarDisplayMode: displayMode, hoursLabelsInset: hoursLabelsInset, weekSwitcherDayBuilder: weekSwitcherDayBuilder)
+                DayInWeekSwitcher(selectedDate: $selectedDate, anchorDate: $anchorDate, calendarDisplayMode: displayMode, hoursLabelsInset: hoursLabelsInset, weekSwitcherDayBuilder: weekSwitcherDayBuilder)
                     .padding(8)
             }
             .background {
@@ -108,7 +109,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                     .padding(.top, 8)
                     .background(theme.day.background)
             case .month:
-                MonthLayout(selectedDate: $selectedDate, calendarDisplayMode: $displayMode, events: viewModel.events, reminders: viewModel.reminders, updateID: updateID, monthDayBuilder: monthDayBuilder)
+                DayInMonthSwitcher(selectedDate: $selectedDate, calendarDisplayMode: $displayMode, events: viewModel.events, reminders: viewModel.reminders, monthDayBuilder: monthDayBuilder)
                     .padding(.top, 8)
                     .background(theme.month.background)
             }

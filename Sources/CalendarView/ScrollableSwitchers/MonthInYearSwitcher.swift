@@ -1,5 +1,5 @@
 //
-//  MonthSwitcher.swift
+//  MonthInYearSwitcher.swift
 //  CalendarView
 //
 //  Created by Alisa Mylnikova on 14.05.2025.
@@ -7,7 +7,8 @@
 
 import SwiftUI
 
-struct MonthSwitcher: View {
+/// Select a month from a year, scroll between years
+struct MonthInYearSwitcher: View {
     @Environment(\.calendarTheme) private var theme
     @Environment(\.dismiss) private var dismiss
 
@@ -15,9 +16,9 @@ struct MonthSwitcher: View {
     var didSelectMonth: (Date)->()
 
     @State private var items: [Int] = Array(-5...5)
-    @State private var searchText = ""
     @State private var tableUpdateID = UUID() // triggers table update
 
+    @State private var searchText = ""
     @FocusState private var isSearchFocused: Bool
 
     var body: some View {
@@ -25,7 +26,7 @@ struct MonthSwitcher: View {
             headerView
                 .padding(16, 8)
 
-            createSimpleTableView(items: $items) { item in
+            createSimpleInfiniteTableView(items: $items) { item in
                 let yearDate = date.startOfYear.adding(.year, value: item)
                 YearLayout(date: yearDate) { month in
                     didSelectMonth(yearDate.setMonth(to: month))

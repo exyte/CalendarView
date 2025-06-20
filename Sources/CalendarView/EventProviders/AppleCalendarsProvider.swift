@@ -57,7 +57,7 @@ final class AppleCalendarsProvider: CalendarsProvider {
         return try await incomplete + complete
     }
 
-    func fetch(_ predicate: NSPredicate, isCompleted: Bool, from startDate: Date, to endDate: Date) async throws -> [CalendarReminder] {
+    private func fetch(_ predicate: NSPredicate, isCompleted: Bool, from startDate: Date, to endDate: Date) async throws -> [CalendarReminder] {
         try await withCheckedThrowingContinuation { continuation in
             eventStore.fetchReminders(matching: predicate) { reminders in
                 let filtered = reminders?.filter {

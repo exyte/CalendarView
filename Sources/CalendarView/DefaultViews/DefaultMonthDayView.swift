@@ -19,14 +19,22 @@ public struct DefaultMonthDayView: View {
     }
 
     let maxEvents = 3
+    let today = Date()
 
     public var body: some View {
         VStack {
             theme.month.separators.frame(height: 1)
                 .padding(.vertical, 10)
 
+            let isToday = date.startOfDay == today.startOfDay
             Text("\(date.getDay())")
-                .systemFont(17, .semibold, theme.month.dateText)
+                .systemFont(17, .semibold, isToday ? theme.month.todayText : theme.month.dateText)
+                .applyIf(isToday) {
+                    $0.padding(4)
+                        .background(theme.month.todayBackground)
+                        .clipShape(Circle())
+                        .padding(.top, -4)
+                }
 
             if events.count <= maxEvents {
                 ForEach(events) { event in

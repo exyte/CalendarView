@@ -42,10 +42,24 @@ public struct DefaultHeaderView: View {
                 Image(.filters)
             }
             .styleLikeButton()
+
+            Button {
+
+            } label: {
+                Image(.search)
+            }
+            .styleLikeButton()
+
+            Button {
+
+            } label: {
+                Image(.add)
+            }
+            .styleLikeButton()
         }
         .padding(.horizontal, 10)
         .sheet(isPresented: $showMonthPicker) {
-            MonthSwitcher(date: params.selectedDate.wrappedValue.startOfYear) { month in
+            MonthInYearSwitcher(date: params.selectedDate.wrappedValue.startOfYear) { month in
                 params.selectedDate.wrappedValue = month
                 params.displayMode.wrappedValue = .month
                 showMonthPicker = false
@@ -76,6 +90,8 @@ public struct DefaultHeaderView: View {
         } customize: {
             $0.position(.anchorRelative(.topLeading))
                 .background(.none)
+                .closeOnTapOutside(true)
+                .isBackgroundPassthrough(true)
         }
     }
 

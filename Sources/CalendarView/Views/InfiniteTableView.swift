@@ -57,7 +57,7 @@ struct InfiniteTableView<Data, Content>: UIViewRepresentable where Data: Identif
     @ViewBuilder var content: (Data) -> Content
 
     @State var prevUpdateID: UUID?
-    var params = InfiniteTableViewCustomizationParams() // if @State, updateID won't work
+    @State var params = InfiniteTableViewCustomizationParams()
 
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
@@ -87,6 +87,7 @@ struct InfiniteTableView<Data, Content>: UIViewRepresentable where Data: Identif
         let newData = data
 
         // completely new data, just reload the whole table and scroll to the middle
+        print(prevUpdateID, params.updateID)
         if prevUpdateID != params.updateID {
             DispatchQueue.main.async {
                 self.prevUpdateID = params.updateID

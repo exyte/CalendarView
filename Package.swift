@@ -15,7 +15,7 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/exyte/AnchoredPopup.git",
-            from: "1.0.6"
+            from: "1.0.7"
         )
     ],
     targets: [

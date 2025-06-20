@@ -9,7 +9,7 @@ import SwiftUI
 
 /// use simple integers as data
 @MainActor
-func createSimpleTableView<Content: View>(
+func createSimpleInfiniteTableView<Content: View>(
     items: Binding<[Int]>,
     @ViewBuilder content: @escaping (Int) -> Content
 ) -> InfiniteTableView<Int, Content> {
