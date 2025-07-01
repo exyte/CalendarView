@@ -64,4 +64,9 @@ class CalendarViewModel {
     func isCalendarSelected(_ calendar: ProviderCalendar) -> Bool {
         selectedCalendarIDs.contains(calendar.id)
     }
+
+    func resetCache() {
+        events = []
+        reminders = []
+    }
 }

@@ -14,7 +14,7 @@ struct ProviderCalendar: Identifiable, Sendable {
     let color: Color
 }
 
-struct DateInterval {
+struct DateInterval: Hashable {
     var start: Date
     var end: Date
 }

@@ -10,13 +10,13 @@ import AnchoredPopup
 
 public struct MonthDayBuilderParams {
     public var date: Date
-    public var events: [CalendarEvent]
+    public var events: [any CalendarEntity]
+    public var viewHeight: CGFloat
 }
 
 public struct WeekSwitcherDayBuilderParams {
+    @ObservedObject var viewModel: WeekCellsModel /// use @ObservedObject to force swiftUI update flow on UIKit components
     public var day: Date
-    public var isSelected: Bool
-    public var isToday: Bool
     public var monthDisplayMode: Bool
 }
 
@@ -50,7 +50,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
             DefaultDayEventView(entity: $0)
         },
         monthDayBuilder: @escaping (_ params: MonthDayBuilderParams) -> MonthDay = {
-            DefaultMonthDayView(date: $0.date, events: $0.events)
+            DefaultDayInMonthView(params: $0)
         },
         weekSwitcherDayBuilder: @escaping (_ params: WeekSwitcherDayBuilderParams) -> WeekSwitcherDay = {
             DefaultDayInWeekView(params: $0)
@@ -69,7 +69,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
 
     @State var viewModel = CalendarViewModel()
 
-    @BindableValue var selectedDate: Date = Date()
+    @BindableValue var selectedDate: Date = Date().startOfDay
     @BindableValue var displayMode: CalendarDisplayMode = .day
 
     @State var anchorDate: Date = Date()
@@ -109,7 +109,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                     .padding(.top, 8)
                     .background(theme.day.background)
             case .month:
-                DayInMonthSwitcher(selectedDate: $selectedDate, calendarDisplayMode: $displayMode, events: viewModel.events, reminders: viewModel.reminders, monthDayBuilder: monthDayBuilder)
+                DayInMonthSwitcher(selectedDate: $selectedDate, calendarDisplayMode: $displayMode, viewModel: viewModel, monthDayBuilder: monthDayBuilder)
                     .padding(.top, 8)
                     .background(theme.month.background)
             }
@@ -137,11 +137,11 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     }
 
     // can't move this one to an extension, because _selectedDate is always private
-//    public func selectedDate(_ binding: Binding<Date>) -> CalendarView {
-//        var copy = self
-//        copy._selectedDate.bind(binding)
-//        return copy
-//    }
+    public func selectedDate(_ binding: Binding<Date>) -> CalendarView {
+        var copy = self
+        copy._selectedDate.bind(binding)
+        return copy
+    }
 
     public func displayMode(_ binding: Binding<CalendarDisplayMode>) -> CalendarView {
         var copy = self
@@ -161,7 +161,7 @@ public enum CalendarDisplayMode: Sendable {
         case .threeDays:
             DateInterval(start: start, end: start.adding(.day, value: 3))
         case .month:
-            DateInterval(start: start.startOfMonth, end: start.adding(.month, value: 1))
+            DateInterval(start: start.startOfMonth, end: start.startOfMonth.adding(.month, value: 1))
         }
     }
 }

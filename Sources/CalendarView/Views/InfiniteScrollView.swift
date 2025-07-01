@@ -12,8 +12,8 @@ import SwiftUI
 func createSimpleInfiniteTableView<Content: View>(
     items: Binding<[Int]>,
     @ViewBuilder content: @escaping (Int) -> Content
-) -> InfiniteTableView<Int, Content> {
-    InfiniteTableView(data: items.wrappedValue) { direction, pageSize in
+) -> InfiniteTableView<Int, EmptyUpdatable, Content, EmptyView> {
+    InfiniteTableView(data: items) { direction, pageSize in
         DispatchQueue.main.async {
             switch direction {
             case .backward:

@@ -152,6 +152,7 @@ public struct CalendarTheme: Sendable {
         public var dateText: Color
         public var todayText: Color
         public var eventText: Color
+        public var plusMoreEventsText: Color
         public var background: Color
         public var todayBackground: Color
         public var separators: Color
@@ -161,6 +162,7 @@ public struct CalendarTheme: Sendable {
                 dateText: dateText.resolve(main.text),
                 todayText: todayText.resolve(main.background),
                 eventText: eventText.resolve(main.text),
+                plusMoreEventsText: plusMoreEventsText.resolve(main.secondaryText),
                 background: background.resolve(main.background),
                 todayBackground: todayBackground.resolve(main.accent),
                 separators: separators.resolve(.named("appLightGrey"))
@@ -171,6 +173,7 @@ public struct CalendarTheme: Sendable {
             dateText: Color = .unset,
             todayText: Color = .unset,
             eventText: Color = .unset,
+            plusMoreEventsText: Color = .unset,
             background: Color = .unset,
             todayBackground: Color = .unset,
             separators: Color = .unset
@@ -178,6 +181,7 @@ public struct CalendarTheme: Sendable {
             self.dateText = dateText
             self.todayText = todayText
             self.eventText = eventText
+            self.plusMoreEventsText = plusMoreEventsText
             self.background = background
             self.todayBackground = todayBackground
             self.separators = separators

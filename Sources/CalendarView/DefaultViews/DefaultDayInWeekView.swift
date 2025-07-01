@@ -11,37 +11,49 @@ public struct DefaultDayInWeekView: View {
     @Environment(\.calendarTheme) private var theme
 
     var params: WeekSwitcherDayBuilderParams
+    @ObservedObject var viewModel: WeekCellsModel
 
-    var isWeekend: Bool { params.day.isWeekend }
+    static let today = Date().startOfDay
 
     public init(params: WeekSwitcherDayBuilderParams) {
         self.params = params
+        self.viewModel = params.viewModel
     }
 
     public var body: some View {
+        let isSelected = viewModel.selectedDate == params.day
+        let isToday = DefaultDayInWeekView.today == params.day
+        let isWeekend = params.day.isWeekend
+
         let textColor =
-        params.isSelected && params.isToday ? theme.week.todaySelectedText :
-        params.isSelected ? theme.week.selectedText :
-        params.isToday ? theme.week.todayText :
+        isSelected && isToday ? theme.week.todaySelectedText :
+        isSelected ? theme.week.selectedText :
+        isToday ? theme.week.todayText :
         isWeekend ? theme.week.weekendText :
         theme.week.text
 
         let bgColor =
-        params.isSelected && params.isToday ? theme.week.todaySelectedBackground :
-        params.isSelected ? theme.week.selectedBackground :
-        params.isToday ? theme.week.todayBackground :
+        isSelected && isToday ? theme.week.todaySelectedBackground :
+        isSelected ? theme.week.selectedBackground :
+        isToday ? theme.week.todayBackground :
         theme.week.background
 
-        VStack(spacing: 10) {
-            Text(params.day.formatted("EEE")).font(.system(size: 15))
-                .systemFont(15, isWeekend ? theme.week.weekendText : theme.week.text)
-                .lineLimit(1)
+        let weekdayLabel = Text(params.day.formatted("EEE")).font(.system(size: 15))
+            .systemFont(15, isWeekend ? theme.week.weekendText : theme.week.text)
+            .lineLimit(1)
 
-            if !params.monthDisplayMode {
+        VStack(spacing: 10) {
+            if params.monthDisplayMode {
+                Spacer()
+                weekdayLabel
+                    .padding(.bottom, 10)
+            } else {
+                weekdayLabel
+
                 Text(params.day.formatted("d")).font(.system(size: 17, weight: .semibold))
                     .systemFont(17, .semibold, textColor)
                     .lineLimit(1)
-                    .padding(8)
+                    .size(30)
                     .background(bgColor)
                     .clipShape(Circle())
             }

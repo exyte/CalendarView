@@ -12,8 +12,7 @@ public struct MonthLayout<MonthDay: View>: View {
     @Environment(\.calendarCustomizationParams) var customizationParams
 
     var date: Date
-    var events: [CalendarEvent]
-    var reminders: [CalendarReminder]
+    @ObservedObject var viewModel: MonthCellModel /// use @ObservedObject to force swiftUI update flow on UIKit components
     @ViewBuilder var monthDayBuilder: (MonthDayBuilderParams) -> MonthDay
     var didSelectDay: (Date)->()
 
@@ -36,6 +35,9 @@ public struct MonthLayout<MonthDay: View>: View {
 
     public var body: some View {
         GeometryReader { g in
+            let numberOfRows = numberOfCalendarRows()
+            let rowHeight = g.size.height/CGFloat(numberOfRows)
+
             LazyVGrid(columns: columns, spacing: 0) {
                 ForEach(0..<inset, id: \.self) { _ in
                     Color.clear
@@ -46,8 +48,8 @@ public struct MonthLayout<MonthDay: View>: View {
                     Button {
                         didSelectDay(date)
                     } label: {
-                        monthDayBuilder(MonthDayBuilderParams(date: date, events: eventsFor(date)))
-                            .frame(height: g.size.height/6)
+                        monthDayBuilder(MonthDayBuilderParams(date: date, events: eventsFor(date), viewHeight: rowHeight))
+                            .frame(height: rowHeight)
                     }
                 }
             }
@@ -55,7 +57,26 @@ public struct MonthLayout<MonthDay: View>: View {
         }
     }
 
-    func eventsFor(_ date: Date) -> [CalendarEvent] {
-        events.filter { $0.startDate.startOfDay == date }
+    func eventsFor(_ date: Date) -> [any CalendarEntity] {
+        viewModel.events.filter { $0.startDate.startOfDay == date }
+    }
+
+    func numberOfCalendarRows() -> Int {
+        let calendar = Calendar.current
+        let firstDayOfWeek = customizationParams.firstDayOfWeek ?? calendar.firstWeekday
+        let startOfMonth = date.startOfMonth
+        let daysInMonth = startOfMonth.daysInMonth
+
+        // First day of week of this month (e.g. 2 for Monday)
+        let weekdayOfFirst = calendar.component(.weekday, from: startOfMonth)
+
+        // Calculate offset based on custom first day of week
+        var leadingEmptyDays = weekdayOfFirst - firstDayOfWeek
+        if leadingEmptyDays < 0 {
+            leadingEmptyDays += 7
+        }
+
+        let totalItems = leadingEmptyDays + daysInMonth
+        return Int(ceil(Double(totalItems) / 7.0))
     }
 }

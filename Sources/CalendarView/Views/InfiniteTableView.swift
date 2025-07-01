@@ -50,20 +50,62 @@ extension InfiniteTableView {
     }
 }
 
-struct InfiniteTableView<Data, Content>: UIViewRepresentable where Data: Identifiable, Content: View {
-    var data: [Data]
+public class EmptyUpdatable: ObservableObject {}
+
+public extension InfiniteTableView where UpdatableModel == EmptyUpdatable, UpdatableContent == EmptyView {
+
+    init(data: Binding<[Data]>,
+         loadMore: ((InfiniteScrollDirection, Int) -> Void)? = nil,
+         willDisplayItem: ((Data)->Void)? = nil,
+         content: @escaping (Data) -> Content
+    ) {
+        self._data = data
+        self._cellModels = .constant([Data: EmptyUpdatable]())
+        self.hasUpdatableModels = false
+        self.loadMore = loadMore
+        self.willDisplayItem = willDisplayItem
+        self.content = content
+        self.updatableContent = { _, _ in EmptyView() }
+    }
+}
+
+public extension InfiniteTableView where Content == EmptyView {
+
+    init(data: Binding<[Data]>,
+         cellModels: Binding<[Data : UpdatableModel]>,
+         loadMore: ((InfiniteScrollDirection, Int) -> Void)? = nil,
+         willDisplayItem: ((Data)->Void)? = nil,
+         content: @escaping (Data, UpdatableModel) -> UpdatableContent
+    ) {
+        self._data = data
+        self._cellModels = cellModels
+        self.hasUpdatableModels = true
+        self.loadMore = loadMore
+        self.willDisplayItem = willDisplayItem
+        self.content = { _ in EmptyView() }
+        self.updatableContent = content
+    }
+}
+
+public struct InfiniteTableView<Data, UpdatableModel, Content, UpdatableContent>: UIViewRepresentable where Data: Identifiable, Data: Hashable, UpdatableModel: ObservableObject, Content: View, UpdatableContent: View {
+    /// use @Bindings to force swiftUI update flow on UIKit components
+    @Binding var data: [Data]
+    @Binding var cellModels: [Data: UpdatableModel]
+    var hasUpdatableModels: Bool
     var loadMore: ((InfiniteScrollDirection, Int) -> Void)?
-    var willDisplayItem: (Data)->() = {_ in}
+    var willDisplayItem: ((Data)->Void)?
+
     @ViewBuilder var content: (Data) -> Content
+    @ViewBuilder var updatableContent: (Data, UpdatableModel) -> UpdatableContent
 
     @State var prevUpdateID: UUID?
-    @State var params = InfiniteTableViewCustomizationParams()
+    var params = InfiniteTableViewCustomizationParams()
 
-    func makeCoordinator() -> Coordinator {
+    public func makeCoordinator() -> Coordinator {
         Coordinator(self)
     }
 
-    func makeUIView(context: Context) -> UITableView {
+    public func makeUIView(context: Context) -> UITableView {
         let tableView = UITableView()
         tableView.dataSource = context.coordinator
         tableView.delegate = context.coordinator
@@ -75,6 +117,7 @@ struct InfiniteTableView<Data, Content>: UIViewRepresentable where Data: Identif
             tableView.estimatedRowHeight = cellSize
         } else {
             tableView.rowHeight = UITableView.automaticDimension
+            tableView.estimatedRowHeight = UITableView.automaticDimension
         }
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
         tableView.backgroundColor = .clear
@@ -82,16 +125,18 @@ struct InfiniteTableView<Data, Content>: UIViewRepresentable where Data: Identif
         return tableView
     }
 
-    func updateUIView(_ uiView: UITableView, context: Context) {
+    public func updateUIView(_ uiView: UITableView, context: Context) {
         let oldData = context.coordinator.data
         let newData = data
 
+        guard !newData.isEmpty else { return }
+
         // completely new data, just reload the whole table and scroll to the middle
-        print(prevUpdateID, params.updateID)
         if prevUpdateID != params.updateID {
             DispatchQueue.main.async {
                 self.prevUpdateID = params.updateID
                 context.coordinator.data = newData
+                context.coordinator.cellModels = cellModels
                 uiView.reloadData()
                 uiView.scrollToRow(at: IndexPath(row: newData.count/2, section: 0), at: .middle, animated: false)
             }
@@ -103,6 +148,7 @@ struct InfiniteTableView<Data, Content>: UIViewRepresentable where Data: Identif
         }
 
         context.coordinator.data = newData
+        context.coordinator.cellModels = cellModels
 
         // Detect prepending
         var insertedCount = 0
@@ -119,24 +165,31 @@ struct InfiniteTableView<Data, Content>: UIViewRepresentable where Data: Identif
             let currentOffsetY = uiView.contentOffset.y
 
             UIView.performWithoutAnimation {
-                uiView.reloadData()
-                uiView.layoutIfNeeded()
+                DispatchQueue.main.async {
+                    context.coordinator.isBusy = true
+                    uiView.reloadData()
+                    uiView.setNeedsLayout()
+                    uiView.layoutIfNeeded()
 
-                let updatedVisibleIndex = IndexPath(row: insertedCount + firstVisibleIndex.row, section: 0)
-                let updatedVisibleCellFrame = uiView.rectForRow(at: updatedVisibleIndex)
-                let deltaY = updatedVisibleCellFrame.minY - firstVisibleCellFrame.minY
-                uiView.contentOffset.y = currentOffsetY + deltaY
+                    let updatedVisibleIndex = IndexPath(row: insertedCount + firstVisibleIndex.row, section: 0)
+                    let updatedVisibleCellFrame = uiView.rectForRow(at: updatedVisibleIndex)
+                    let deltaY = updatedVisibleCellFrame.minY - firstVisibleCellFrame.minY
+                    uiView.contentOffset.y = currentOffsetY + deltaY
+                    context.coordinator.isBusy = false
+                }
             }
         } else {
             uiView.reloadData()
         }
     }
 
-    class Coordinator: NSObject, UITableViewDataSource, UITableViewDelegate {
-        var parent: InfiniteTableView
+    public class Coordinator: NSObject, UITableViewDataSource, UITableViewDelegate {
         var data: [Data] = []
+        var cellModels: [Data: UpdatableModel] = [:]
+        var isBusy = false
 
-        private var isBusy = false
+        private var parent: InfiniteTableView
+
         private var pagedCellSize: CGFloat? {
             if case let .paged(size) = parent.params.scrollMode {
                 return size
@@ -148,22 +201,28 @@ struct InfiniteTableView<Data, Content>: UIViewRepresentable where Data: Identif
             self.parent = parent
         }
 
-        func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
             data.count
         }
 
-        func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
             let cell = tableView.dequeueReusableCell(withIdentifier: "Cell") ?? UITableViewCell(style: .default, reuseIdentifier: "Cell")
             cell.selectionStyle = .none
 
             if let item = data[safe: indexPath.row] {
                 cell.contentConfiguration = UIHostingConfiguration {
-                    parent.content(item)
-                        .applyIfLet(pagedCellSize) { view, size in
-                            view.frame(width: size)
+                    Group {
+                        if parent.hasUpdatableModels, let model = parent.cellModels[item] {
+                            parent.updatableContent(item, model)
+                        } else {
+                            parent.content(item)
                         }
-                        .frame(maxHeight: .infinity)
-                        .rotationEffect(Angle(radians: (parent.params.scrollLayout == .horizontal ? .pi/2.0 : 0)))
+                    }
+                    .applyIfLet(pagedCellSize) { view, size in
+                        view.frame(width: size)
+                    }
+                    .frame(maxHeight: .infinity)
+                    .rotationEffect(Angle(radians: (parent.params.scrollLayout == .horizontal ? .pi/2.0 : 0)))
                 }
                 .margins(.all, 0)
                 .background(.clear)
@@ -172,8 +231,11 @@ struct InfiniteTableView<Data, Content>: UIViewRepresentable where Data: Identif
             return cell
         }
 
-        func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        public func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
             guard !isBusy else { return }
+            if case .free = parent.params.scrollMode, let item = self.data[safe: indexPath.row] {
+                self.parent.willDisplayItem?(item)
+            }
             let count = data.count
             if indexPath.row >= count - parent.params.threshold - 1 {
                 parent.loadMore?(.forward, parent.params.pageSize)
@@ -182,7 +244,7 @@ struct InfiniteTableView<Data, Content>: UIViewRepresentable where Data: Identif
             }
         }
 
-        func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
+        public func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
             guard case let .paged(cellSize) = parent.params.scrollMode else { return }
             isBusy = true
             let targetY = targetContentOffset.pointee.y
@@ -197,7 +259,7 @@ struct InfiniteTableView<Data, Content>: UIViewRepresentable where Data: Identif
 
                 let targetIndex = Int(newOffsetY/cellSize + 0.5)
                 if let item = self.data[safe: targetIndex] {
-                    self.parent.willDisplayItem(item)
+                    self.parent.willDisplayItem?(item)
                 }
             }
         }

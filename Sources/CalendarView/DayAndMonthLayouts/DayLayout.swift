@@ -123,7 +123,7 @@ public struct DayLayout<Content: View>: View {
     var allDayEventsView: some View {
         let spaceBetweenDays = 2 * customizationParams.horSpacing + 1
         HStack(alignment: .top, spacing: spaceBetweenDays) {
-            Color.clear.frame(width: hoursLabelsInset - spaceBetweenDays, height: 1)
+            Color.clear.frame(width: max(0, hoursLabelsInset - spaceBetweenDays), height: 1)
 
             ForEach(0..<daysCount, id: \.self) { i in
                 let date = selectedDate.adding(.day, value: i).startOfDay

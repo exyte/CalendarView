@@ -19,37 +19,41 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
     var hoursLabelsInset: CGFloat
     @ViewBuilder var weekSwitcherDayBuilder: (WeekSwitcherDayBuilderParams) -> WeekSwitcherDay
 
-    private var calendar: Calendar { Calendar.current }
+    @StateObject private var weekCellsModel = WeekCellsModel()
 
     @State private var daySize: CGSize?
     @State private var items = Array(-5...5)
-    @State private var tableUpdateID = UUID() // triggers table update
+
+    private var calendar: Calendar { Calendar.current }
 
     var body: some View {
         ZStack {
             MeasuringTrickView(size: $daySize) {
-                weekSwitcherDayBuilder(WeekSwitcherDayBuilderParams(day: selectedDate, isSelected: true, isToday: true, monthDisplayMode: false))
+                weekSwitcherDayBuilder(WeekSwitcherDayBuilderParams(viewModel: weekCellsModel, day: selectedDate, monthDisplayMode: false))
             }
 
             switch calendarDisplayMode {
             case .day:
-                fullWeekView(monthDisplayMode: false)
+                fullWeekView
             case .threeDays:
                 threeDayWeekView
             case .month:
-                fullWeekView(monthDisplayMode: true)
+                weekdaysOnlyView
             }
+        }
+        .onAppear() {
+            self.weekCellsModel.selectedDate = selectedDate
         }
     }
 
     @ViewBuilder
-    func fullWeekView(monthDisplayMode: Bool) -> some View {
+    var fullWeekView: some View {
         GeometryReader { g in
             createSimpleInfiniteTableView(items: $items) { item in
                 HStack(spacing: 0) {
                     let startOfWeek = selectedDate.startOfWeek(customizationParams.firstDayOfWeek).startOfDay.adding(.day, value: item*7)
                     ForEach(0..<7, id: \.self) { i in
-                        dayView(startDay: startOfWeek, index: i, monthDisplayMode: monthDisplayMode)
+                        dayView(startDay: startOfWeek, index: i, monthDisplayMode: false)
                     }
                 }
             }
@@ -58,8 +62,6 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
             .willDisplayItem { item in
                 anchorDate = selectedDate.startOfWeek(customizationParams.firstDayOfWeek).startOfDay.adding(.day, value: item*7)
             }
-            .reloadTrigger(updateID: tableUpdateID) // trigger new table recentering when new date is selected...
-            .id(tableUpdateID) // ...+ have to rerender the whole thing to pass updated selectedDate into otherwise cached cells
         }
         .frame(height: daySize?.height)
     }
@@ -74,27 +76,40 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
             .willDisplayItem { item in
                 anchorDate = selectedDate.startOfDay.adding(.day, value: item)
             }
-            .reloadTrigger(updateID: tableUpdateID)
-            .id(tableUpdateID)
         }
         .frame(height: daySize?.height)
         .padding(.leading, hoursLabelsInset)
     }
 
     @ViewBuilder
+    var weekdaysOnlyView: some View {
+        let startOfWeek = Date().startOfWeek(customizationParams.firstDayOfWeek)
+        HStack(spacing: 8) {
+            ForEach(0..<7, id: \.self) { i in
+                dayView(startDay: startOfWeek, index: i, monthDisplayMode: true)
+                    .greedyWidth()
+            }
+        }
+        .frame(height: daySize?.height)
+    }
+
+    @ViewBuilder
     private func dayView(startDay: Date, index: Int, monthDisplayMode: Bool) -> some View {
         let day = startDay.adding(.day, value: index)
-        let isSelected = calendar.isDate(day, inSameDayAs: selectedDate)
-        let isToday = calendar.isDateInToday(day)
 
-        weekSwitcherDayBuilder(WeekSwitcherDayBuilderParams(day: day, isSelected: isSelected, isToday: isToday, monthDisplayMode: monthDisplayMode))
-            .simultaneousGesture(
-                TapGesture().onEnded {
-                    self.selectedDate = day
-                    self.items = Array(-5...5)
-                    self.tableUpdateID = UUID()
-                }
-            )
-        .greedyWidth()
+        weekSwitcherDayBuilder(WeekSwitcherDayBuilderParams(viewModel: weekCellsModel, day: day, monthDisplayMode: monthDisplayMode))
+            .greedyWidth()
+            .applyIf(!monthDisplayMode) {
+                $0.simultaneousGesture(
+                    TapGesture().onEnded {
+                        self.selectedDate = day
+                        self.weekCellsModel.selectedDate = day
+                    }
+                )
+            }
     }
+}
+
+class WeekCellsModel: ObservableObject {
+    @Published var selectedDate: Date?
 }
