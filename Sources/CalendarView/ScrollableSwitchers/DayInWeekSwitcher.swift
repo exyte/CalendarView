@@ -23,6 +23,7 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
 
     @State private var daySize: CGSize?
     @State private var items = Array(-5...5)
+    @State private var tableUpdateID = UUID()
 
     private var calendar: Calendar { Calendar.current }
 
@@ -62,6 +63,7 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
             .willDisplayItem { item in
                 anchorDate = selectedDate.startOfWeek(customizationParams.firstDayOfWeek).startOfDay.adding(.day, value: item*7)
             }
+            .reloadTrigger(updateID: tableUpdateID)
         }
         .frame(height: daySize?.height)
     }

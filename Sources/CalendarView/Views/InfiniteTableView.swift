@@ -100,6 +100,8 @@ public struct InfiniteTableView<Data, UpdatableModel, Content, UpdatableContent>
 
     @State var prevUpdateID: UUID?
     var params = InfiniteTableViewCustomizationParams()
+    // @state: week works
+    // no state: month update works
 
     public func makeCoordinator() -> Coordinator {
         Coordinator(self)
