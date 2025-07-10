@@ -21,6 +21,8 @@ struct DayInMonthSwitcher<MonthDay: View>: View {
     @State private var dateInterval = DateInterval(start: Date(), end: Date())
     @State private var tableUpdateID = UUID()
 
+    @State private var monthCellSize: CGSize?
+
     let today = Date()
 
     var body: some View {
@@ -58,6 +60,7 @@ struct DayInMonthSwitcher<MonthDay: View>: View {
                 .background(theme.month.background)
             }
             .reloadTrigger(updateID: tableUpdateID)
+            .scrollMode(scrollMode: .free(monthCellSize?.height))
             .willDisplayItem { item in
                 Task.detached {
                     let monthDate = await selectedDate.startOfMonth.adding(.month, value: item)
@@ -68,20 +71,11 @@ struct DayInMonthSwitcher<MonthDay: View>: View {
                         models[item-1]?.events = eventsFor(monthDate.adding(.month, value: -1))
                         models[item]?.events = eventsFor(monthDate)
                         models[item+1]?.events = eventsFor(monthDate.adding(.month, value: 1))
-                        //reloadItemsSubject.send(toReload)
                         dateInterval = interval
                     }
                 }
             }
         }
-//        .task {
-//            items = Array(-3...3)
-//            for item in items {
-//                models[item] = MonthCellModel(id: item)
-//            }
-//            await viewModel.fetch(DateInterval(start: selectedDate.startOfMonth, end: selectedDate.startOfMonth.adding(.month, value: 1)))
-//            models[0]?.events = viewModel.events
-//        }
         .onChange(of: selectedDate, initial: true) {
             Task {
                 items = Array(-3...3)
@@ -98,6 +92,11 @@ struct DayInMonthSwitcher<MonthDay: View>: View {
             viewModel.resetCache()
             items.removeAll()
             models.removeAll()
+        }
+        .background {
+            MeasuringTrickView(size: $monthCellSize) {
+                MonthLayout(date: Date(), viewModel: MonthCellModel(id: 0), monthDayBuilder: monthDayBuilder, didSelectDay: {_ in})
+            }
         }
     }
 

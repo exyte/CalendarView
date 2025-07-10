@@ -42,7 +42,7 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
                 weekdaysOnlyView
             }
         }
-        .onAppear() {
+        .onAppear {
             self.weekCellsModel.selectedDate = selectedDate
         }
     }

@@ -18,6 +18,8 @@ struct MonthInYearSwitcher: View {
     @State private var items: [Int] = Array(-5...5)
     @State private var tableUpdateID = UUID() // triggers table update
 
+    @State private var yearCellSize: CGSize?
+
     @State private var searchText = ""
     @FocusState private var isSearchFocused: Bool
 
@@ -36,8 +38,14 @@ struct MonthInYearSwitcher: View {
             }
             .loadMoreParameters(threshold: 2, pageSize: 4)
             .reloadTrigger(updateID: tableUpdateID)
+            .scrollMode(scrollMode: .free(yearCellSize?.height))
         }
         .background(theme.year.background)
+        .background {
+            MeasuringTrickView(size: $yearCellSize) {
+                YearLayout(date: Date(), didSelectMonth: {_ in})
+            }
+        }
     }
 
     var headerView: some View {

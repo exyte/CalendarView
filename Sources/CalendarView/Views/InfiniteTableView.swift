@@ -16,12 +16,12 @@ public enum InfiniteScrollLayout {
 }
 
 public enum InfiniteScrollMode {
-    case free, paged(CGFloat)
+    case free(CGFloat? = nil), paged(CGFloat)
 }
 
 public class InfiniteTableViewCustomizationParams {
     var scrollLayout: InfiniteScrollLayout = .vertical
-    var scrollMode: InfiniteScrollMode = .free
+    var scrollMode: InfiniteScrollMode = .free()
     var threshold: Int = 0
     var pageSize: Int = 5
     var updateID: UUID = UUID() // use to perform a full reload with re-centering
@@ -117,9 +117,9 @@ public struct InfiniteTableView<Data, UpdatableModel, Content, UpdatableContent>
         if case let .paged(cellSize) = params.scrollMode {
             tableView.rowHeight = cellSize
             tableView.estimatedRowHeight = cellSize
-        } else {
-            tableView.rowHeight = UITableView.automaticDimension
-            tableView.estimatedRowHeight = UITableView.automaticDimension
+        } else if case let .free(cellSize) = params.scrollMode {
+            tableView.rowHeight = cellSize ?? UITableView.automaticDimension
+            tableView.estimatedRowHeight = cellSize ?? UITableView.automaticDimension
         }
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
         tableView.backgroundColor = .clear
@@ -194,6 +194,9 @@ public struct InfiniteTableView<Data, UpdatableModel, Content, UpdatableContent>
 
         private var pagedCellSize: CGFloat? {
             if case let .paged(size) = parent.params.scrollMode {
+                return size
+            }
+            if case let .free(size) = parent.params.scrollMode {
                 return size
             }
             return nil
