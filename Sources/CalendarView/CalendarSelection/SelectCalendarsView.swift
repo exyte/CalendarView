@@ -10,8 +10,7 @@ import SwiftUI
 public struct SelectCalendarsView: View {
     @Environment(\.calendarTheme) private var theme
     @Environment(\.dismiss) private var dismiss
-
-    var viewModel: CalendarViewModel
+    @EnvironmentObject var viewModel: CalendarViewModel
 
     var calendarsGroupedBySection: [(key: String, value: [ProviderCalendar])] {
         Dictionary(grouping: viewModel.calendars, by: \.source)
@@ -21,14 +20,21 @@ public struct SelectCalendarsView: View {
     public var body: some View {
         VStack {
             ZStack {
-                Text("Filter").systemFont(17, .semibold, theme.main.text)
                 HStack {
+                    Button("Add") {
+                      //  viewModel.ad
+                    }
+                    .systemFont(17, .semibold, theme.main.accent)
+
                     Spacer()
+
                     Button("Done") {
                         dismiss()
                     }
                     .systemFont(17, .semibold, theme.main.accent)
                 }
+
+                Text("Filter").systemFont(17, .semibold, theme.main.text)
             }
             .padding(16)
 

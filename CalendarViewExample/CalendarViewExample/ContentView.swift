@@ -15,8 +15,15 @@ struct ContentView: View {
 
     @State var b = false
 
+    let id = UUID()
+
+    init() {
+        print("ContentView init id:", id)
+    }
+
     var body: some View {
-        CalendarView()
+        print("ContentView body id:", id)
+                return CalendarView()
 //        { calendarEvent in
 //            ZStack {
 //                Rectangle().foregroundStyle(.red.opacity(0.1))

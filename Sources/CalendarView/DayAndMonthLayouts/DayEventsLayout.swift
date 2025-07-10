@@ -19,7 +19,7 @@ struct DayEventsLayout<Content: View>: View {
     private var reminderFrames: [CGRect] = []
 
     init(events: [CalendarEvent], reminders: [CalendarReminder], size: CGSize, horSpacing: CGFloat, verSpacing: CGFloat, dayEventBuilder: @escaping (any CalendarEntity) -> Content) {
-        self.events = events.sorted(by: \.duration)
+        self.events = events.sorted(by: \.duration, thenBy: \.title)
         self.reminders = reminders
         self.size = size
         self.horSpacing = horSpacing
@@ -95,7 +95,7 @@ struct DayEventsLayout<Content: View>: View {
     }
 
     func startCoeff(_ reminder: CalendarReminder) -> CGFloat {
-        CGFloat((reminder.dueDate.getHour() * 60 + reminder.dueDate.getMinute())) / CGFloat(60)
+        CGFloat((reminder.startDate.getHour() * 60 + reminder.startDate.getMinute())) / CGFloat(60)
     }
 }
 
@@ -135,7 +135,7 @@ extension NSRange {
     }
 
     init(_ reminder: CalendarReminder) {
-        self.init(reminder.dueDate, reminder.dueDate.adding(.hour, value: 1))
+        self.init(reminder.startDate, reminder.startDate.adding(.hour, value: 1))
     }
 
     init(_ startDate: Date, _ endDate: Date) {

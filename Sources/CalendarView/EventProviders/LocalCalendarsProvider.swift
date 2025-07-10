@@ -7,30 +7,40 @@
 
 import SwiftUI
 
-/// Fetches events from Apple's Calendar App. Will only fetch events from accounts which Calendar App has access to. If you'd like to add more accounts, add them in Calendar App.
-final class LocalCalendarsProvider: CalendarsProvider {
-    func getEvents(from startDate: Date, to endDate: Date, selectedCalendarIDs: Set<String>) async throws -> [CalendarEvent] {
-        Array([
-            CalendarEvent(title: "Mom's BD", notes: "Don't forget to get her something nice", startDate: startDate.setTime(to: "10:00")!, endDate: startDate.setTime(to: "20:30")!),
-            CalendarEvent(title: "Restaurant", startDate: startDate.setTime(to: "14:00")!, endDate: startDate.setTime(to: "16:00")!),
-            CalendarEvent(title: "Bowling", startDate: startDate.setTime(to: "18:00")!, endDate: startDate.setTime(to: "21:00")!),
-            CalendarEvent(title: "Water plants", startDate: startDate.setTime(to: "13:00")!),
-            CalendarEvent(title: "Take medicine", startDate: startDate.setTime(to: "14:40")!),
-            CalendarEvent(title: "Clean up", startDate: startDate.setTime(to: "22:00")!),
-            CalendarEvent(title: "Read a book", startDate: startDate.setTime(to: "23:00")!),
-            CalendarEvent(title: "Cook dinner", startDate: startDate.setTime(to: "23:00")!)
-        ].prefix(startDate.getDay() % 8))
+public final actor LocalCalendarsProvider: EditableCalendarsProvider {
+    private let calendarStore = CodableStore<ProviderCalendar>()
+    private let eventStore = CalendarEntityStore<CalendarEvent>()
+    private let reminderStore = CalendarEntityStore<CalendarReminder>()
+
+    public func getCalendars() async throws -> [ProviderCalendar] {
+        try await calendarStore.load()
     }
 
-    func getReminders(from startDate: Date, to endDate: Date, selectedCalendarIDs: Set<String>) async throws -> [CalendarReminder] {
-        []
+    public func getEvents(from startDate: Date, to endDate: Date, selectedCalendarIDs: [String]) async throws -> [CalendarEvent] {
+        try await eventStore.events(from: startDate, to: endDate, calendarIDs: selectedCalendarIDs)
     }
 
-    func getCalendars() async throws -> [ProviderCalendar] {
-        [ProviderCalendar(id: "local", title: "local", source: "local", color: .gray)]
+    public func getReminders(from startDate: Date, to endDate: Date, selectedCalendarIDs: [String]) async throws -> [CalendarReminder] {
+        try await reminderStore.events(from: startDate, to: endDate, calendarIDs: selectedCalendarIDs)
     }
 
-    func addCalendar() {
-        
+    public func addCalendar(_ calendar: ProviderCalendar) {
+        Task {
+            var existing = await (try? calendarStore.load()) ?? []
+            existing.append(calendar)
+            try await calendarStore.save(existing)
+        }
+    }
+
+    func addEvent(_ event: CalendarEvent) {
+        Task {
+            try await eventStore.add(event)
+        }
+    }
+
+    func addReminder(_ reminder: CalendarReminder) {
+        Task {
+            try await reminderStore.add(reminder)
+        }
     }
 }

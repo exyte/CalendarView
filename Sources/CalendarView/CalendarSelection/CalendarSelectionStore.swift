@@ -8,9 +8,9 @@
 import Foundation
 
 final class CalendarSelectionStore {
-    private let key = "SelectedCalendarIDs"
+    private let key = "deselectedCalendarIDs"
 
-    var selectedIDs: Set<String> {
+    var deselectedIDs: Set<String> {
         get {
             let ids = UserDefaults.standard.array(forKey: key) as? [String] ?? []
             return Set(ids)
@@ -20,22 +20,17 @@ final class CalendarSelectionStore {
         }
     }
 
-    var selectedIDsExists: Bool {
-        UserDefaults.standard.array(forKey: key) != nil
-    }
-
-    func initializeIfNeeded(with calendarIDs: [String]) {
-        guard !selectedIDsExists else { return }
-        selectedIDs = Set(calendarIDs)
-    }
-
     func toggle(_ id: String) {
-        var ids = selectedIDs
-        if selectedIDs.contains(id) {
+        var ids = deselectedIDs
+        if deselectedIDs.contains(id) {
             ids.remove(id)
         } else {
             ids.insert(id)
         }
-        selectedIDs = ids
+        deselectedIDs = ids
+    }
+
+    func getSelectedIDs(calendars: [ProviderCalendar]) -> [String] {
+        calendars.map { $0.id }.filter { !deselectedIDs.contains($0) }
     }
 }

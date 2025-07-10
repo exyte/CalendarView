@@ -27,23 +27,23 @@ struct FrameGetter: ViewModifier {
     }
 }
 
-//struct SizeGetter: ViewModifier {
-//    @Binding var size: CGSize
-//
-//    func body(content: Content) -> some View {
-//        content
-//            .background(
-//                GeometryReader { proxy -> Color in
-//                    if proxy.size != self.size {
-//                        DispatchQueue.main.async {
-//                            self.size = proxy.size
-//                        }
-//                    }
-//                    return Color.clear
-//                }
-//            )
-//    }
-//}
+struct SizeGetter: ViewModifier {
+    @Binding var size: CGSize
+
+    func body(content: Content) -> some View {
+        content
+            .background(
+                GeometryReader { proxy -> Color in
+                    if proxy.size != self.size {
+                        DispatchQueue.main.async {
+                            self.size = proxy.size
+                        }
+                    }
+                    return Color.clear
+                }
+            )
+    }
+}
 
 extension View {
 
@@ -56,32 +56,38 @@ extension View {
     }
 }
 
-struct SizeGetter: ViewModifier {
-    @Binding var size: CGSize
+struct MaxHeightGetter: ViewModifier {
+    @Binding var maxHeight: CGFloat
 
     func body(content: Content) -> some View {
         content
             .background(
                 GeometryReader { proxy in
                     Color.clear
-                        .preference(key: SizePreferenceKey.self, value: proxy.size)
+                        .preference(key: MaxHeightPreferenceKey.self, value: proxy.size.height)
                 }
             )
-            .onPreferenceChange(SizePreferenceKey.self) { newSize in
+            .onPreferenceChange(MaxHeightPreferenceKey.self) { newMax in
                 DispatchQueue.main.async {
-                    if size != newSize {
-                        size = newSize
+                    if maxHeight != newMax {
+                        maxHeight = newMax
                     }
                 }
             }
     }
 }
 
-private struct SizePreferenceKey: PreferenceKey {
-    nonisolated(unsafe) static var defaultValue: CGSize = .zero
+private struct MaxHeightPreferenceKey: PreferenceKey {
+    nonisolated(unsafe) static var defaultValue: CGFloat = 0
 
-    static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
-        value = nextValue()
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
+extension View {
+    func maxHeightGetter(_ binding: Binding<CGFloat>) -> some View {
+        modifier(MaxHeightGetter(maxHeight: binding))
     }
 }
 

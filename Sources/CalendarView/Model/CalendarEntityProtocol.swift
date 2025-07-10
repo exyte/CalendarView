@@ -11,14 +11,19 @@ public enum EntityType: Sendable {
     case event, reminder
 }
 
-public protocol CalendarEntity: Identifiable, Sendable {
+public protocol CalendarEntity: Equatable, Identifiable, Sendable, Codable {
     var id: String { get }
-    var calendarID: String { get }
+    var calendarID: String { get set }
 
-    var title: String { get }
-    var notes: String? { get }
-    var calendarColor: Color { get }
-    var startDate: Date { get }
+    var title: String { get set }
+    var notes: String { get set }
+    var calendarColor: Color { get set }
+    var startDate: Date { get set }
+
+    var repeatType: RepeatType { get set }
+    var alertType: AlertType { get set }
+    var priorityType: PriorityType { get set }
+    var vibrationType: VibrationType { get set }
 
     var isLocal: Bool { get }
     var entityType: EntityType { get }

@@ -7,11 +7,18 @@
 
 import SwiftUI
 
-struct ProviderCalendar: Identifiable, Sendable {
-    let id: String
-    let title: String
-    let source: String
-    let color: Color
+public struct ProviderCalendar: Identifiable, Equatable, Sendable, Codable {
+    public let id: String
+    var title: String
+    var source: String
+    var color: Color
+
+    init(id: String = UUID().uuidString, title: String = "", source: String = "", color: Color = .gray) {
+        self.id = id
+        self.title = title
+        self.source = source
+        self.color = color
+    }
 }
 
 struct DateInterval: Hashable {

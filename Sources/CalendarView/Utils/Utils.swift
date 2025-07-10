@@ -17,6 +17,17 @@ extension Array {
     func sorted<T: Comparable>(by keyPath: KeyPath<Element, T>) -> [Element] {
         self.sorted { $0[keyPath: keyPath] > $1[keyPath: keyPath] }
     }
+    
+    func sorted<T1: Comparable, T2: Comparable>(
+        by primary: KeyPath<Element, T1>,
+        thenBy secondary: KeyPath<Element, T2>
+    ) -> [Element] {
+        sorted {
+            let lhs = ($0[keyPath: primary], $0[keyPath: secondary])
+            let rhs = ($1[keyPath: primary], $1[keyPath: secondary])
+            return lhs < rhs
+        }
+    }
 }
 
 extension View {
@@ -103,21 +114,6 @@ extension View {
     }
 }
 
-extension Color {
-    /// Simulates the result of applying `self.opacity(opacity)` over `background`, returning a fully opaque color.
-    func blended(opacity: Double) -> Color {
-        // Extract RGB components (SwiftUI doesn't support this directly, so we go via UIColor)
-        let fg = UIColor(self).cgColor.components ?? [0,0,0,1]
-        let bg = UIColor(.white).cgColor.components ?? [0,0,0,1]
-
-        let r = fg[0] * opacity + bg[0] * (1 - opacity)
-        let g = fg[1] * opacity + bg[1] * (1 - opacity)
-        let b = fg[2] * opacity + bg[2] * (1 - opacity)
-
-        return Color(red: r, green: g, blue: b)
-    }
-}
-
 @propertyWrapper
 public struct BindableValue<Value: Sendable>: DynamicProperty, Sendable {
     @State private var internalValue: Value
@@ -157,5 +153,45 @@ extension Collection {
 extension Int: @retroactive Identifiable {
     public var id: Int {
         self
+    }
+}
+
+extension Color {
+    /// Simulates the result of applying `self.opacity(opacity)` over `background`, returning a fully opaque color.
+    func blended(opacity: Double) -> Color {
+        // Extract RGB components (SwiftUI doesn't support this directly, so we go via UIColor)
+        let fg = UIColor(self).cgColor.components ?? [0,0,0,1]
+        let bg = UIColor(.white).cgColor.components ?? [0,0,0,1]
+
+        let r = fg[0] * opacity + bg[0] * (1 - opacity)
+        let g = fg[1] * opacity + bg[1] * (1 - opacity)
+        let b = fg[2] * opacity + bg[2] * (1 - opacity)
+
+        return Color(red: r, green: g, blue: b)
+    }
+}
+
+extension Color: Codable, Sendable {
+    private enum CodingKeys: String, CodingKey {
+        case red, green, blue, opacity
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let red = try container.decode(Double.self, forKey: .red)
+        let green = try container.decode(Double.self, forKey: .green)
+        let blue = try container.decode(Double.self, forKey: .blue)
+        let opacity = try container.decode(Double.self, forKey: .opacity)
+        self = Color(red: red, green: green, blue: blue, opacity: opacity)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        UIColor(self).getRed(&r, green: &g, blue: &b, alpha: &a)
+        try container.encode(Double(r), forKey: .red)
+        try container.encode(Double(g), forKey: .green)
+        try container.encode(Double(b), forKey: .blue)
+        try container.encode(Double(a), forKey: .opacity)
     }
 }

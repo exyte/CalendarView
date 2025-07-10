@@ -12,7 +12,7 @@ import SwiftUI
 final class AppleCalendarsProvider: CalendarsProvider {
     private let eventStore = EKEventStore()
 
-    func getEvents(from startDate: Date, to endDate: Date, selectedCalendarIDs: Set<String>) async throws -> [CalendarEvent] {
+    func getEvents(from startDate: Date, to endDate: Date, selectedCalendarIDs: [String]) async throws -> [CalendarEvent] {
         try await requestAccessIfNeeded(.event)
 
         let calendars = eventStore.calendars(for: .event).filter { selectedCalendarIDs.contains($0.calendarIdentifier) }
@@ -35,7 +35,7 @@ final class AppleCalendarsProvider: CalendarsProvider {
         }
     }
 
-    func getReminders(from startDate: Date, to endDate: Date, selectedCalendarIDs: Set<String>) async throws -> [CalendarReminder] {
+    func getReminders(from startDate: Date, to endDate: Date, selectedCalendarIDs: [String]) async throws -> [CalendarReminder] {
         try await requestAccessIfNeeded(.reminder)
 
         let calendars = eventStore.calendars(for: .reminder).filter { selectedCalendarIDs.contains($0.calendarIdentifier) }
@@ -69,9 +69,9 @@ final class AppleCalendarsProvider: CalendarsProvider {
                     CalendarReminder(
                         id: reminder.calendarItemIdentifier,
                         calendarID: reminder.calendar.calendarIdentifier, title: reminder.title ?? "Untitled",
-                        notes: reminder.notes,
+                        notes: reminder.notes ?? "",
                         calendarColor: Color(cgColor: reminder.calendar.cgColor ?? UIColor.systemGray.cgColor),
-                        dueDate: reminder.dueDateComponents?.date ?? Date(),
+                        startDate: reminder.dueDateComponents?.date ?? Date(),
                         isCompleted: isCompleted
                     )
                 }

@@ -8,9 +8,13 @@
 import SwiftUI
 
 protocol CalendarsProvider: Sendable {
-    func getEvents(from startDate: Date, to endDate: Date, selectedCalendarIDs: Set<String>) async throws -> [CalendarEvent]
-    func getReminders(from startDate: Date, to endDate: Date, selectedCalendarIDs: Set<String>) async throws -> [CalendarReminder]
-
     func getCalendars() async throws -> [ProviderCalendar]
-    func addCalendar()
+    func getEvents(from startDate: Date, to endDate: Date, selectedCalendarIDs: [String]) async throws -> [CalendarEvent]
+    func getReminders(from startDate: Date, to endDate: Date, selectedCalendarIDs: [String]) async throws -> [CalendarReminder]
+}
+
+protocol EditableCalendarsProvider: CalendarsProvider {
+    func addCalendar(_ calendar: ProviderCalendar) async throws
+    func addEvent(_ event: CalendarEvent) async throws
+    func addReminder(_ reminder: CalendarReminder) async throws
 }

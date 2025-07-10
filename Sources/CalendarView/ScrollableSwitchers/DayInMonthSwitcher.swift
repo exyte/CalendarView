@@ -10,10 +10,10 @@ import SwiftUI
 /// Select a day from a month, scroll between months
 struct DayInMonthSwitcher<MonthDay: View>: View {
     @Environment(\.calendarTheme) private var theme
+    @EnvironmentObject var viewModel: CalendarViewModel
 
     @Binding var selectedDate: Date
     @Binding var calendarDisplayMode: CalendarDisplayMode
-    var viewModel: CalendarViewModel
     @ViewBuilder var monthDayBuilder: (MonthDayBuilderParams) -> MonthDay
 
     @State private var items: [Int] = []

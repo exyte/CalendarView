@@ -51,7 +51,7 @@ public struct DefaultHeaderView: View {
             .styleLikeButton()
 
             Button {
-
+                params.tapAddEventClosure()
             } label: {
                 Image(.add)
             }

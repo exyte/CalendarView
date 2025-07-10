@@ -36,7 +36,7 @@ public struct DayLayout<Content: View>: View {
     }
 
     @State private var hourLabelsSize: CGSize = .zero
-    @State private var hourTextSize: CGSize = .zero
+    @State private var hourTextHeight: CGFloat = 0
 
     var firstOccupiedHour: Int {
         nonAllDayEvents.map { $0.startDate.getHour() } .min { $0 < $1 } ?? 0
@@ -72,7 +72,7 @@ public struct DayLayout<Content: View>: View {
                                 nowLine(oneHourHeight)
                                 dayEventsAndRemindersView
                             }
-                            .padding(.top, hourTextSize.height)
+                            .padding(.top, hourTextHeight)
                         }
                     }
                     .onChange(of: updateID) {
@@ -91,7 +91,7 @@ public struct DayLayout<Content: View>: View {
             ForEach(0..<25, id: \.self) { i in
                 Text(Date().setHour(to: i).setMinute(to: 0).formatted(customizationParams.hourLabelFormat))
                     .systemFont(13, theme.day.hourText)
-                    .sizeGetter($hourTextSize)
+                    .maxHeightGetter($hourTextHeight)
                     .frame(height: oneHourHeight, alignment: .top)
                     .id(i)
             }

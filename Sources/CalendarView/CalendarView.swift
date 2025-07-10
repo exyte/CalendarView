@@ -26,6 +26,7 @@ public struct HeaderBuilderParams {
     public var anchorDate: Date
     public var tapSelectDisplayModeClosure: ()->()
     public var tapFilterCalendarsClosure: ()->()
+    public var tapAddEventClosure: ()->()
 }
 
 public class CalendarViewCustomizationParams {
@@ -67,13 +68,14 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
 
     @Environment(\.calendarTheme) var theme
 
-    @State var viewModel = CalendarViewModel()
+    @StateObject var viewModel = CalendarViewModel()
 
     @BindableValue var selectedDate: Date = Date().startOfDay
     @BindableValue var displayMode: CalendarDisplayMode = .day
 
     @State var anchorDate: Date = Date()
     @State var showCalendarFilters = false
+    @State var showCreateEvent = false
     @State var updateID = UUID() // triggers downstream updates
 
     // layout helpers
@@ -93,6 +95,9 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                     },
                     tapFilterCalendarsClosure: {
                         showCalendarFilters = true
+                    },
+                    tapAddEventClosure: {
+                        showCreateEvent = true
                     })
                 )
 
@@ -109,11 +114,12 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                     .padding(.top, 8)
                     .background(theme.day.background)
             case .month:
-                DayInMonthSwitcher(selectedDate: $selectedDate, calendarDisplayMode: $displayMode, viewModel: viewModel, monthDayBuilder: monthDayBuilder)
+                DayInMonthSwitcher(selectedDate: $selectedDate, calendarDisplayMode: $displayMode, monthDayBuilder: monthDayBuilder)
                     .padding(.top, 8)
                     .background(theme.month.background)
             }
         }
+        .environmentObject(viewModel)
         .environment(\.calendarCustomizationParams, customizationParams)
         .onChange(of: selectedDate, initial: true) {
             anchorDate = selectedDate
@@ -122,10 +128,19 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         .onChange(of: displayMode) {
             updateData()
         }
+
         .sheet(isPresented: $showCalendarFilters) {
             updateData() // onDismiss
         } content: {
-            SelectCalendarsView(viewModel: viewModel)
+            SelectCalendarsView()
+                .environmentObject(viewModel)
+        }
+
+        .sheet(isPresented: $showCreateEvent) {
+            updateData() // onDismiss
+        } content: {
+            CreateEventView()
+                .environmentObject(viewModel)
         }
     }
 
