@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct DayEventsLayout<Content: View>: View {
+    @Environment(\.showEventDetailsClosure) var showEventDetailsClosure
+
     var events: [CalendarEvent] = []
     var reminders: [CalendarReminder] = []
     var size: CGSize
@@ -73,6 +75,9 @@ struct DayEventsLayout<Content: View>: View {
                 dayEventBuilder(event)
                     .position(x: frame.midX, y: frame.midY)
                     .frame(width: frame.width, height: frame.height)
+                    .onTapGesture {
+                        showEventDetailsClosure(event)
+                    }
             }
 
             ForEach(reminderFrames.indices, id: \.self) { i in
@@ -81,6 +86,9 @@ struct DayEventsLayout<Content: View>: View {
                 dayEventBuilder(reminder)
                     .position(x: frame.midX, y: frame.midY)
                     .frame(width: frame.width, height: frame.height)
+                    .onTapGesture {
+                        showEventDetailsClosure(reminder)
+                    }
             }
         }
         .transaction { $0.disablesAnimations = true }

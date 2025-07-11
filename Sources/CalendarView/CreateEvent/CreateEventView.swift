@@ -7,32 +7,26 @@
 
 import SwiftUI
 
-struct CreateEventView: View {
+struct CreateOrEditEventView<Entity: CalendarEntity>: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var viewModel: CalendarViewModel
 
-    @State private var isEvent: Bool = true
-    @State private var event: CalendarEvent = CalendarEvent()
-    @State private var reminder: CalendarReminder = CalendarReminder()
+    var entity: Binding<Entity>?
+    var didEditEntity: (()->())?
+
+    var isEdit: Bool {
+        entity != nil
+    }
 
     var body: some View {
         NavigationStack {
-            VStack {
-                eventTypeSwitcher
-
-                if isEvent {
-                    InternalCreateEventView(entity: $event)
+            Group {
+                if let entity {
+                    EditCalendarEntityView(entity: entity)
                 } else {
-                    InternalCreateEventView(entity: $reminder)
+                    CreateEventView()
                 }
             }
-            .onChange(of: event) {
-                reminder.syncFields(from: event)
-            }
-            .onChange(of: reminder) {
-                event.syncFields(from: reminder)
-            }
-
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
@@ -49,18 +43,59 @@ struct CreateEventView: View {
                     }
                 }
 
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        Task {
-                            dismiss()
-                            isEvent ? await viewModel.addEvent(event) : await viewModel.addReminder(reminder)
+                if isEdit {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button {
+                            Task {
+                                dismiss()
+                                didEditEntity?()
+                            }
+                        } label: {
+                            Text("Save")
                         }
-                    } label: {
-                        Text(true ? "Create" : "Save")
-                            .systemFont(17, .semibold, event.title.isEmpty ? .gray : .green)
                     }
-                    .disabled(event.title.isEmpty)
                 }
+            }
+        }
+    }
+}
+
+struct CreateEventView: View {
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var viewModel: CalendarViewModel
+
+    @State private var isEvent: Bool = true
+    @State private var event: CalendarEvent = CalendarEvent()
+    @State private var reminder: CalendarReminder = CalendarReminder()
+
+    var body: some View {
+        VStack {
+            eventTypeSwitcher
+
+            if isEvent {
+                EditCalendarEntityView(entity: $event)
+            } else {
+                EditCalendarEntityView(entity: $reminder)
+            }
+        }
+        .onChange(of: event) {
+            reminder.syncFields(from: event)
+        }
+        .onChange(of: reminder) {
+            event.syncFields(from: reminder)
+        }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    Task {
+                        dismiss()
+                        isEvent ? await viewModel.addEvent(event) : await viewModel.addReminder(reminder)
+                    }
+                } label: {
+                    Text("Create")
+                        .systemFont(17, .semibold, event.title.isEmpty ? .gray : .green)
+                }
+                .disabled(event.title.isEmpty)
             }
         }
     }
@@ -97,7 +132,7 @@ struct CreateEventView: View {
     }
 }
 
-struct InternalCreateEventView<Entity: CalendarEntity>: View {
+struct EditCalendarEntityView<Entity: CalendarEntity>: View {
     @Environment(\.dismiss) private var dismiss
 
     @Binding var entity: Entity
@@ -168,5 +203,11 @@ fileprivate extension CalendarEntity {
         self.alertType = other.alertType
         self.priorityType = other.priorityType
         self.vibrationType = other.vibrationType
+    }
+}
+
+extension CreateOrEditEventView where Entity == CalendarEvent {
+    init() {
+        self.init(entity: nil)
     }
 }

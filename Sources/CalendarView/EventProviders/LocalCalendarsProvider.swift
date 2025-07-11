@@ -43,4 +43,16 @@ public final actor LocalCalendarsProvider: EditableCalendarsProvider {
             try await reminderStore.add(reminder)
         }
     }
+
+    func updateEvent(_ event: CalendarEvent, oldStartDate: Date) {
+        Task {
+            try await eventStore.update(event, oldStartDate: oldStartDate)
+        }
+    }
+
+    func updateReminder(_ reminder: CalendarReminder, oldStartDate: Date) {
+        Task {
+            try await reminderStore.update(reminder, oldStartDate: oldStartDate)
+        }
+    }
 }

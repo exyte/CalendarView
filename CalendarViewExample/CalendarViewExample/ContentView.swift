@@ -13,17 +13,8 @@ struct ContentView: View {
     @State var a = Date().setMonth(to: 6).setDayOfMonth(to: 18)
     @State var mode = CalendarDisplayMode.day
 
-    @State var b = false
-
-    let id = UUID()
-
-    init() {
-        print("ContentView init id:", id)
-    }
-
     var body: some View {
-        print("ContentView body id:", id)
-                return CalendarView()
+        CalendarView()
 //        { calendarEvent in
 //            ZStack {
 //                Rectangle().foregroundStyle(.red.opacity(0.1))

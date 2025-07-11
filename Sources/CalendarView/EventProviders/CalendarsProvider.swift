@@ -17,4 +17,7 @@ protocol EditableCalendarsProvider: CalendarsProvider {
     func addCalendar(_ calendar: ProviderCalendar) async throws
     func addEvent(_ event: CalendarEvent) async throws
     func addReminder(_ reminder: CalendarReminder) async throws
+
+    func updateEvent(_ event: CalendarEvent, oldStartDate: Date) async throws
+    func updateReminder(_ reminder: CalendarReminder, oldStartDate: Date) async throws
 }

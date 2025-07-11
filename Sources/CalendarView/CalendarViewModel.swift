@@ -71,8 +71,12 @@ class CalendarViewModel: ObservableObject {
 
     // MARK: - adding
 
+    func getProvider() -> EditableCalendarsProvider? {
+        eventProviders.first(where: { $0 is EditableCalendarsProvider }) as? EditableCalendarsProvider
+    }
+
     func addCalendar(_ calendar: ProviderCalendar) async {
-        if let provider = eventProviders.first(where: { $0 is EditableCalendarsProvider }) as? EditableCalendarsProvider {
+        if let provider = getProvider() {
             do {
                 try await provider.addCalendar(calendar)
                 await fetchCalendars()
@@ -83,7 +87,7 @@ class CalendarViewModel: ObservableObject {
     }
 
     func addEvent(_ event: CalendarEvent) async {
-        if let provider = eventProviders.first(where: { $0 is EditableCalendarsProvider }) as? EditableCalendarsProvider {
+        if let provider = getProvider() {
             do {
                 try await provider.addEvent(event)
             } catch {
@@ -93,9 +97,30 @@ class CalendarViewModel: ObservableObject {
     }
 
     func addReminder(_ reminder: CalendarReminder) async {
-        if let provider = eventProviders.first(where: { $0 is EditableCalendarsProvider }) as? EditableCalendarsProvider {
+        if let provider = getProvider() {
             do {
                 try await provider.addReminder(reminder)
+            } catch {
+                print(error)
+            }
+        }
+    }
+
+
+    func updateEvent(_ event: CalendarEvent, oldStartDate: Date) async {
+        if let provider = getProvider() {
+            do {
+                try await provider.updateEvent(event, oldStartDate: oldStartDate)
+            } catch {
+                print(error)
+            }
+        }
+    }
+
+    func updateReminder(_ reminder: CalendarReminder, oldStartDate: Date) async {
+        if let provider = getProvider() {
+            do {
+                try await provider.updateReminder(reminder, oldStartDate: oldStartDate)
             } catch {
                 print(error)
             }

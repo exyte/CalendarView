@@ -10,6 +10,7 @@ import SwiftUI
 public struct DayLayout<Content: View>: View {
     @Environment(\.calendarTheme) private var theme
     @Environment(\.calendarCustomizationParams) var customizationParams
+    @Environment(\.showEventDetailsClosure) var showEventDetailsClosure
 
     @Binding var selectedDate: Date
     @Binding var hoursLabelsInset: CGFloat
@@ -135,6 +136,9 @@ public struct DayLayout<Content: View>: View {
                         ForEach(events) { event in
                             dayEventBuilder(event)
                                 .fixedSize(horizontal: false, vertical: true)
+                                .onTapGesture {
+                                    showEventDetailsClosure(event)
+                                }
                         }
                     }
                 }

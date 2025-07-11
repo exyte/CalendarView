@@ -76,6 +76,8 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     @State var anchorDate: Date = Date()
     @State var showCalendarFilters = false
     @State var showCreateEvent = false
+    @State var showEventDetails = false
+    @State var displayedEventDetails: CalendarEntityWrapper?
     @State var updateID = UUID() // triggers downstream updates
 
     // layout helpers
@@ -121,6 +123,9 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         }
         .environmentObject(viewModel)
         .environment(\.calendarCustomizationParams, customizationParams)
+        .environment(\.showEventDetailsClosure, { (entity: any CalendarEntity) in
+            displayedEventDetails = CalendarEntityWrapper(entity)
+        })
         .onChange(of: selectedDate, initial: true) {
             anchorDate = selectedDate
             updateData()
@@ -139,7 +144,14 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         .sheet(isPresented: $showCreateEvent) {
             updateData() // onDismiss
         } content: {
-            CreateEventView()
+            CreateOrEditEventView()
+                .environmentObject(viewModel)
+        }
+
+        .sheet(item: $displayedEventDetails) {
+            updateData() // onDismiss
+        } content: { entity in
+            EventDetailsView(entity: entity.entity)
                 .environmentObject(viewModel)
         }
     }
@@ -178,5 +190,15 @@ public enum CalendarDisplayMode: Sendable {
         case .month:
             DateInterval(start: start.startOfMonth, end: start.startOfMonth.adding(.month, value: 1))
         }
+    }
+}
+
+struct CalendarEntityWrapper: Identifiable {
+    let id: String
+    let entity: any CalendarEntity
+
+    init(_ entity: some CalendarEntity) {
+        self.id = entity.id
+        self.entity = entity
     }
 }

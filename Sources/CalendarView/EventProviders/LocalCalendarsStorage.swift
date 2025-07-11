@@ -65,9 +65,8 @@ public final actor CalendarEntityStore<T: CalendarEntity> {
         self.baseURL = docs.appendingPathComponent(folderName)
         do {
             try fileManager.createDirectory(at: baseURL, withIntermediateDirectories: true)
-            //print("CalendarEntityStore initialized at \(Unmanaged.passUnretained(self).toOpaque()) with baseURL = \(baseURL)")
         } catch {
-            //print("Failed to create base directory: \(error)")
+            print("Failed to create base directory: \(error)")
         }
     }
 
@@ -86,7 +85,6 @@ public final actor CalendarEntityStore<T: CalendarEntity> {
     private func loadChunkFromDisk(calendarID: String, month: Date) async throws -> [T] {
         let path = fileURL(calendarID: calendarID, monthKey: monthKey(for: month))
         guard fileManager.fileExists(atPath: path.path) else {
-            //print("loadChunkFromDisk: no file at", path)
             return []
         }
         let data = try Data(contentsOf: path)
@@ -94,25 +92,14 @@ public final actor CalendarEntityStore<T: CalendarEntity> {
         return decoded
     }
 
-    private func getCachedChunk(key: String) -> [T]? {
-        let cached = cache[key]
-        if let c = cached {
-            //print("getCachedChunk \(key):", c.map(\.title))
-        } else {
-            //print("getCachedChunk \(key): nil")
-        }
-        return cached
-    }
-
     private func updateCache(key: String, with events: [T]) {
         cache[key] = events
-        //print("updateCache \(key):", events.map(\.title))
     }
 
     private func getChunk(calendarID: String, month: Date) async throws -> [T] {
         let key = "\(calendarID)-\(monthKey(for: month))"
 
-        if let cached = getCachedChunk(key: key) {
+        if let cached = cache[key] {
             return cached
         }
 
@@ -132,23 +119,37 @@ public final actor CalendarEntityStore<T: CalendarEntity> {
         let path = fileURL(calendarID: calendarID, monthKey: monthKey(for: month))
         try fileManager.createDirectory(at: path.deletingLastPathComponent(), withIntermediateDirectories: true)
         try data.write(to: path, options: .atomic)
-        //print("saveChunk \(key):", events.map(\.title))
     }
 
     public func add(_ event: T) async throws {
         let month = event.startDate
         let key = "\(event.calendarID)-\(monthKey(for: month))"
 
-        var chunk = getCachedChunk(key: key)
+        var chunk = cache[key]
         if chunk == nil {
             chunk = try await loadChunkFromDisk(calendarID: event.calendarID, month: month)
         }
 
         chunk?.append(event)
-        //print("add →", chunk?.map(\.title) ?? [])
         if let chunk = chunk {
             try await saveChunk(chunk, calendarID: event.calendarID, month: month)
         }
+    }
+
+    /// Updates an existing entity by ID using its original startDate to locate the chunk.
+    public func update(_ updated: T, oldStartDate: Date) async throws {
+        let oldKey = "\(updated.calendarID)-\(monthKey(for: oldStartDate))"
+        var chunk = try await getChunk(calendarID: updated.calendarID, month: oldStartDate)
+        guard let index = chunk.firstIndex(where: { $0.id == updated.id }) else { return }
+        chunk[index] = updated
+        try await saveChunk(chunk, calendarID: updated.calendarID, month: oldStartDate)
+    }
+
+    public func delete(id: String, calendarID: String, from date: Date) async throws {
+        let key = "\(calendarID)-\(monthKey(for: date))"
+        var chunk = try await getChunk(calendarID: calendarID, month: date)
+        chunk.removeAll { $0.id == id }
+        try await saveChunk(chunk, calendarID: calendarID, month: date)
     }
 
     public func events(from startDate: Date, to endDate: Date, calendarIDs: [String]) async throws -> [T] {
@@ -159,7 +160,7 @@ public final actor CalendarEntityStore<T: CalendarEntity> {
             while current <= end {
                 let key = "\(calendarID)-\(monthKey(for: current))"
 
-                var chunk = getCachedChunk(key: key)
+                var chunk = cache[key]
                 if chunk == nil {
                     chunk = try await loadChunkFromDisk(calendarID: calendarID, month: current)
                 }
@@ -167,12 +168,10 @@ public final actor CalendarEntityStore<T: CalendarEntity> {
                 updateCache(key: key, with: chunk)
 
                 let filtered = chunk.filter { $0.startDate >= startDate && $0.startDate <= endDate }
-                //print("events \(key): filtered =", filtered.map(\.title))
                 result += filtered
                 current = calendar.date(byAdding: .month, value: 1, to: current)!
             }
         }
-        //print("events final result:", result.map(\.title))
         return result
     }
 }
