@@ -33,7 +33,7 @@ public struct CalendarEvent: CalendarEntity {
         endDate.timeIntervalSinceNow - startDate.timeIntervalSinceNow
     }
 
-    public init(id: String = UUID().uuidString, calendarID: String = "local", title: String = "", notes: String = "", calendarColor: Color = .gray, startDate: Date = Date(), endDate: Date? = nil, isAllDay: Bool = false, isDetached: Bool = false, repeatType: RepeatType = .never, alertType: AlertType = .none, priorityType: PriorityType = .none, vibrationType: VibrationType = .none, payload: [String : Sendable] = [:]) {
+    public init(id: String = UUID().uuidString, calendarID: String = "", title: String = "", notes: String = "", calendarColor: Color = .gray, startDate: Date = Date(), endDate: Date? = nil, isAllDay: Bool = false, isDetached: Bool = false, repeatType: RepeatType = .never, alertType: AlertType = .none, priorityType: PriorityType = .none, vibrationType: VibrationType = .none, payload: [String : Sendable] = [:]) {
         self.id = id
         self.calendarID = calendarID
         self.title = title

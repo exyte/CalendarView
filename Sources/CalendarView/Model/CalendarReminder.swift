@@ -24,7 +24,7 @@ public struct CalendarReminder: CalendarEntity {
 
     public var entityType: EntityType { .reminder }
 
-    init(id: String = UUID().uuidString, calendarID: String = "local", title: String = "", notes: String = "", calendarColor: Color = .gray, startDate: Date = Date(), isCompleted: Bool = false, repeatType: RepeatType = .never, alertType: AlertType = .atTimeOfEvent, priorityType: PriorityType = .none, vibrationType: VibrationType = .none) {
+    init(id: String = UUID().uuidString, calendarID: String = "", title: String = "", notes: String = "", calendarColor: Color = .gray, startDate: Date = Date(), isCompleted: Bool = false, repeatType: RepeatType = .never, alertType: AlertType = .atTimeOfEvent, priorityType: PriorityType = .none, vibrationType: VibrationType = .none) {
         self.id = id
         self.calendarID = calendarID
         self.title = title

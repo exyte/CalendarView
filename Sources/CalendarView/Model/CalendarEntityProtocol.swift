@@ -25,13 +25,7 @@ public protocol CalendarEntity: Equatable, Identifiable, Sendable, Codable {
     var priorityType: PriorityType { get set }
     var vibrationType: VibrationType { get set }
 
-    var isLocal: Bool { get }
     var entityType: EntityType { get }
 }
 
-extension CalendarEntity {
-    public var isLocal: Bool {
-        calendarID == "local"
-    }
-}
 

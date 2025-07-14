@@ -10,7 +10,7 @@ import SwiftUI
 struct CreateCalendarView: View {
     @EnvironmentObject var viewModel: CalendarViewModel
 
-    @State private var calendar = ProviderCalendar(source: "library")
+    @State private var calendar = ProviderCalendar()
 
     var body: some View {
         VStack {
@@ -22,7 +22,7 @@ struct CreateCalendarView: View {
             Button {
                 Task {
                     await viewModel.addCalendar(calendar)
-                    calendar = ProviderCalendar(source: "library")
+                    calendar = ProviderCalendar()
                 }
             } label: {
                 Text("Create")

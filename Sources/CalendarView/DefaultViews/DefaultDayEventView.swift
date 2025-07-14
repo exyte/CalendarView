@@ -41,7 +41,7 @@ public struct DefaultDayEventView: View {
                             .padding(.horizontal, 6)
                     }
 
-                    if isEvent, !entity.isLocal {
+                    if isEvent {
                         entity.calendarColor
                             .frame(width: 2)
                             .cornerRadius(6)
