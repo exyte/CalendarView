@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-protocol CalendarsProvider: Sendable {
+public protocol CalendarsProvider: Sendable {
     func getCalendars() async throws -> [ProviderCalendar]
     func getEvents(from startDate: Date, to endDate: Date, selectedCalendarIDs: [String]) async throws -> [CalendarEvent]
     func getReminders(from startDate: Date, to endDate: Date, selectedCalendarIDs: [String]) async throws -> [CalendarReminder]

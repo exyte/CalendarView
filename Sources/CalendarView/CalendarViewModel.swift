@@ -14,9 +14,18 @@ class CalendarViewModel: ObservableObject {
     @Published public var calendars: [ProviderCalendar] = []
     @Published public var deselectedCalendarIDs: [String] = []
 
-    private let eventProviders: [CalendarsProvider] = [AppleCalendarsProvider(), LocalCalendarsProvider()]
+    private var eventProviders: [CalendarsProvider] = []
     private var calendarSelectionStore = CalendarSelectionStore()
 
+    init(providers: [CalendarsProvider]) {
+        if providers.isEmpty {
+            eventProviders.append(AppleCalendarsProvider())
+            eventProviders.append(LocalCalendarsProvider())
+        } else {
+            eventProviders.append(contentsOf: providers)
+        }
+    }
+    
     func fetch(_ interval: DateInterval) async {
         await fetchCalendars()
         let selectedIDs = calendarSelectionStore.getSelectedIDs(calendars: calendars)

@@ -46,7 +46,10 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     @ViewBuilder var weekSwitcherDayBuilder: (WeekSwitcherDayBuilderParams) -> WeekSwitcherDay
     @ViewBuilder var headerBuilder: (HeaderBuilderParams) -> Header
 
+    @StateObject var viewModel: CalendarViewModel
+    
     public init(
+        providers: [CalendarsProvider],
         dayEventBuilder: @escaping (_ calendarEvent: any CalendarEntity) -> DayEvent = {
             DefaultDayEventView(entity: $0)
         },
@@ -60,6 +63,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
             DefaultHeaderView(params: $0)
         }
     ) {
+        self._viewModel = StateObject(wrappedValue: CalendarViewModel(providers: providers))
         self.dayEventBuilder = dayEventBuilder
         self.monthDayBuilder = monthDayBuilder
         self.weekSwitcherDayBuilder = weekSwitcherDayBuilder
@@ -67,8 +71,6 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     }
 
     @Environment(\.calendarTheme) var theme
-
-    @StateObject var viewModel = CalendarViewModel()
 
     @BindableValue var selectedDate: Date = Date().startOfDay
     @BindableValue var displayMode: CalendarDisplayMode = .day
