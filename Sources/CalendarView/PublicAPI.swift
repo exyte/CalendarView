@@ -41,4 +41,9 @@ extension CalendarView {
         self.customizationParams.headerBackground = HeaderBackground(viewBuilder: viewBuilder)
         return self
     }
+    
+    public func eventDetailsClosure(_ closure: @escaping (any CalendarEntity)->()) -> CalendarView {
+        self.customizationParams.eventDetailsClosure = closure
+        return self
+    }
 }

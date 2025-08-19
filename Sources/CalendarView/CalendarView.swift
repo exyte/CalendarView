@@ -37,6 +37,8 @@ public class CalendarViewCustomizationParams {
     public var horSpacing: CGFloat = 4
     public var verSpacing: CGFloat = 4
     public var headerBackground: HeaderBackground = .color(.named("headerBG"))
+    
+    public var eventDetailsClosure: ((any CalendarEntity)->())?
 }
 
 public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View, Header: View>: View {
@@ -126,7 +128,11 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         .environmentObject(viewModel)
         .environment(\.calendarCustomizationParams, customizationParams)
         .environment(\.showEventDetailsClosure, { (entity: any CalendarEntity) in
-            displayedEventDetails = CalendarEntityWrapper(entity)
+            if let eventDetailsClosure = customizationParams.eventDetailsClosure {
+                eventDetailsClosure(entity)
+            } else {
+                displayedEventDetails = CalendarEntityWrapper(entity)
+            }
         })
         .onChange(of: selectedDate, initial: true) {
             anchorDate = selectedDate
