@@ -7,6 +7,7 @@
 
 import SwiftUI
 import AnchoredPopup
+import Combine
 
 public struct MonthDayBuilderParams {
     public var date: Date
@@ -76,6 +77,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
 
     @BindableValue var selectedDate: Date = Date().startOfDay
     @BindableValue var displayMode: CalendarDisplayMode = .day
+    @BindableValue var needUpdate: UUID = UUID()
 
     @State var anchorDate: Date = Date()
     @State var showCalendarFilters = false
@@ -141,6 +143,9 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         .onChange(of: displayMode) {
             updateData()
         }
+        .onChange(of: needUpdate) {
+            updateData()
+        }
 
         .sheet(isPresented: $showCalendarFilters) {
             updateData() // onDismiss
@@ -175,6 +180,12 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     public func selectedDate(_ binding: Binding<Date>) -> CalendarView {
         var copy = self
         copy._selectedDate.bind(binding)
+        return copy
+    }
+    
+    public func needUpdate(_ binding: Binding<UUID>) -> CalendarView {
+        var copy = self
+        copy._needUpdate.bind(binding)
         return copy
     }
 
