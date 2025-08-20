@@ -35,9 +35,12 @@ public struct DayLayout<Content: View>: View {
         self.nonAllDayEvents = isAllDayGrouped[false] ?? []
         self.nonAllDayEventsByDay = daysCount == 1 ? [selectedDate.wrappedValue: nonAllDayEvents] : nonAllDayEvents.groupedByDay()
     }
+    
+    private let allDaysViewMaxHeight: CGFloat = 90.0
 
     @State private var hourLabelsSize: CGSize = .zero
     @State private var hourTextHeight: CGFloat = 0
+    @State private var allDaysViewHeight: CGFloat = 0
 
     var firstOccupiedHour: Int {
         nonAllDayEvents.map { $0.startDate.getHour() } .min { $0 < $1 } ?? 0
@@ -128,20 +131,41 @@ public struct DayLayout<Content: View>: View {
 
             ForEach(0..<daysCount, id: \.self) { i in
                 let date = selectedDate.adding(.day, value: i).startOfDay
-                VStack {
-                    let events = allDayEventsByDay[date] ?? []
-                    if events.isEmpty {
-                        Color.clear.frame(height: 1)
-                    } else {
-                        ForEach(events) { event in
-                            dayEventBuilder(event)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .onTapGesture {
-                                    showEventDetailsClosure(event)
+                ScrollView {
+                    VStack {
+                        let events = allDayEventsByDay[date] ?? []
+                        let eventsCount = events.count
+                        if events.isEmpty {
+                            Color.clear.frame(height: 1)
+                        } else {
+                            ForEach(Array(stride(from: 0, to: eventsCount, by: 2)), id: \.self) { index in
+                                HStack(spacing: spaceBetweenDays) {
+                                    dayEventBuilder(events[index])
+                                        .fixedSize(horizontal: false, vertical: true)
+                                        .onTapGesture {
+                                            showEventDetailsClosure(events[index])
+                                        }
+                                    if index + 1 < eventsCount {
+                                        dayEventBuilder(events[index + 1])
+                                            .fixedSize(horizontal: false, vertical: true)
+                                            .onTapGesture {
+                                                showEventDetailsClosure(events[index + 1])
+                                            }
+                                    }
                                 }
+                            }
+                            
                         }
                     }
+                    .background(GeometryReader {geo -> Color in
+                        DispatchQueue.main.async {
+                            self.allDaysViewHeight = geo.size.height
+                        }
+                        return Color.clear
+                    })
                 }
+                .frame(height: min(allDaysViewHeight, allDaysViewMaxHeight))
+                .scrollBounceBehavior(.basedOnSize)
             }
         }
         .padding(.horizontal, customizationParams.horSpacing)
