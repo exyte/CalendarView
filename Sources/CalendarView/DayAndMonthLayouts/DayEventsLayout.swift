@@ -35,7 +35,9 @@ struct DayEventsLayout<Content: View>: View {
         var eventFrames = [CGRect]()
         var reminderFrames = [CGRect]()
         var eventColumns = [Int]()
+        var eventCountInRow = [Int]()
         var reminderColumns = [Int]()
+        var reminderCountInRow = [Int]()
 
         var space = PartiallyOccupiedSpace()
         for event in events {
@@ -46,20 +48,36 @@ struct DayEventsLayout<Content: View>: View {
             let column = space.occupyFirstFreeSpace(with: NSRange(reminder))
             reminderColumns.append(column)
         }
-
-        let columnsCount = CGFloat(space.occupiedColumns.count)
-        let columnWidth = (size.width - horSpacing * (columnsCount - 1)) / columnsCount
-        let rowHeight = (size.height - verSpacing * 24) / 25
-        let deltaX = columnWidth + horSpacing
-        let deltaY = rowHeight + verSpacing
+        
+        for event in events {
+            let count = space.countEventsInRow(with: NSRange(event))
+            eventCountInRow.append(count)
+        }
+        
+        for reminder in reminders {
+            let count = space.countEventsInRow(with: NSRange(reminder))
+            reminderCountInRow.append(count)
+        }
 
         for i in 0..<events.count {
+            let columnsCount = CGFloat(eventCountInRow[i])
+            let columnWidth = (size.width - horSpacing * (columnsCount - 1)) / columnsCount
+            let rowHeight = (size.height - verSpacing * 24) / 25
+            let deltaX = columnWidth + horSpacing
+            let deltaY = rowHeight + verSpacing
+            
             let event = events[i]
             let column = CGFloat(eventColumns[i])
             eventFrames.append(CGRect(x: deltaX * column, y: deltaY * startCoeff(event), width: columnWidth, height: deltaY * durationCoeff(event) - verSpacing))
         }
 
         for i in 0..<reminders.count {
+            let columnsCount = CGFloat(reminderCountInRow[i])
+            let columnWidth = (size.width - horSpacing * (columnsCount - 1)) / columnsCount
+            let rowHeight = (size.height - verSpacing * 24) / 25
+            let deltaX = columnWidth + horSpacing
+            let deltaY = rowHeight + verSpacing
+            
             let reminder = reminders[i]
             let column = CGFloat(reminderColumns[i])
             reminderFrames.append(CGRect(x: deltaX * column, y: deltaY * startCoeff(reminder), width: columnWidth, height: deltaY - verSpacing))
@@ -121,6 +139,16 @@ fileprivate struct PartiallyOccupiedSpace {
         occupiedColumns.append(newColumn)
         return occupiedColumns.count - 1
     }
+    
+    mutating func countEventsInRow(with range: NSRange) -> Int {
+        var count = 0
+        for index in occupiedColumns.indices {
+            if occupiedColumns[index].isRangeInThisColumn(with: range) {
+                count += 1
+            }
+        }
+        return count
+    }
 }
 
 fileprivate struct PartiallyOccupiedColumn {
@@ -134,6 +162,15 @@ fileprivate struct PartiallyOccupiedColumn {
         }
         occupiedRanges.append(range)
         return true
+    }
+    
+    mutating func isRangeInThisColumn(with range: NSRange) -> Bool {
+        for occupied in occupiedRanges {
+            if occupied.intersects(range) {
+                return true
+            }
+        }
+        return false
     }
 }
 
