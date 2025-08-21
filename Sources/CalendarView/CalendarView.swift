@@ -39,6 +39,8 @@ public class CalendarViewCustomizationParams {
     public var verSpacing: CGFloat = 4
     public var headerBackground: HeaderBackground = .color(.named("headerBG"))
     
+    public var isDayInWeekSwitcherPagingEnabled: Bool = false
+    
     public var eventDetailsClosure: ((any CalendarEntity)->())?
 }
 

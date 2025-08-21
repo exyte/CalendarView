@@ -60,6 +60,7 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
             }
             .scrollLayout(.horizontal)
             .scrollMode(scrollMode: .paged(g.size.width))
+            .isPagingEnabled(customizationParams.isDayInWeekSwitcherPagingEnabled)
             .willDisplayItem { item in
                 anchorDate = selectedDate.startOfWeek(customizationParams.firstDayOfWeek).startOfDay.adding(.day, value: item*7)
             }

@@ -46,4 +46,9 @@ extension CalendarView {
         self.customizationParams.eventDetailsClosure = closure
         return self
     }
+    
+    public func isDayInWeekSwitcherPagingEnabled(_ value: Bool) -> CalendarView {
+        self.customizationParams.isDayInWeekSwitcherPagingEnabled = value
+        return self
+    }
 }

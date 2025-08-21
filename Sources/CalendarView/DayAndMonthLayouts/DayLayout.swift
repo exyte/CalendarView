@@ -73,7 +73,9 @@ public struct DayLayout<Content: View>: View {
 
                             ZStack(alignment: .top) {
                                 separatorsView(oneHourHeight)
-                                nowLine(oneHourHeight)
+                                if selectedDate.getDateWithoutTime() == Date().getDateWithoutTime() {
+                                    nowLine(oneHourHeight)
+                                }
                                 dayEventsAndRemindersView
                             }
                             .padding(.top, hourTextHeight)
