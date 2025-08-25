@@ -30,6 +30,10 @@ public struct HeaderBuilderParams {
     public var tapAddEventClosure: ()->()
 }
 
+public struct weekSwitcherDayFooterParams {
+    public var selectedDate: Binding<Date>
+}
+
 public class CalendarViewCustomizationParams {
     public var hoursToFit: Int = 12
     public var hourLabelFormat: String = "h a"
@@ -44,12 +48,13 @@ public class CalendarViewCustomizationParams {
     public var eventDetailsClosure: ((any CalendarEntity)->())?
 }
 
-public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View, Header: View>: View {
+public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View, Header: View, Footer: View>: View {
 
     @ViewBuilder var dayEventBuilder: (any CalendarEntity) -> DayEvent
     @ViewBuilder var monthDayBuilder: (MonthDayBuilderParams) -> MonthDay
     @ViewBuilder var weekSwitcherDayBuilder: (WeekSwitcherDayBuilderParams) -> WeekSwitcherDay
     @ViewBuilder var headerBuilder: (HeaderBuilderParams) -> Header
+    @ViewBuilder var weekSwitcherDayFooterBuilder: (weekSwitcherDayFooterParams) -> Footer
 
     @StateObject var viewModel: CalendarViewModel
     
@@ -66,6 +71,9 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         },
         headerBuilder: @escaping (_ params: HeaderBuilderParams) -> Header = {
             DefaultHeaderView(params: $0)
+        },
+        weekSwitcherDayFooterBuilder: @escaping (_ params: weekSwitcherDayFooterParams) -> Footer = {
+            DefaultWeekSwitcherDayFooterView(params: $0)
         }
     ) {
         self._viewModel = StateObject(wrappedValue: CalendarViewModel(providers: providers))
@@ -73,6 +81,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         self.monthDayBuilder = monthDayBuilder
         self.weekSwitcherDayBuilder = weekSwitcherDayBuilder
         self.headerBuilder = headerBuilder
+        self.weekSwitcherDayFooterBuilder = weekSwitcherDayFooterBuilder
     }
 
     @Environment(\.calendarTheme) var theme
@@ -113,6 +122,12 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
 
                 DayInWeekSwitcher(selectedDate: $selectedDate, anchorDate: $anchorDate, calendarDisplayMode: displayMode, hoursLabelsInset: hoursLabelsInset, weekSwitcherDayBuilder: weekSwitcherDayBuilder)
                     .padding(8)
+                
+                if displayMode == .day {
+                    weekSwitcherDayFooterBuilder(weekSwitcherDayFooterParams(selectedDate: $selectedDate))
+                        .padding(.top, -16)
+                }
+                    
             }
             .background {
                 HeaderBackgroundView(background: customizationParams.headerBackground)
