@@ -24,7 +24,7 @@ public class InfiniteTableViewCustomizationParams {
     var scrollMode: InfiniteScrollMode = .free()
     var isPagingEnabled: Bool = false
     var threshold: Int = 0
-    var pageSize: Int = 5
+    var pageSize: Int = 1
     var updateID: UUID = UUID() // use to perform a full reload with re-centering
 }
 
@@ -41,6 +41,7 @@ extension InfiniteTableView {
     
     func isPagingEnabled(_ isPagingEnabled: Bool) -> InfiniteTableView {
         self.params.isPagingEnabled = isPagingEnabled
+        self.params.pageSize = isPagingEnabled ? 1 : 5
         return self
     }
 
