@@ -19,21 +19,26 @@ public struct DayLayout<Content: View>: View {
     var reminders: [CalendarReminder]
     var updateID: UUID
     @ViewBuilder var dayEventBuilder: (any CalendarEntity)->Content
+    
+    var currentDate: Date
+    @Binding var isDragging: Bool
 
-    init(selectedDate: Binding<Date>, hoursLabelsInset: Binding<CGFloat>, daysCount: Int, events: [CalendarEvent], reminders: [CalendarReminder], updateID: UUID, dayEventBuilder: @escaping (any CalendarEntity) -> Content) {
+    init(selectedDate: Binding<Date>, currentDate: Date, hoursLabelsInset: Binding<CGFloat>, daysCount: Int, events: [CalendarEvent], reminders: [CalendarReminder], updateID: UUID, isDragging: Binding<Bool>, dayEventBuilder: @escaping (any CalendarEntity) -> Content) {
         self._selectedDate = selectedDate
+        self.currentDate = currentDate
         self._hoursLabelsInset = hoursLabelsInset
         self.daysCount = daysCount
         self.events = events
         self.reminders = reminders
         self.updateID = updateID
         self.dayEventBuilder = dayEventBuilder
+        self._isDragging = isDragging
 
         let isAllDayGrouped = Dictionary(grouping: events, by: \.isAllDay)
         self.allDayEvents = isAllDayGrouped[true] ?? []
-        self.allDayEventsByDay = daysCount == 1 ? [selectedDate.wrappedValue: allDayEvents] : allDayEvents.groupedByDay()
+        self.allDayEventsByDay = daysCount == 1 ? [currentDate: allDayEvents] : allDayEvents.groupedByDay()
         self.nonAllDayEvents = isAllDayGrouped[false] ?? []
-        self.nonAllDayEventsByDay = daysCount == 1 ? [selectedDate.wrappedValue: nonAllDayEvents] : nonAllDayEvents.groupedByDay()
+        self.nonAllDayEventsByDay = daysCount == 1 ? [currentDate: nonAllDayEvents] : nonAllDayEvents.groupedByDay()
     }
     
     private let allDaysViewMaxHeight: CGFloat = 90.0
@@ -73,7 +78,7 @@ public struct DayLayout<Content: View>: View {
 
                             ZStack(alignment: .top) {
                                 separatorsView(oneHourHeight)
-                                if selectedDate.getDateWithoutTime() == Date().getDateWithoutTime() {
+                                if currentDate.getDateWithoutTime() == Date().getDateWithoutTime() {
                                     nowLine(oneHourHeight)
                                 }
                                 dayEventsAndRemindersView
@@ -81,6 +86,7 @@ public struct DayLayout<Content: View>: View {
                             .padding(.top, hourTextHeight)
                         }
                     }
+                    .scrollDisabled(isDragging)
                     .onChange(of: updateID) {
                         proxy.scrollTo(firstOccupiedHour, anchor: .top)
                     }
@@ -132,7 +138,7 @@ public struct DayLayout<Content: View>: View {
             Color.clear.frame(width: max(0, hoursLabelsInset - spaceBetweenDays), height: 1)
 
             ForEach(0..<daysCount, id: \.self) { i in
-                let date = selectedDate.adding(.day, value: i).startOfDay
+                let date = currentDate.adding(.day, value: i).startOfDay
                 ScrollView {
                     VStack {
                         let events = allDayEventsByDay[date] ?? []
@@ -168,6 +174,7 @@ public struct DayLayout<Content: View>: View {
                 }
                 .frame(height: min(allDaysViewHeight, allDaysViewMaxHeight))
                 .scrollBounceBehavior(.basedOnSize)
+                .scrollDisabled(isDragging)
             }
         }
         .padding(.horizontal, customizationParams.horSpacing)
@@ -184,7 +191,7 @@ public struct DayLayout<Content: View>: View {
             ForEach(0..<daysCount, id: \.self) { i in
                 theme.day.separators.frame(width: 1)
                 GeometryReader { g in
-                    let date = selectedDate.adding(.day, value: i).startOfDay
+                    let date = currentDate.adding(.day, value: i).startOfDay
                     DayEventsLayout(events: nonAllDayEventsByDay[date] ?? [], reminders: reminders, size: g.size, horSpacing: customizationParams.horSpacing, verSpacing: customizationParams.verSpacing, dayEventBuilder: dayEventBuilder)
                 }
             }

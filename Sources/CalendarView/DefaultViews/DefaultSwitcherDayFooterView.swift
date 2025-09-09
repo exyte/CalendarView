@@ -22,11 +22,11 @@ public struct DefaultWeekSwitcherDayFooterView: View {
     public var body: some View {
         VStack(spacing: 10) {
             HStack {
-                Text(params.selectedDate.wrappedValue.formatted("d MMMM yyyy"))
+                Text(params.selectedDate.formatted("d MMMM yyyy"))
                     .systemFont(15, .regular, theme.week.text)
                     .lineLimit(1)
                 
-                if  params.selectedDate.wrappedValue.startOfDay == today {
+                if  params.selectedDate.startOfDay == today {
                     Text("(Today)")
                         .systemFont(15, .semibold, theme.week.text)
                         .lineLimit(1)

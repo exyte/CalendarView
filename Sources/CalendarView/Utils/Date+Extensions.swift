@@ -74,6 +74,14 @@ public extension Date {
         dateComponents.timeZone = TimeZone.current
         return calendar.date(from: dateComponents)
     }
+    
+    func nextDay() -> Date? {
+        Calendar.current.date(byAdding: .day, value: 1, to: self)
+    }
+    
+    func previousDay() -> Date? {
+        Calendar.current.date(byAdding: .day, value: -1, to: self)
+    }
 
     // MARK: - Set Full Time or Date
 

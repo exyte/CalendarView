@@ -11,6 +11,7 @@ import SwiftUI
 struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
     @Environment(\.calendarTheme) private var theme
     @Environment(\.calendarCustomizationParams) var customizationParams
+    @EnvironmentObject var viewModel: CalendarViewModel
 
     @Binding var selectedDate: Date
     @Binding var anchorDate: Date // first day of currently on screen week. selectedData could be off screen, so need to track this through another variable
@@ -46,6 +47,11 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
         .onAppear {
             self.weekCellsModel.selectedDate = selectedDate
         }
+        .onChange(of: selectedDate) { _, _ in
+            onePageitems = Array(-1...1)
+            items = Array(-5...5)
+            tableUpdateID = UUID()
+        }
     }
 
     @ViewBuilder
@@ -53,7 +59,7 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
         GeometryReader { g in
             createSimpleInfiniteTableView(items: customizationParams.isDayInWeekSwitcherPagingEnabled ? $onePageitems : $items) { item in
                 HStack(spacing: 0) {
-                    let startOfWeek = Date().startOfWeek(customizationParams.firstDayOfWeek).startOfDay.adding(.day, value: item*7)
+                    let startOfWeek = selectedDate.startOfWeek(customizationParams.firstDayOfWeek).startOfDay.adding(.day, value: item*7)
                     ForEach(0..<7, id: \.self) { i in
                         dayView(startDay: startOfWeek, index: i, monthDisplayMode: false)
                     }

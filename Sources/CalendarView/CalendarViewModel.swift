@@ -16,6 +16,8 @@ class CalendarViewModel: ObservableObject {
 
     private var eventProviders: [CalendarsProvider] = []
     private var calendarSelectionStore = CalendarSelectionStore()
+    
+    @Published var didEndAnimating: Int = 0
 
     init(providers: [CalendarsProvider]) {
         if providers.isEmpty {
@@ -36,21 +38,28 @@ class CalendarViewModel: ObservableObject {
             return
         }
 
+        events = await fetchEvents(interval, selectedIDs: selectedIDs)
+        reminders = await fetchReminders(interval, selectedIDs: selectedIDs)
+    }
+    
+    private func fetchEvents(_ interval: DateInterval, selectedIDs: [String]) async -> [CalendarEvent] {
         var resultE = [CalendarEvent]()
         for eventProvider in eventProviders {
             if let providerResult = try? await eventProvider.getEvents(from: interval.start, to: interval.end, selectedCalendarIDs: selectedIDs) {
                 resultE.append(contentsOf: providerResult)
             }
         }
-        events = resultE
-
+        return resultE
+    }
+    
+    private func fetchReminders(_ interval: DateInterval, selectedIDs: [String]) async -> [CalendarReminder] {
         var resultR = [CalendarReminder]()
         for eventProvider in eventProviders {
             if let providerResult = try? await eventProvider.getReminders(from: interval.start, to: interval.end, selectedCalendarIDs: selectedIDs) {
                 resultR.append(contentsOf: providerResult)
             }
         }
-        reminders = resultR
+        return resultR
     }
 
     func fetchCalendars() async {

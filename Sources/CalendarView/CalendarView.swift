@@ -31,7 +31,7 @@ public struct HeaderBuilderParams {
 }
 
 public struct weekSwitcherDayFooterParams {
-    public var selectedDate: Binding<Date>
+    public var selectedDate: Date
 }
 
 public class CalendarViewCustomizationParams {
@@ -89,6 +89,8 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     @BindableValue var selectedDate: Date = Date().startOfDay
     @BindableValue var displayMode: CalendarDisplayMode = .day
     @BindableValue var needUpdate: UUID = UUID()
+    
+    @BindableValue var eventsBinding: [CalendarEvent] = []
 
     @State var anchorDate: Date = Date()
     @State var showCalendarFilters = false
@@ -96,6 +98,9 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     @State var showEventDetails = false
     @State var displayedEventDetails: CalendarEntityWrapper?
     @State var updateID = UUID() // triggers downstream updates
+    
+    @State var isDragging: Bool = false
+    @State var currentPage: Int = 0
 
     // layout helpers
     @State var hoursLabelsInset: CGFloat = 0
@@ -122,11 +127,6 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
 
                 DayInWeekSwitcher(selectedDate: $selectedDate, anchorDate: $anchorDate, calendarDisplayMode: displayMode, hoursLabelsInset: hoursLabelsInset, weekSwitcherDayBuilder: weekSwitcherDayBuilder)
                     .padding(8)
-                
-                if displayMode == .day {
-                    weekSwitcherDayFooterBuilder(weekSwitcherDayFooterParams(selectedDate: $selectedDate))
-                        .padding(.top, -16)
-                }
                     
             }
             .background {
@@ -134,8 +134,23 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
             }
 
             switch displayMode {
-            case .day, .threeDays:
-                DayLayout(selectedDate: $selectedDate, hoursLabelsInset: $hoursLabelsInset, daysCount: displayMode == .day ? 1 : 3, events: viewModel.events, reminders: viewModel.reminders, updateID: updateID, dayEventBuilder: dayEventBuilder)
+            case .day:
+                GeometryReader { g in
+                    InfiniteTabPageView(width: g.size.width, currentPage: $currentPage, didEndAnimation: $viewModel.didEndAnimating, isDragging: $isDragging) { page in
+                        let date = Calendar.current.date(byAdding: .day, value: page - currentPage, to: selectedDate) ?? selectedDate
+                        
+                        VStack(spacing: 0) {
+                            weekSwitcherDayFooterBuilder(weekSwitcherDayFooterParams(selectedDate: date))
+
+                            DayLayout(selectedDate: $selectedDate, currentDate: date, hoursLabelsInset: $hoursLabelsInset, daysCount: displayMode == .day ? 1 : 3, events: getEvents(from: date), reminders: [], updateID: updateID, isDragging: $isDragging, dayEventBuilder: dayEventBuilder)
+                                .padding(.top, 8)
+                                .background(theme.day.background)
+                        }
+                    }
+                }
+                .padding(.top, -8)
+            case .threeDays:
+                DayLayout(selectedDate: $selectedDate, currentDate: selectedDate, hoursLabelsInset: $hoursLabelsInset, daysCount: displayMode == .day ? 1 : 3, events: viewModel.events, reminders: viewModel.reminders, updateID: updateID, isDragging: $isDragging, dayEventBuilder: dayEventBuilder)
                     .padding(.top, 8)
                     .background(theme.day.background)
             case .month:
@@ -162,6 +177,11 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         }
         .onChange(of: needUpdate) {
             updateData()
+        }
+        .onReceive(viewModel.$didEndAnimating) { value in
+            let date = Calendar.current.date(byAdding: .day, value: value, to: selectedDate) ?? selectedDate
+            
+            selectedDate = date
         }
 
         .sheet(isPresented: $showCalendarFilters) {
@@ -210,6 +230,29 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         var copy = self
         copy._displayMode.bind(binding)
         return copy
+    }
+    
+    public func eventsBinding(_ binding: Binding<[CalendarEvent]>) -> CalendarView {
+        var copy = self
+        copy._eventsBinding.bind(binding)
+        return copy
+    }
+    
+    private func getEvents(from date: Date) -> [CalendarEvent] {
+        let interval = displayMode.interval(date)
+        let startDate = interval.start
+        let endDate = interval.end
+        var events = eventsBinding
+            .filter { !$0.isAllDay }
+            .filter{ $0.startDate >= startDate && $0.startDate <= endDate }
+        
+        let allDayEvents = eventsBinding
+            .filter { $0.isAllDay }
+            .filter{ $0.startDate <= startDate && $0.endDate >= startDate }
+        
+        events.append(contentsOf: allDayEvents)
+        
+        return events
     }
 }
 
