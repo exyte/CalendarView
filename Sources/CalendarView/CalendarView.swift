@@ -35,7 +35,7 @@ public struct weekSwitcherDayFooterParams {
 }
 
 public class CalendarViewCustomizationParams {
-    public var hoursToFit: Int = 12
+    public var hoursToFit: CGFloat = 12
     public var hourLabelFormat: String = "h a"
     public var firstDayOfWeek: Int?
 
@@ -105,7 +105,10 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     // layout helpers
     @State var hoursLabelsInset: CGFloat = 0
 
-    var customizationParams = CalendarViewCustomizationParams()
+    @State var customizationParams = CalendarViewCustomizationParams()
+    
+    @State private var currentZoom = 0.0
+    @State private var totalZoom = 4.0
 
     public var body: some View {
         VStack(spacing: 0) {
@@ -147,6 +150,23 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                                 .background(theme.day.background)
                         }
                     }
+                    .simultaneousGesture(
+                        MagnifyGesture()
+                            .onChanged { value in
+                                isDragging = true
+                                currentZoom = (value.magnification - 1) * 3
+                                let hoursToFit = max(3.0, min(currentZoom + totalZoom, 12.0))
+                                customizationParams.hoursToFit = hoursToFit
+                                updateID = UUID()
+                            }
+                            .onEnded { value in
+                                totalZoom += currentZoom
+                                totalZoom = max(3.0, min(12.0, totalZoom))
+                                currentZoom = 0
+                                isDragging = false
+                            }
+                            
+                    )
                 }
                 .padding(.top, -8)
             case .threeDays:

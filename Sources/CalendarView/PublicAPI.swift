@@ -10,7 +10,7 @@ import SwiftUI
 extension CalendarView {
 
     /// how many hours will fit vertically in a day displayMode, default is 12
-    public func hoursToFit(_ hoursToFit: Int) -> CalendarView {
+    public func hoursToFit(_ hoursToFit: CGFloat) -> CalendarView {
         if hoursToFit > 24 {
             print("Please specify hoursToFit's value less or equal to 24")
             return self

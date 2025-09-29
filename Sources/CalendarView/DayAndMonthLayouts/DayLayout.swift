@@ -94,7 +94,7 @@ public struct DayLayout<Content: View>: View {
             }
         }
         .onChange(of: hourLabelsSize) {
-            hoursLabelsInset = hourLabelsSize.width + 2*horizontalPadding
+            hoursLabelsInset = hourLabelsSize.width + 2 * horizontalPadding
         }
     }
 
@@ -149,12 +149,14 @@ public struct DayLayout<Content: View>: View {
                             ForEach(Array(stride(from: 0, to: eventsCount, by: 2)), id: \.self) { index in
                                 HStack(spacing: spaceBetweenDays) {
                                     dayEventBuilder(events[index])
+                                        .frame(height: 30)
                                         .fixedSize(horizontal: false, vertical: true)
                                         .onTapGesture {
                                             showEventDetailsClosure(events[index])
                                         }
                                     if index + 1 < eventsCount {
                                         dayEventBuilder(events[index + 1])
+                                            .frame(height: 30)
                                             .fixedSize(horizontal: false, vertical: true)
                                             .onTapGesture {
                                                 showEventDetailsClosure(events[index + 1])
