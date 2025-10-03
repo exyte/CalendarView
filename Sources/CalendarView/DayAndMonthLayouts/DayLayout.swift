@@ -36,16 +36,16 @@ public struct DayLayout<Content: View>: View {
 
         let isAllDayGrouped = Dictionary(grouping: events, by: \.isAllDay)
         self.allDayEvents = isAllDayGrouped[true] ?? []
-        self.allDayEventsByDay = daysCount == 1 ? [currentDate: allDayEvents] : allDayEvents.groupedByDay()
         self.nonAllDayEvents = isAllDayGrouped[false] ?? []
         self.nonAllDayEventsByDay = daysCount == 1 ? [currentDate: nonAllDayEvents] : nonAllDayEvents.groupedByDay()
+        self.allDayEventsByDay = daysCount == 1 ? [currentDate: allDayEvents] : getAllDayEventsByDate()
     }
     
     private let allDaysViewMaxHeight: CGFloat = 90.0
 
     @State private var hourLabelsSize: CGSize = .zero
     @State private var hourTextHeight: CGFloat = 0
-    @State private var allDaysViewHeight: CGFloat = 0
+    @State private var allDaysViewHeight: [Int: CGFloat] = [0:0]
 
     var firstOccupiedHour: Int {
         nonAllDayEvents.map { $0.startDate.getHour() } .min { $0 < $1 } ?? 0
@@ -134,7 +134,7 @@ public struct DayLayout<Content: View>: View {
     @ViewBuilder
     var allDayEventsView: some View {
         let spaceBetweenDays = 2 * customizationParams.horSpacing + 1
-        HStack(alignment: .top, spacing: spaceBetweenDays) {
+        HStack(alignment: .top, spacing: customizationParams.horSpacing) {
             Color.clear.frame(width: max(0, hoursLabelsInset - spaceBetweenDays), height: 1)
 
             ForEach(0..<daysCount, id: \.self) { i in
@@ -169,17 +169,17 @@ public struct DayLayout<Content: View>: View {
                     }
                     .background(GeometryReader {geo -> Color in
                         DispatchQueue.main.async {
-                            self.allDaysViewHeight = geo.size.height
+                            self.allDaysViewHeight[i] = geo.size.height
                         }
                         return Color.clear
                     })
                 }
-                .frame(height: min(allDaysViewHeight, allDaysViewMaxHeight))
+                .frame(height: min(allDaysViewHeight.values.max() ?? 0, allDaysViewMaxHeight))
                 .scrollBounceBehavior(.basedOnSize)
                 .scrollDisabled(isDragging)
             }
         }
-        .padding(.horizontal, customizationParams.horSpacing)
+        .padding(.trailing, customizationParams.horSpacing)
         // can't be a part of layout to be able to align 3-day view correctly
         .overlay(alignment: .topLeading) {
             Text("all-day")
@@ -203,6 +203,22 @@ public struct DayLayout<Content: View>: View {
 
     private func startCoeff(_ date: Date) -> CGFloat {
         CGFloat((date.getHour() * 60 + date.getMinute())) / CGFloat(60)
+    }
+    
+    private func getAllDayEventsByDate() -> [Date: [CalendarEvent]] {
+        var allDayEventsByDay: [Date: [CalendarEvent]] = [:]
+        for i in 0..<daysCount {
+            let currentDate = currentDate.adding(.day, value: i)
+            let interval = CalendarDisplayMode.day.interval(currentDate)
+            let startDate = interval.start
+            let endDate = interval.end
+            let allDayEvents = allDayEvents
+                .filter{ $0.startDate <= startDate && $0.endDate >= startDate }
+            
+            allDayEventsByDay[currentDate.startOfDay] = Array(Set(allDayEvents)).sorted(by: { $0.id < $1.id})
+        }
+        
+        return allDayEventsByDay
     }
 }
 

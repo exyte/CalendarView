@@ -32,6 +32,7 @@ public struct HeaderBuilderParams {
 
 public struct weekSwitcherDayFooterParams {
     public var selectedDate: Date
+    public var daysCount: Int = 1
 }
 
 public class CalendarViewCustomizationParams {
@@ -169,6 +170,38 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                     )
                 }
                 .padding(.top, -8)
+            case .twoDays:
+                GeometryReader { g in
+                    InfiniteTabPageView(width: g.size.width, currentPage: $currentPage, didEndAnimation: $viewModel.didEndAnimating, isDragging: $isDragging) { page in
+                        let date = Calendar.current.date(byAdding: .day, value: page - currentPage, to: selectedDate) ?? selectedDate
+                        
+                        VStack(spacing: 0) {
+                            weekSwitcherDayFooterBuilder(weekSwitcherDayFooterParams(selectedDate: date, daysCount: 2))
+                            
+                            DayLayout(selectedDate: $selectedDate, currentDate: date, hoursLabelsInset: $hoursLabelsInset, daysCount: 2, events: getEvents(from: date), reminders: viewModel.reminders, updateID: updateID, isDragging: $isDragging, dayEventBuilder: dayEventBuilder)
+                                .padding(.top, 8)
+                                .background(theme.day.background)
+                        }
+                    }
+                    .simultaneousGesture(
+                        MagnifyGesture()
+                            .onChanged { value in
+                                isDragging = true
+                                currentZoom = (value.magnification - 1) * 3
+                                let hoursToFit = max(3.0, min(currentZoom + totalZoom, 12.0))
+                                customizationParams.hoursToFit = hoursToFit
+                                updateID = UUID()
+                            }
+                            .onEnded { value in
+                                totalZoom += currentZoom
+                                totalZoom = max(3.0, min(12.0, totalZoom))
+                                currentZoom = 0
+                                isDragging = false
+                            }
+                        
+                    )
+                }
+                .padding(.top, -8)
             case .threeDays:
                 DayLayout(selectedDate: $selectedDate, currentDate: selectedDate, hoursLabelsInset: $hoursLabelsInset, daysCount: displayMode == .day ? 1 : 3, events: viewModel.events, reminders: viewModel.reminders, updateID: updateID, isDragging: $isDragging, dayEventBuilder: dayEventBuilder)
                     .padding(.top, 8)
@@ -266,24 +299,35 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
             .filter { !$0.isAllDay }
             .filter{ $0.startDate >= startDate && $0.startDate <= endDate }
         
-        let allDayEvents = eventsBinding
-            .filter { $0.isAllDay }
-            .filter{ $0.startDate <= startDate && $0.endDate >= startDate }
-        
-        events.append(contentsOf: allDayEvents)
+        for i in 0..<displayMode.rawValue {
+            let currentDate = date.adding(.day, value: i)
+            let interval = CalendarDisplayMode.day.interval(currentDate)
+            let startDate = interval.start
+            let endDate = interval.end
+            let allDayEvents = eventsBinding
+                .filter { $0.isAllDay }
+                .filter{ $0.startDate <= startDate && $0.endDate >= startDate }
+            
+            events.append(contentsOf: allDayEvents)
+        }
         
         return events
     }
 }
 
-public enum CalendarDisplayMode: Sendable {
-    case day, threeDays, month
+public enum CalendarDisplayMode: Int,  Sendable {
+    case day = 1
+    case twoDays = 2
+    case threeDays = 3
+    case month = 30
 
     func interval(_ start: Date) -> DateInterval {
         let start = start.startOfDay
         return switch self {
         case .day:
             DateInterval(start: start, end: start.adding(.day, value: 1))
+        case .twoDays:
+            DateInterval(start: start, end: start.adding(.day, value: 2))
         case .threeDays:
             DateInterval(start: start, end: start.adding(.day, value: 3))
         case .month:

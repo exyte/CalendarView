@@ -72,7 +72,7 @@ public struct DefaultHeaderView: View {
             switch params.displayMode.wrappedValue {
             case .day:
                 Image(.day)
-            case .threeDays:
+            case .twoDays, .threeDays:
                 Image(.three)
             case .month:
                 Image(.month)

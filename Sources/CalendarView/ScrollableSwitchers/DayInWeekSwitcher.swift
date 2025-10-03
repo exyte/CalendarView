@@ -36,7 +36,7 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
             }
 
             switch calendarDisplayMode {
-            case .day:
+            case .day, .twoDays:
                 fullWeekView
             case .threeDays:
                 threeDayWeekView

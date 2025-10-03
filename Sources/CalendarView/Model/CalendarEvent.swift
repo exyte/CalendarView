@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-public struct CalendarEvent: CalendarEntity {
+public struct CalendarEvent: CalendarEntity, Hashable {
     public let id: String
     public var calendarID: String
 
@@ -52,6 +52,10 @@ public struct CalendarEvent: CalendarEntity {
 
     func toString() -> String {
         title + startDate.formatted(" HH:mm") + endDate.formatted(" - HH:mm")
+    }
+    
+    static public func ==(left:CalendarEvent, right:CalendarEvent) -> Bool {
+        return left.id == right.id
     }
 }
 

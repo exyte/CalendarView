@@ -246,7 +246,7 @@ public struct InfiniteTableView<Data, UpdatableModel, Content, UpdatableContent>
 
         public func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
             guard !isBusy else { return }
-            if case .free = parent.params.scrollMode, let item = self.data[safe: indexPath.row] {
+            if let item = self.data[safe: indexPath.row] {
                 self.parent.willDisplayItem?(item)
             }
             let count = data.count
