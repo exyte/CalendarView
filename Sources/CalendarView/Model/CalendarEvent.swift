@@ -54,6 +54,37 @@ public struct CalendarEvent: CalendarEntity, Hashable {
         title + startDate.formatted(" HH:mm") + endDate.formatted(" - HH:mm")
     }
     
+    func isRepeatToday (selectedDate: Date) -> Bool {
+        guard repeatType != .never else { return false }
+        var isSameDay: Bool = false
+        
+        switch repeatType {
+        case .never:
+            isSameDay = false
+        case .daily:
+            isSameDay = true
+        case .workingDay:
+            isSameDay = false
+        case .weekend:
+            isSameDay = false
+        case .weekly:
+            isSameDay = Calendar.current.dateComponents([.weekday], from: selectedDate).weekday ==
+                        Calendar.current.dateComponents([.weekday], from: startDate).weekday
+        case .twoWeekly:
+            isSameDay = false
+        case .monthly:
+            isSameDay = Calendar.current.dateComponents([.day], from: selectedDate).day ==
+            Calendar.current.dateComponents([.day], from: startDate).day
+        case .year:
+            isSameDay = Calendar.current.dateComponents([.month], from: selectedDate).month ==
+                        Calendar.current.dateComponents([.month], from: startDate).month &&
+                        Calendar.current.dateComponents([.day], from: selectedDate).day ==
+                        Calendar.current.dateComponents([.day], from: startDate).day
+        }
+        
+        return isSameDay
+    }
+    
     static public func ==(left:CalendarEvent, right:CalendarEvent) -> Bool {
         return left.id == right.id
     }

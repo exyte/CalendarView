@@ -297,6 +297,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         let endDate = interval.end
         var events = eventsBinding
             .filter { !$0.isAllDay }
+            .filter { $0.repeatType == .never }
             .filter{ $0.startDate >= startDate && $0.startDate <= endDate }
         
         for i in 0..<displayMode.rawValue {
@@ -306,10 +307,17 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
             let endDate = interval.end
             let allDayEvents = eventsBinding
                 .filter { $0.isAllDay }
+                .filter { $0.repeatType == .never }
                 .filter{ $0.startDate <= startDate && $0.endDate >= startDate }
             
             events.append(contentsOf: allDayEvents)
         }
+        
+        let repeatEvents = eventsBinding
+            .filter { $0.repeatType != .never }
+            .filter { $0.isRepeatToday(selectedDate: selectedDate) }
+        
+        events.append(contentsOf: repeatEvents)
         
         return events
     }
