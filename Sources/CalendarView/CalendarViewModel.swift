@@ -45,7 +45,9 @@ class CalendarViewModel: ObservableObject {
     private func fetchEvents(_ interval: DateInterval, selectedIDs: [String]) async -> [CalendarEvent] {
         var resultE = [CalendarEvent]()
         for eventProvider in eventProviders {
-            if let providerResult = try? await eventProvider.getEvents(from: interval.start, to: interval.end, selectedCalendarIDs: selectedIDs) {
+            let start = interval.start.adding(.day, value: -4)
+            let end = interval.end.adding(.day, value: 4)
+            if let providerResult = try? await eventProvider.getEvents(from: start, to: end, selectedCalendarIDs: selectedIDs) {
                 resultE.append(contentsOf: providerResult)
             }
         }
@@ -143,5 +145,36 @@ class CalendarViewModel: ObservableObject {
                 print(error)
             }
         }
+    }
+    
+    func getEvents(from date: Date, displayMode: CalendarDisplayMode, selectedDate: Date) -> [CalendarEvent] {
+        let interval = displayMode.interval(date)
+        let startDate = interval.start
+        let endDate = interval.end
+        var events = self.events
+            .filter { !$0.isAllDay }
+            .filter { $0.repeatType == .never }
+            .filter{ $0.startDate >= startDate && $0.startDate <= endDate }
+        
+        for i in 0..<displayMode.rawValue {
+            let currentDate = date.adding(.day, value: i)
+            let interval = CalendarDisplayMode.day.interval(currentDate)
+            let startDate = interval.start
+            let endDate = interval.end
+            let allDayEvents = self.events
+                .filter { $0.isAllDay }
+                .filter { $0.repeatType == .never }
+                .filter{ $0.startDate <= startDate && $0.endDate >= startDate }
+            
+            events.append(contentsOf: allDayEvents)
+        }
+        
+        let repeatEvents = self.events
+            .filter { $0.repeatType != .never }
+            .filter { $0.isRepeatToday(selectedDate: selectedDate) }
+        
+        events.append(contentsOf: repeatEvents)
+        
+        return events
     }
 }
