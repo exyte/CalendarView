@@ -10,7 +10,7 @@ import CalendarView
 
 struct ContentView: View {
 
-    @State var a = Date().setMonth(to: 6).setDayOfMonth(to: 18)
+    @State var selectedDate = Date()
     @State var mode = CalendarDisplayMode.day
 
     var body: some View {
@@ -36,9 +36,11 @@ struct ContentView: View {
 //            }
 //        }
 
-        //.selectedDate($a)
+//        .selectedDate(selectedDate)
         .firstDayOfWeek(2)
+        .hoursToFit(6)
         .hourLabelFormat("HH:mm")
+        .isDayInWeekSwitcherPagingEnabled(true)
         .headerBackground {
             GeometryReader { geo in
                 ZStack(alignment: .top) {

@@ -23,12 +23,12 @@ public struct DefaultWeekSwitcherDayFooterView: View {
         VStack(spacing: 10) {
             HStack {
                 Text(params.selectedDate.formatted("d MMMM yyyy"))
-                    .systemFont(15, .regular, theme.week.text)
+                    .systemFont(15, .regular, theme.main.text)
                     .lineLimit(1)
                 
                 if  params.selectedDate.startOfDay == today {
                     Text("(Today)")
-                        .systemFont(15, .semibold, theme.week.text)
+                        .systemFont(15, .semibold, theme.main.text)
                         .lineLimit(1)
                 }
                 
@@ -36,13 +36,13 @@ public struct DefaultWeekSwitcherDayFooterView: View {
                 
                 Circle()
                     .frame(width: 8, height: 8)
-                    .foregroundStyle(theme.week.text)
+                    .foregroundStyle(theme.main.accent)
                 
-                Text("\(viewModel.events.count) Events")
-                    .systemFont(15, .regular, theme.week.text)
+                Text("\(viewModel.getEvents(from: params.selectedDate, displayMode: CalendarDisplayMode.init(rawValue: params.daysCount) ?? .day, selectedDate: params.selectedDate).count) Events")
+                    .systemFont(15, .regular, theme.main.accent)
                     .lineLimit(1)
             }
-            .padding(.horizontal, 16)
+            .padding(16)
         }
     }
 }

@@ -58,7 +58,13 @@ public struct MonthLayout<MonthDay: View>: View {
     }
 
     func eventsFor(_ date: Date) -> [any CalendarEntity] {
-        viewModel.events.filter { $0.startDate.startOfDay == date }
+        var allDayEvents = viewModel.events
+            .filter { $0.isAllDay }
+            .filter{ $0.startDate.startOfDay <= date && $0.endDate >= date }
+        let events = viewModel.events
+            .filter { !$0.isAllDay && $0.startDate.startOfDay == date }
+        allDayEvents.append(contentsOf: events)
+        return allDayEvents
     }
 
     func numberOfCalendarRows() -> Int {

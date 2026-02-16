@@ -60,7 +60,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     @StateObject var viewModel: CalendarViewModel
     
     public init(
-        providers: [CalendarsProvider],
+        providers: [CalendarsProvider] = [],
         dayEventBuilder: @escaping (_ calendarEvent: any CalendarEntity) -> DayEvent = {
             DefaultDayEventView(entity: $0)
         },
@@ -206,7 +206,8 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                         let date = Calendar.current.date(byAdding: .day, value: page - currentPage, to: selectedDate) ?? selectedDate
                         
                         VStack(spacing: 0) {
-                            weekSwitcherDayFooterBuilder(weekSwitcherDayFooterParams(selectedDate: date, daysCount: 2))
+                            weekSwitcherDayFooterBuilder(weekSwitcherDayFooterParams(selectedDate: date, daysCount: 3))
+                            
                             DayLayout(selectedDate: $selectedDate, currentDate: date, hoursLabelsInset: $hoursLabelsInset, daysCount: 3, events: viewModel.getEvents(from: date, displayMode: displayMode, selectedDate: selectedDate), reminders: viewModel.reminders, updateID: updateID, isDragging: $isDragging, dayEventBuilder: dayEventBuilder)
                                 .padding(.top, 8)
                                 .background(theme.day.background)
@@ -257,7 +258,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
             updateData()
         }
         .onReceive(viewModel.$didEndAnimating) { value in
-            let date = Calendar.current.date(byAdding: .day, value: value, to: selectedDate) ?? selectedDate
+            let date = selectedDate.adding(.day, value: value)
             
             selectedDate = date
         }

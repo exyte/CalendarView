@@ -39,7 +39,7 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
             case .day, .twoDays:
                 fullWeekView
             case .threeDays:
-                threeDayWeekView
+                fullWeekView
             case .month:
                 weekdaysOnlyView
             }
@@ -48,6 +48,7 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
             self.weekCellsModel.selectedDate = selectedDate
         }
         .onChange(of: selectedDate) { _, _ in
+            self.weekCellsModel.selectedDate = selectedDate
             onePageitems = Array(-1...1)
             items = Array(-5...5)
             tableUpdateID = UUID()
