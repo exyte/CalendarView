@@ -28,6 +28,7 @@ struct CreateOrEditEventView<Entity: CalendarEntity>: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
+            .navigationBarBackButtonHidden()
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Text("New")
@@ -93,7 +94,7 @@ struct CreateEventView: View {
                     }
                 } label: {
                     Text("Create")
-                        .systemFont(17, .semibold, event.title.isEmpty ? .gray : .green)
+                        .systemFont(17, .semibold, event.title.isEmpty ? .gray : .blue.opacity(1))
                 }
                 .disabled(event.title.isEmpty)
             }
@@ -107,8 +108,9 @@ struct CreateEventView: View {
             } label: {
                 Text("Event")
                     .systemFont(15, .semibold)
+                    .frame(height: 32)
                     .greedyWidth()
-                    .background(isEvent ? Color.white : Color.gray)
+                    .background(isEvent ? Color.blue.opacity(0.3) : Color.clear)
                     .cornerRadius(6)
                     .padding(2)
             }
@@ -119,16 +121,19 @@ struct CreateEventView: View {
             } label: {
                 Text("Reminder")
                     .systemFont(15, .semibold)
+                    .frame(height: 32)
                     .greedyWidth()
-                    .background(!isEvent ? Color.white : Color.gray)
+                    .background(!isEvent ? Color.blue.opacity(0.3) : Color.clear)
                     .cornerRadius(6)
                     .padding(2)
             }
             .padding(.trailing, 3)
         }
         .greedyWidth()
+        .background(.blue.opacity(0.1))
         .frame(height: 38)
         .cornerRadius(8)
+        .padding(.horizontal, 8)
     }
 }
 
@@ -156,6 +161,9 @@ struct EditCalendarEntityView<Entity: CalendarEntity>: View {
         ScrollView {
             VStack(spacing: 16) {
                 TextField("Title", text: $entity.title)
+                
+                Color.blue.opacity(0.3)
+                    .frame(height: 1)
 
                 if let eventBinding {
                     FieldTimeAndDate(isAllDay: eventBinding.isAllDay, startsDay: $entity.startDate, endsDay: eventBinding.endDate)
@@ -163,20 +171,25 @@ struct EditCalendarEntityView<Entity: CalendarEntity>: View {
                     FieldTimeOrDate(type: .date, date: $entity.startDate)
                     FieldTimeOrDate(type: .time, date: $entity.startDate)
                 }
+                
+                Color.blue.opacity(0.3)
+                    .frame(height: 1)
 
                 FieldCalendarSelection(selectedCalendar: $selectedCalendar)
 
                 FieldEnumPicker(eventFieldType: .repeatField, currentValue: $entity.repeatType)
 
-                if let _ = entity as? CalendarEvent {
-                    FieldEnumPicker(eventFieldType: .alertField, currentValue: $entity.alertType)
-                } else {
+                if let _ = entity as? CalendarEvent { } else {
                     FieldEnumPicker(eventFieldType: .priority, currentValue: $entity.priorityType)
                 }
-
-                FieldEnumPicker(eventFieldType: .vibrationTypeField, currentValue: $entity.vibrationType)
-
+                
+                Color.blue.opacity(0.3)
+                    .frame(height: 1)
+                
                 FieldDescription(description: $entity.notes)
+                
+                Color.blue.opacity(0.3)
+                    .frame(height: 1)
             }
             .scrollIndicators(.hidden)
             .scrollBounceBehavior(.basedOnSize)

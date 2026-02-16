@@ -21,11 +21,15 @@ struct FieldCalendarSelection: View {
                     Spacer()
                     if let title = selectedCalendar?.title {
                         Text(title)
+                            .padding(12, 8)
+                            .background(Color(selectedCalendar?.color ?? .clear).opacity(0.3))
+                            .cornerRadius(6)
                     }
 
                     Image(systemName: "arrow.right")
                         .frame(width: 24, height: 24)
-                        .border(Color.blue, width: 2)
+                        .foregroundStyle(.blue)
+                    
                 }
             }
         }

@@ -24,9 +24,6 @@ public struct CalendarEvent: CalendarEntity, Hashable {
     public var priorityType: PriorityType
     public var vibrationType: VibrationType
 
-    //public var payload: [String: Codable]
-    //var jayeBlockValue: JayeBlockType = .none
-
     public var entityType: EntityType { .event }
 
     public var duration: CGFloat { // in seconds
@@ -47,7 +44,6 @@ public struct CalendarEvent: CalendarEntity, Hashable {
         self.alertType = alertType
         self.priorityType = priorityType
         self.vibrationType = vibrationType
-        //self.payload = payload
     }
 
     func toString() -> String {
@@ -85,9 +81,9 @@ public struct CalendarEvent: CalendarEntity, Hashable {
         return isSameDay
     }
     
-    static public func ==(left:CalendarEvent, right:CalendarEvent) -> Bool {
-        return left.id == right.id
-    }
+//    static public func ==(left:CalendarEvent, right:CalendarEvent) -> Bool {
+//        return left.id == right.id
+//    }
 }
 
 extension UIImpactFeedbackGenerator.FeedbackStyle: Codable {
