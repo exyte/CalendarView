@@ -19,6 +19,7 @@ public struct MonthDayBuilderParams {
     public var viewHeight: CGFloat
 }
 
+@MainActor
 public struct WeekSwitcherDayBuilderParams {
     @ObservedObject var viewModel: WeekCellsModel /// use @ObservedObject to force swiftUI update flow on UIKit components
     public var day: Date
@@ -53,6 +54,7 @@ public class CalendarViewCustomizationParams {
     public var eventDetailsClosure: ((any CalendarEntity)->())?
 }
 
+@MainActor
 public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View, Header: View, Footer: View>: View {
 
     @StateObject var viewModel: CalendarViewModel

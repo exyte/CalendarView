@@ -52,18 +52,18 @@ public extension EnvironmentValues {
 #endif
 
 public extension EnvironmentValues {
-    #if swift(>=6.0)
-    @Entry var showEventDetailsClosure = (any CalendarEntity)->()
-    #else
+//    #if swift(>=6.0)
+//    @Entry var showEventDetailsClosure = ((any CalendarEntity)->()).self
+//    #else
     var showEventDetailsClosure: (any CalendarEntity)->() {
         get { self[ShowEventDetailsClosureKey.self] }
         set { self[ShowEventDetailsClosureKey.self] = newValue }
     }
-    #endif
+//    #endif
 }
 
-#if swift(<6.0)
+//#if swift(<6.0)
 @preconcurrency public struct ShowEventDetailsClosureKey: EnvironmentKey {
     nonisolated(unsafe) public static let defaultValue = {(_: any CalendarEntity) in}
 }
-#endif
+//#endif

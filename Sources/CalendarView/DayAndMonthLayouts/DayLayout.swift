@@ -20,8 +20,18 @@ public struct DayLayout<Content: View>: View {
     var reminders: [CalendarReminder]
     var isScrollDisabled: Bool
     var updateID: UUID
-    
+
     @ViewBuilder var dayEventBuilder: (any CalendarEntity)->Content
+    
+    private struct ScrollInfo: Equatable {
+        let yOffset: CGFloat
+        let maxOffset: CGFloat
+    }
+
+    @State private var scrollPosition = ScrollPosition()
+    @State private var targetOffset = CGFloat.zero
+    @State private var scrollInfo: ScrollInfo = ScrollInfo(yOffset: 0, maxOffset: 100)
+    @State private var isScrolling = false
 
     init(hoursLabelsInset: Binding<CGFloat>, anchorDate: Date, daysCount: Int, events: [CalendarEvent], reminders: [CalendarReminder], isScrollDisabled: Bool, updateID: UUID, dayEventBuilder: @escaping (any CalendarEntity) -> Content) {
         self._hoursLabelsInset = hoursLabelsInset
@@ -89,7 +99,43 @@ public struct DayLayout<Content: View>: View {
                     }
                     .scrollDisabled(isScrollDisabled)
                     .onChange(of: updateID) {
-                        proxy.scrollTo(firstOccupiedHour, anchor: .top)
+                        if !isScrollDisabled {
+                            proxy.scrollTo(firstOccupiedHour, anchor: .top)
+                        }
+                    }
+                    .onChange(of: scrollInfo, { old, new in
+                        if isScrollDisabled {
+                            let offset = targetOffset + (new.maxOffset - old.maxOffset) / 2
+                            let yOffset = max(0, min(offset.rounded(), scrollInfo.maxOffset))
+                            if yOffset != targetOffset {
+                                targetOffset = yOffset
+                            }
+                        }
+                    })
+                    .scrollPosition($scrollPosition, anchor: .topLeading)
+                    .onScrollGeometryChange(for: ScrollInfo.self) { geo in
+                        ScrollInfo(
+                            yOffset: geo.contentOffset.y + geo.contentInsets.top,
+                            maxOffset: geo.contentSize.height - geo.containerSize.height
+                        )
+                    } action: { _, newVal in
+                        scrollInfo = newVal
+                    }
+                    .onScrollPhaseChange { _, newVal in
+                        isScrolling = newVal != .idle
+                    }
+                    .task(id: targetOffset) {
+                        if !isScrolling && targetOffset != scrollInfo.yOffset {
+                            scrollPosition.scrollTo(y: targetOffset)
+                        }
+                    }
+                    .task(id: scrollInfo) {
+                        if isScrolling {
+                            let yOffset = max(0, min(scrollInfo.yOffset.rounded(), scrollInfo.maxOffset))
+                            if yOffset != targetOffset {
+                                targetOffset = yOffset
+                            }
+                        }
                     }
                 }
             }
