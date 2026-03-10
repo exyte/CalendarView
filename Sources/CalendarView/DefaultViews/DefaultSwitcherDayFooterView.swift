@@ -38,7 +38,7 @@ public struct DefaultWeekSwitcherDayFooterView: View {
                     .frame(width: 8, height: 8)
                     .foregroundStyle(theme.main.accent)
                 
-                Text("\(viewModel.getEvents(from: params.selectedDate, displayMode: CalendarDisplayMode.init(rawValue: params.daysCount) ?? .day, selectedDate: params.selectedDate).count) Events")
+                Text("\(viewModel.getEventsAndRemindersCount(from: params.selectedDate, displayMode: CalendarDisplayMode.init(rawValue: params.daysCount) ?? .day, selectedDate: params.selectedDate)) Events")
                     .systemFont(15, .regular, theme.main.accent)
                     .lineLimit(1)
             }

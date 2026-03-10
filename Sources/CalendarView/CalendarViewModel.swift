@@ -57,7 +57,9 @@ class CalendarViewModel: ObservableObject {
     private func fetchReminders(_ interval: DateInterval, selectedIDs: [String]) async -> [CalendarReminder] {
         var resultR = [CalendarReminder]()
         for eventProvider in eventProviders {
-            if let providerResult = try? await eventProvider.getReminders(from: interval.start, to: interval.end, selectedCalendarIDs: selectedIDs) {
+            let start = interval.start.adding(.day, value: -4)
+            let end = interval.end.adding(.day, value: 4)
+            if let providerResult = try? await eventProvider.getReminders(from: start, to: end, selectedCalendarIDs: selectedIDs) {
                 resultR.append(contentsOf: providerResult)
             }
         }
@@ -147,6 +149,15 @@ class CalendarViewModel: ObservableObject {
         }
     }
     
+    func getEventsAndRemindersCount(from date: Date, displayMode: CalendarDisplayMode, selectedDate: Date) -> Int {
+        var count = 0
+        
+        count += getEvents(from: date, displayMode: displayMode, selectedDate: selectedDate).count
+        count += getReminders(from: date, displayMode: displayMode, selectedDate: selectedDate).count
+        
+        return count
+    }
+    
     func getEvents(from date: Date, displayMode: CalendarDisplayMode, selectedDate: Date) -> [CalendarEvent] {
         let interval = displayMode.interval(date)
         let startDate = interval.start
@@ -160,7 +171,6 @@ class CalendarViewModel: ObservableObject {
             let currentDate = date.adding(.day, value: i)
             let interval = CalendarDisplayMode.day.interval(currentDate)
             let startDate = interval.start
-            let endDate = interval.end
             let allDayEvents = self.events
                 .filter { $0.isAllDay }
                 .filter { $0.repeatType == .never }
@@ -176,5 +186,22 @@ class CalendarViewModel: ObservableObject {
         events.append(contentsOf: repeatEvents)
         
         return events
+    }
+    
+    func getReminders(from date: Date, displayMode: CalendarDisplayMode, selectedDate: Date) -> [CalendarReminder] {
+        let interval = displayMode.interval(date)
+        let startDate = interval.start
+        let endDate = interval.end
+        var reminders = self.reminders
+            .filter { $0.repeatType == .never }
+            .filter{ $0.startDate >= startDate && $0.startDate <= endDate }
+        
+        let repeatReminders = self.reminders
+            .filter { $0.repeatType != .never }
+            .filter { $0.isRepeatToday(selectedDate: selectedDate) }
+        
+        reminders.append(contentsOf: repeatReminders)
+        
+        return reminders
     }
 }

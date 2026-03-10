@@ -144,7 +144,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                         VStack(spacing: 0) {
                             weekSwitcherDayFooterBuilder(weekSwitcherDayFooterParams(selectedDate: date))
 
-                            DayLayout(selectedDate: $selectedDate, currentDate: date, hoursLabelsInset: $hoursLabelsInset, daysCount: displayMode == .day ? 1 : 3, events: viewModel.getEvents(from: date, displayMode: displayMode, selectedDate: selectedDate), reminders: [], updateID: updateID, isDragging: $isDragging, dayEventBuilder: dayEventBuilder)
+                            DayLayout(selectedDate: $selectedDate, currentDate: date, hoursLabelsInset: $hoursLabelsInset, daysCount: displayMode == .day ? 1 : 3, events: viewModel.getEvents(from: date, displayMode: displayMode, selectedDate: selectedDate), reminders: viewModel.getReminders(from: date, displayMode: displayMode, selectedDate: selectedDate), updateID: updateID, isDragging: $isDragging, dayEventBuilder: dayEventBuilder)
                                 .padding(.top, 8)
                                 .background(theme.day.background)
                         }
@@ -176,7 +176,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                         VStack(spacing: 0) {
                             weekSwitcherDayFooterBuilder(weekSwitcherDayFooterParams(selectedDate: date, daysCount: 2))
                             
-                            DayLayout(selectedDate: $selectedDate, currentDate: date, hoursLabelsInset: $hoursLabelsInset, daysCount: 2, events: viewModel.getEvents(from: date, displayMode: displayMode, selectedDate: selectedDate), reminders: viewModel.reminders, updateID: updateID, isDragging: $isDragging, dayEventBuilder: dayEventBuilder)
+                            DayLayout(selectedDate: $selectedDate, currentDate: date, hoursLabelsInset: $hoursLabelsInset, daysCount: 2, events: viewModel.getEvents(from: date, displayMode: displayMode, selectedDate: selectedDate), reminders: viewModel.getReminders(from: date, displayMode: displayMode, selectedDate: selectedDate), updateID: updateID, isDragging: $isDragging, dayEventBuilder: dayEventBuilder)
                                 .padding(.top, 8)
                                 .background(theme.day.background)
                         }
@@ -208,7 +208,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                         VStack(spacing: 0) {
                             weekSwitcherDayFooterBuilder(weekSwitcherDayFooterParams(selectedDate: date, daysCount: 3))
                             
-                            DayLayout(selectedDate: $selectedDate, currentDate: date, hoursLabelsInset: $hoursLabelsInset, daysCount: 3, events: viewModel.getEvents(from: date, displayMode: displayMode, selectedDate: selectedDate), reminders: viewModel.reminders, updateID: updateID, isDragging: $isDragging, dayEventBuilder: dayEventBuilder)
+                            DayLayout(selectedDate: $selectedDate, currentDate: date, hoursLabelsInset: $hoursLabelsInset, daysCount: 3, events: viewModel.getEvents(from: date, displayMode: displayMode, selectedDate: selectedDate), reminders: viewModel.getReminders(from: date, displayMode: displayMode, selectedDate: selectedDate), updateID: updateID, isDragging: $isDragging, dayEventBuilder: dayEventBuilder)
                                 .padding(.top, 8)
                                 .background(theme.day.background)
                         }

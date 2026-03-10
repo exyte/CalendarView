@@ -17,7 +17,7 @@ struct FieldCalendarSelection: View {
         HStack(alignment: .top) {
             VStack {
                 HStack {
-                    Text("Calendar")
+                    Text("Calendar*")
                     Spacer()
                     if let title = selectedCalendar?.title {
                         Text(title)

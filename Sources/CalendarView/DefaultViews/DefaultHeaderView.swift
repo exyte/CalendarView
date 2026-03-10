@@ -44,13 +44,6 @@ public struct DefaultHeaderView: View {
             .styleLikeButton()
 
             Button {
-
-            } label: {
-                Image(.search)
-            }
-            .styleLikeButton()
-
-            Button {
                 params.tapAddEventClosure()
             } label: {
                 Image(.add)
@@ -83,6 +76,7 @@ public struct DefaultHeaderView: View {
             VStack(alignment: .leading) {
                 makeModeSwitcherButton("Month", .month, .month)
                 makeModeSwitcherButton("Day", .day, .day)
+                makeModeSwitcherButton("2 Day", .three, .twoDays)
                 makeModeSwitcherButton("3 Day", .three, .threeDays)
             }
             .padding(18, 10)

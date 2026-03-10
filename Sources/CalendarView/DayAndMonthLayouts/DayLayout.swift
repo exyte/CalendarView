@@ -39,6 +39,7 @@ public struct DayLayout<Content: View>: View {
         self.nonAllDayEvents = isAllDayGrouped[false] ?? []
         self.nonAllDayEventsByDay = daysCount == 1 ? [currentDate: nonAllDayEvents] : nonAllDayEvents.groupedByDay()
         self.allDayEventsByDay = daysCount == 1 ? [currentDate: allDayEvents] : getAllDayEventsByDate()
+        self.remindersByDay = daysCount == 1 ? [currentDate: reminders] : reminders.groupedByDay()
     }
     
     private let allDaysViewMaxHeight: CGFloat = 90.0
@@ -55,6 +56,7 @@ public struct DayLayout<Content: View>: View {
     var allDayEventsByDay: [Date: [CalendarEvent]] = [:]
     var nonAllDayEvents: [CalendarEvent]
     var nonAllDayEventsByDay: [Date: [CalendarEvent]] = [:]
+    var remindersByDay: [Date: [CalendarReminder]] = [:]
 
     let horizontalPadding = 8.0
 
@@ -194,7 +196,7 @@ public struct DayLayout<Content: View>: View {
                 theme.day.separators.frame(width: 1)
                 GeometryReader { g in
                     let date = currentDate.adding(.day, value: i).startOfDay
-                    DayEventsLayout(events: nonAllDayEventsByDay[date] ?? [], reminders: reminders, size: g.size, horSpacing: customizationParams.horSpacing, verSpacing: customizationParams.verSpacing, dayEventBuilder: dayEventBuilder)
+                    DayEventsLayout(events: nonAllDayEventsByDay[date] ?? [], reminders: remindersByDay[date] ?? [], size: g.size, horSpacing: customizationParams.horSpacing, verSpacing: customizationParams.verSpacing, dayEventBuilder: dayEventBuilder)
                 }
             }
         }
@@ -224,6 +226,14 @@ public struct DayLayout<Content: View>: View {
 
 extension Sequence where Element == CalendarEvent {
     func groupedByDay() -> [Date: [CalendarEvent]] {
+        Dictionary(grouping: self) {
+            $0.startDate.startOfDay
+        }
+    }
+}
+
+extension Sequence where Element == CalendarReminder {
+    func groupedByDay() -> [Date: [CalendarReminder]] {
         Dictionary(grouping: self) {
             $0.startDate.startOfDay
         }

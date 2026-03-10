@@ -94,9 +94,9 @@ struct CreateEventView: View {
                     }
                 } label: {
                     Text("Create")
-                        .systemFont(17, .semibold, event.title.isEmpty ? .gray : .blue.opacity(1))
+                        .systemFont(17, .semibold, event.title.isEmpty || event.calendarID.isEmpty ? .gray : .blue.opacity(1))
                 }
-                .disabled(event.title.isEmpty)
+                .disabled(event.title.isEmpty || event.calendarID.isEmpty)
             }
         }
     }
@@ -160,7 +160,7 @@ struct EditCalendarEntityView<Entity: CalendarEntity>: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                TextField("Title", text: $entity.title)
+                TextField("Title*", text: $entity.title)
                 
                 Color.blue.opacity(0.3)
                     .frame(height: 1)
