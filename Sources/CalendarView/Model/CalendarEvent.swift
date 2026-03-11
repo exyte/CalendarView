@@ -80,10 +80,6 @@ public struct CalendarEvent: CalendarEntity, Hashable {
         
         return isSameDay
     }
-    
-//    static public func ==(left:CalendarEvent, right:CalendarEvent) -> Bool {
-//        return left.id == right.id
-//    }
 }
 
 extension UIImpactFeedbackGenerator.FeedbackStyle: Codable {
