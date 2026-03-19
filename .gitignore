@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+CalendarViewExample/.DS_Store
+
+# Xcode user data
+# Ignore user interface state snapshots
+*.xcuserstate
+
+# Ignore per-user data inside Xcode project/workspace bundles
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+
+# Ignore debugger breakpoints lists
+**/xcdebugger/Breakpoints_v2.xcbkptlist
+
