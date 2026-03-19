@@ -113,6 +113,8 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     
     @State private var currentZoom = 0.0
     @State private var totalZoom = 4.0
+    @State private var pinchAnchor: CGFloat = 0.5
+    @State private var lastAppliedHoursToFit: CGFloat = 4.0
 
     var idForUpdate: UUID = UUID()
 
@@ -189,6 +191,10 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
             EventDetailsView(entity: entity.entity)
                 .environmentObject(viewModel)
         }
+        .onAppear {
+            customizationParams.hoursToFit = totalZoom
+            lastAppliedHoursToFit = totalZoom
+        }
     }
 
     private var dayLayoutView: some View {
@@ -206,13 +212,20 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                     VStack(spacing: 0) {
                         weekSwitcherDayFooterBuilder(weekSwitcherDayFooterParams(date: date, daysCount: displayMode.rawValue))
 
-                        DayLayout(hoursLabelsInset: $hoursLabelsInset, anchorDate: date, daysCount: displayMode.rawValue, events: viewModel.getEvents(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate), reminders: viewModel.getReminders(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate), isScrollDisabled: isDragging, updateID: updateID, dayEventBuilder: dayEventBuilder)
+                        DayLayout(hoursLabelsInset: $hoursLabelsInset, anchorDate: date, daysCount: displayMode.rawValue, events: viewModel.getEvents(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate), reminders: viewModel.getReminders(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate), isScrollDisabled: isDragging, updateID: updateID, pinchAnchor: pinchAnchor, dayEventBuilder: dayEventBuilder)
                             .padding(.top, 8)
                             .background(theme.day.background)
                     }
                 }
             }
             .simultaneousGesture(magnifyGesture)
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 0, coordinateSpace: .local)
+                    .onChanged { value in
+                        let h = max(1, g.size.height)
+                        pinchAnchor = max(0, min(1, value.location.y / h))
+                    }
+            )
         }
         .padding(.top, -8)
     }
@@ -221,16 +234,21 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         MagnifyGesture()
             .onChanged { value in
                 isDragging = true
-                currentZoom = (value.magnification - 1) * 3
-                let hoursToFit = max(3.0, min(currentZoom + totalZoom, 12.0))
-                customizationParams.hoursToFit = hoursToFit
-                updateID = UUID()
+                let delta = (value.magnification - 1) * 3
+                let desired = max(3.0, min(totalZoom - delta, 12.0))
+                if abs(desired - lastAppliedHoursToFit) > 0.05 {
+                    customizationParams.hoursToFit = desired
+                    lastAppliedHoursToFit = desired
+                    updateID = UUID()
+                }
             }
             .onEnded { value in
-                totalZoom += currentZoom
-                totalZoom = max(3.0, min(12.0, totalZoom))
+                let delta = (value.magnification - 1) * 3
+                totalZoom = max(3.0, min(totalZoom - delta, 12.0))
                 currentZoom = 0
-                isDragging = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                    isDragging = false
+                }
             }
     }
 
@@ -285,3 +303,4 @@ struct CalendarEntityWrapper: Identifiable {
         self.entity = entity
     }
 }
+

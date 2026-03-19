@@ -22,7 +22,7 @@ public struct DayLayout<Content: View>: View {
     var updateID: UUID
 
     @ViewBuilder var dayEventBuilder: (any CalendarEntity)->Content
-    
+
     private struct ScrollInfo: Equatable {
         let yOffset: CGFloat
         let maxOffset: CGFloat
@@ -32,8 +32,10 @@ public struct DayLayout<Content: View>: View {
     @State private var targetOffset = CGFloat.zero
     @State private var scrollInfo: ScrollInfo = ScrollInfo(yOffset: 0, maxOffset: 100)
     @State private var isScrolling = false
+    @State private var lastHours: CGFloat = 12
+    var pinchAnchor: CGFloat = 0.5
 
-    init(hoursLabelsInset: Binding<CGFloat>, anchorDate: Date, daysCount: Int, events: [CalendarEvent], reminders: [CalendarReminder], isScrollDisabled: Bool, updateID: UUID, dayEventBuilder: @escaping (any CalendarEntity) -> Content) {
+    init(hoursLabelsInset: Binding<CGFloat>, anchorDate: Date, daysCount: Int, events: [CalendarEvent], reminders: [CalendarReminder], isScrollDisabled: Bool, updateID: UUID, pinchAnchor: CGFloat = 0.5, dayEventBuilder: @escaping (any CalendarEntity) -> Content) {
         self._hoursLabelsInset = hoursLabelsInset
         self.anchorDate = anchorDate
         self.daysCount = daysCount
@@ -42,6 +44,7 @@ public struct DayLayout<Content: View>: View {
         self.updateID = updateID
         self.isScrollDisabled = isScrollDisabled
         self.dayEventBuilder = dayEventBuilder
+        self.pinchAnchor = pinchAnchor
 
         let isAllDayGrouped = Dictionary(grouping: events, by: \.isAllDay)
         self.allDayEvents = isAllDayGrouped[true] ?? []
@@ -99,16 +102,36 @@ public struct DayLayout<Content: View>: View {
                     }
                     .scrollDisabled(isScrollDisabled)
                     .onChange(of: updateID) {
-                        if !isScrollDisabled {
+                        // When zooming, keep the content under the viewport center in place
+                        if isScrollDisabled {
+                            var t = Transaction()
+                            t.disablesAnimations = true
+                            withTransaction(t) {
+                                let focalY = max(0, min(global.size.height, pinchAnchor * global.size.height))
+                                let centerY = scrollInfo.yOffset + focalY
+                                let gridTop = hourTextHeight
+                                let hoursOld = lastHours
+                                let hoursNew = customizationParams.hoursToFit
+                                let oneHourOld = global.size.height / max(3.0, min(12.0, hoursOld))
+                                let oneHourNew = global.size.height / max(3.0, min(12.0, hoursNew))
+                                // Compute old/new hour index at focal point (accounting for top inset) and adjust offset to keep it under the fingers
+                                let hourIndexAtFocal = max(0, min(24, (centerY - gridTop) / oneHourOld))
+                                let newCenterY = hourIndexAtFocal * oneHourNew + gridTop
+                                let desiredOffset = max(0, min(newCenterY - focalY, scrollInfo.maxOffset))
+                                targetOffset = desiredOffset.rounded()
+                                scrollPosition.scrollTo(y: targetOffset)
+                                lastHours = hoursNew
+                            }
+                        } else {
                             proxy.scrollTo(firstOccupiedHour, anchor: .top)
+                            lastHours = customizationParams.hoursToFit
                         }
                     }
                     .onChange(of: scrollInfo, { old, new in
                         if isScrollDisabled {
-                            let offset = targetOffset + (new.maxOffset - old.maxOffset) / 2
-                            let yOffset = max(0, min(offset.rounded(), scrollInfo.maxOffset))
-                            if yOffset != targetOffset {
-                                targetOffset = yOffset
+                            let clamped = max(0, min(targetOffset, new.maxOffset))
+                            if clamped != targetOffset {
+                                targetOffset = clamped
                             }
                         }
                     })
@@ -126,7 +149,11 @@ public struct DayLayout<Content: View>: View {
                     }
                     .task(id: targetOffset) {
                         if !isScrolling && targetOffset != scrollInfo.yOffset {
-                            scrollPosition.scrollTo(y: targetOffset)
+                            var t = Transaction()
+                            t.disablesAnimations = true
+                            withTransaction(t) {
+                                scrollPosition.scrollTo(y: targetOffset)
+                            }
                         }
                     }
                     .task(id: scrollInfo) {
@@ -139,6 +166,9 @@ public struct DayLayout<Content: View>: View {
                     }
                 }
             }
+        }
+        .onAppear {
+            lastHours = customizationParams.hoursToFit
         }
         .onChange(of: hourLabelsSize) {
             hoursLabelsInset = hourLabelsSize.width + 2 * horizontalPadding
