@@ -13,6 +13,7 @@ public struct DayLayout<Content: View>: View {
     @Environment(\.showEventDetailsClosure) var showEventDetailsClosure
 
     @Binding var hoursLabelsInset: CGFloat
+    @Binding var isScrolling: Bool
 
     var anchorDate: Date
     var daysCount: Int
@@ -31,12 +32,12 @@ public struct DayLayout<Content: View>: View {
     @State private var scrollPosition = ScrollPosition()
     @State private var targetOffset = CGFloat.zero
     @State private var scrollInfo: ScrollInfo = ScrollInfo(yOffset: 0, maxOffset: 100)
-    @State private var isScrolling = false
     @State private var lastHours: CGFloat = 12
     var pinchAnchor: CGFloat = 0.5
 
-    init(hoursLabelsInset: Binding<CGFloat>, anchorDate: Date, daysCount: Int, events: [CalendarEvent], reminders: [CalendarReminder], isScrollDisabled: Bool, updateID: UUID, pinchAnchor: CGFloat = 0.5, dayEventBuilder: @escaping (any CalendarEntity) -> Content) {
+    init(hoursLabelsInset: Binding<CGFloat>, isScrolling: Binding<Bool>, anchorDate: Date, daysCount: Int, events: [CalendarEvent], reminders: [CalendarReminder], isScrollDisabled: Bool, updateID: UUID, pinchAnchor: CGFloat = 0.5, dayEventBuilder: @escaping (any CalendarEntity) -> Content) {
         self._hoursLabelsInset = hoursLabelsInset
+        self._isScrolling = isScrolling
         self.anchorDate = anchorDate
         self.daysCount = daysCount
         self.events = events

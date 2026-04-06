@@ -104,6 +104,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     @State var updateID = UUID() // triggers downstream updates
     
     @State var isDragging: Bool = false
+    @State var isScrolling = false
     @State var currentPage: Int = 0
 
     // layout helpers
@@ -201,6 +202,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         GeometryReader { g in
             InfiniteTabPageView(currentPage: $currentPage,
                                 isDragging: $isDragging,
+                                isScrolling: isScrolling,
                                 width: g.size.width,
                                 didEndAnimation: { direction in
                 let date = fullscreenDate.adding(.day, value: direction)
@@ -212,7 +214,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                     VStack(spacing: 0) {
                         weekSwitcherDayFooterBuilder(weekSwitcherDayFooterParams(date: date, daysCount: displayMode.rawValue))
 
-                        DayLayout(hoursLabelsInset: $hoursLabelsInset, anchorDate: date, daysCount: displayMode.rawValue, events: viewModel.getEvents(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate), reminders: viewModel.getReminders(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate), isScrollDisabled: isDragging, updateID: updateID, pinchAnchor: pinchAnchor, dayEventBuilder: dayEventBuilder)
+                        DayLayout(hoursLabelsInset: $hoursLabelsInset, isScrolling: $isScrolling, anchorDate: date, daysCount: displayMode.rawValue, events: viewModel.getEvents(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate), reminders: viewModel.getReminders(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate), isScrollDisabled: isDragging, updateID: updateID, pinchAnchor: pinchAnchor, dayEventBuilder: dayEventBuilder)
                             .padding(.top, 8)
                             .background(theme.day.background)
                     }
