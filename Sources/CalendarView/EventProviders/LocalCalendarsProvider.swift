@@ -7,22 +7,22 @@
 
 import SwiftUI
 
-open class LocalCalendarsProvider: EditableCalendarsProvider {
+public final class LocalCalendarsProvider: EditableCalendarsProvider {
     private let calendarStore = CodableStore<ProviderCalendar>()
     private let eventStore = CalendarEntityStore<CalendarEvent>()
     private let reminderStore = CalendarEntityStore<CalendarReminder>()
 
     public init() {}
     
-    open func getCalendars() async throws -> [ProviderCalendar] {
+    public func getCalendars() async throws -> [ProviderCalendar] {
         try await calendarStore.load()
     }
 
-    open func getEvents(from startDate: Date, to endDate: Date, selectedCalendarIDs: [String]) async throws -> [CalendarEvent] {
+    public func getEvents(from startDate: Date, to endDate: Date, selectedCalendarIDs: [String]) async throws -> [CalendarEvent] {
         try await eventStore.events(from: startDate, to: endDate, calendarIDs: selectedCalendarIDs)
     }
 
-    open func getReminders(from startDate: Date, to endDate: Date, selectedCalendarIDs: [String]) async throws -> [CalendarReminder] {
+    public func getReminders(from startDate: Date, to endDate: Date, selectedCalendarIDs: [String]) async throws -> [CalendarReminder] {
         try await reminderStore.events(from: startDate, to: endDate, calendarIDs: selectedCalendarIDs)
     }
 
@@ -34,25 +34,25 @@ open class LocalCalendarsProvider: EditableCalendarsProvider {
         }
     }
 
-    open func addEvent(_ event: CalendarEvent) {
+    public func addEvent(_ event: CalendarEvent) {
         Task {
             try await eventStore.add(event)
         }
     }
 
-    open func addReminder(_ reminder: CalendarReminder) {
+    public func addReminder(_ reminder: CalendarReminder) {
         Task {
             try await reminderStore.add(reminder)
         }
     }
 
-    open func updateEvent(_ event: CalendarEvent, oldStartDate: Date) {
+    public func updateEvent(_ event: CalendarEvent, oldStartDate: Date) {
         Task {
             try await eventStore.update(event, oldStartDate: oldStartDate)
         }
     }
 
-    open func updateReminder(_ reminder: CalendarReminder, oldStartDate: Date) {
+    public func updateReminder(_ reminder: CalendarReminder, oldStartDate: Date) {
         Task {
             try await reminderStore.update(reminder, oldStartDate: oldStartDate)
         }

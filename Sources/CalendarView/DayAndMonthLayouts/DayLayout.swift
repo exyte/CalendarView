@@ -14,25 +14,26 @@ public struct DayLayout<Content: View>: View {
 
     @Binding var selectedDate: Date
     @Binding var hoursLabelsInset: CGFloat
+
+    var currentDate: Date
     var daysCount: Int
     var events: [CalendarEvent]
     var reminders: [CalendarReminder]
+    var isDragging: Bool
     var updateID: UUID
-    @ViewBuilder var dayEventBuilder: (any CalendarEntity)->Content
     
-    var currentDate: Date
-    @Binding var isDragging: Bool
+    @ViewBuilder var dayEventBuilder: (any CalendarEntity)->Content
 
-    init(selectedDate: Binding<Date>, currentDate: Date, hoursLabelsInset: Binding<CGFloat>, daysCount: Int, events: [CalendarEvent], reminders: [CalendarReminder], updateID: UUID, isDragging: Binding<Bool>, dayEventBuilder: @escaping (any CalendarEntity) -> Content) {
+    init(selectedDate: Binding<Date>, hoursLabelsInset: Binding<CGFloat>, currentDate: Date, daysCount: Int, events: [CalendarEvent], reminders: [CalendarReminder], isDragging: Bool, updateID: UUID, dayEventBuilder: @escaping (any CalendarEntity) -> Content) {
         self._selectedDate = selectedDate
-        self.currentDate = currentDate
         self._hoursLabelsInset = hoursLabelsInset
+        self.currentDate = currentDate
         self.daysCount = daysCount
         self.events = events
         self.reminders = reminders
         self.updateID = updateID
+        self.isDragging = isDragging
         self.dayEventBuilder = dayEventBuilder
-        self._isDragging = isDragging
 
         let isAllDayGrouped = Dictionary(grouping: events, by: \.isAllDay)
         self.allDayEvents = isAllDayGrouped[true] ?? []
@@ -166,15 +167,16 @@ public struct DayLayout<Content: View>: View {
                                     }
                                 }
                             }
-                            
                         }
                     }
-                    .background(GeometryReader {geo -> Color in
-                        DispatchQueue.main.async {
-                            self.allDaysViewHeight[i] = geo.size.height
+                    .background {
+                        GeometryReader { geo -> Color in
+                            DispatchQueue.main.async {
+                                self.allDaysViewHeight[i] = geo.size.height
+                            }
+                            return Color.clear
                         }
-                        return Color.clear
-                    })
+                    }
                 }
                 .frame(height: min(allDaysViewHeight.values.max() ?? 0, allDaysViewMaxHeight))
                 .scrollBounceBehavior(.basedOnSize)
@@ -217,7 +219,7 @@ public struct DayLayout<Content: View>: View {
             let allDayEvents = allDayEvents
                 .filter{ $0.startDate <= startDate && $0.endDate >= startDate }
             
-            allDayEventsByDay[currentDate.startOfDay] = Array(Set(allDayEvents)).sorted(by: { $0.id < $1.id})
+            allDayEventsByDay[currentDate.startOfDay] = Array(Set(allDayEvents)).sorted(by: \.id)
         }
         
         return allDayEventsByDay

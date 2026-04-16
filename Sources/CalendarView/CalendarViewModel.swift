@@ -14,15 +14,17 @@ class CalendarViewModel: ObservableObject {
     @Published public var calendars: [ProviderCalendar] = []
     @Published public var deselectedCalendarIDs: [String] = []
 
+    static let defaultProviders: [CalendarsProvider] = [AppleCalendarsProvider(), LocalCalendarsProvider()]
+
     private var eventProviders: [CalendarsProvider] = []
     private var calendarSelectionStore = CalendarSelectionStore()
-    
+    private let preloadSize: Int = 4
+
     @Published var didEndAnimating: Int = 0
 
     init(providers: [CalendarsProvider]) {
         if providers.isEmpty {
-            eventProviders.append(AppleCalendarsProvider())
-            eventProviders.append(LocalCalendarsProvider())
+            eventProviders = CalendarViewModel.defaultProviders
         } else {
             eventProviders.append(contentsOf: providers)
         }
@@ -45,8 +47,8 @@ class CalendarViewModel: ObservableObject {
     private func fetchEvents(_ interval: DateInterval, selectedIDs: [String]) async -> [CalendarEvent] {
         var resultE = [CalendarEvent]()
         for eventProvider in eventProviders {
-            let start = interval.start.adding(.day, value: -4)
-            let end = interval.end.adding(.day, value: 4)
+            let start = interval.start.adding(.day, value: -preloadSize)
+            let end = interval.end.adding(.day, value: preloadSize)
             if let providerResult = try? await eventProvider.getEvents(from: start, to: end, selectedCalendarIDs: selectedIDs) {
                 resultE.append(contentsOf: providerResult)
             }
@@ -57,8 +59,8 @@ class CalendarViewModel: ObservableObject {
     private func fetchReminders(_ interval: DateInterval, selectedIDs: [String]) async -> [CalendarReminder] {
         var resultR = [CalendarReminder]()
         for eventProvider in eventProviders {
-            let start = interval.start.adding(.day, value: -4)
-            let end = interval.end.adding(.day, value: 4)
+            let start = interval.start.adding(.day, value: -preloadSize)
+            let end = interval.end.adding(.day, value: preloadSize)
             if let providerResult = try? await eventProvider.getReminders(from: start, to: end, selectedCalendarIDs: selectedIDs) {
                 resultR.append(contentsOf: providerResult)
             }
@@ -165,8 +167,8 @@ class CalendarViewModel: ObservableObject {
         var events = self.events
             .filter { !$0.isAllDay }
             .filter { $0.repeatType == .never }
-            .filter{ $0.startDate >= startDate && $0.startDate <= endDate }
-        
+            .filter { $0.startDate >= startDate && $0.startDate <= endDate }
+
         for i in 0..<displayMode.rawValue {
             let currentDate = date.adding(.day, value: i)
             let interval = CalendarDisplayMode.day.interval(currentDate)
@@ -174,8 +176,8 @@ class CalendarViewModel: ObservableObject {
             let allDayEvents = self.events
                 .filter { $0.isAllDay }
                 .filter { $0.repeatType == .never }
-                .filter{ $0.startDate <= startDate && $0.endDate >= startDate }
-            
+                .filter { $0.startDate <= startDate && $0.endDate >= startDate }
+
             events.append(contentsOf: allDayEvents)
         }
         
@@ -194,7 +196,7 @@ class CalendarViewModel: ObservableObject {
         let endDate = interval.end
         var reminders = self.reminders
             .filter { $0.repeatType == .never }
-            .filter{ $0.startDate >= startDate && $0.startDate <= endDate }
+            .filter { $0.startDate >= startDate && $0.startDate <= endDate }
         
         let repeatReminders = self.reminders
             .filter { $0.repeatType != .never }

@@ -27,6 +27,18 @@ struct InfiniteTabPageView<Content: View>: View {
         self._isDragging = isDragging
     }
     
+    var body: some View {
+        ZStack {
+            pageView(index: -1)
+            pageView(index: 0)
+            pageView(index: 1)
+        }
+        .offset(x: translation + offset)
+        .contentShape(Rectangle())
+        .gesture(dragGesture)
+        .clipped()
+    }
+
     private var dragGesture: some Gesture {
         DragGesture(minimumDistance: 5)
             .updating($translation) { value, state, _ in
@@ -59,40 +71,30 @@ struct InfiniteTabPageView<Content: View>: View {
                 }
             }
     }
-    
-    var body: some View {
-        ZStack {
-            content(pageIndex(currentPage + 2) - 1)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .offset(x: CGFloat(1 - offsetIndex(currentPage - 1)) * width)
 
-            content(pageIndex(currentPage + 1) + 0)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .offset(x: CGFloat(1 - offsetIndex(currentPage + 1)) * width)
-
-            content(pageIndex(currentPage + 0) + 1)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .offset(x: CGFloat(1 - offsetIndex(currentPage)) * width)
+    private func pageView(index: Int) -> some View {
+        var offset: Int {
+            if index == -1 { -1 }
+            else if index == 0 { 1 }
+            else { 0 }
         }
-        .contentShape(Rectangle())
-        .offset(x: translation)
-        .offset(x: offset)
-        .gesture(dragGesture)
-        .clipped()
+
+        return content(pageIndex(currentPage + (1 - index)) + index)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .offset(x: CGFloat(1 - offsetIndex(currentPage + offset)) * width)
     }
-    
+
     private func pageIndex(_ x: Int) -> Int {
         // 0 0 0 3 3 3 6 6 6 ...
         Int((CGFloat(x) / 3).rounded(.down)) * 3
     }
-    
-    
+
     private func offsetIndex(_ x: Int) -> Int {
         // 0 1 2 0 1 2 0 1 2 ...
         if x >= 0 {
             return x % 3
         } else {
-            return (x + 1) % 3 + 2
+            return (x % 3 + 3) % 3
         }
     }
 }

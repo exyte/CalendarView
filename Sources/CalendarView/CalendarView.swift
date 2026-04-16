@@ -51,14 +51,14 @@ public class CalendarViewCustomizationParams {
 
 public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View, Header: View, Footer: View>: View {
 
+    @StateObject var viewModel: CalendarViewModel
+
     @ViewBuilder var dayEventBuilder: (any CalendarEntity) -> DayEvent
     @ViewBuilder var monthDayBuilder: (MonthDayBuilderParams) -> MonthDay
     @ViewBuilder var weekSwitcherDayBuilder: (WeekSwitcherDayBuilderParams) -> WeekSwitcherDay
     @ViewBuilder var headerBuilder: (HeaderBuilderParams) -> Header
     @ViewBuilder var weekSwitcherDayFooterBuilder: (weekSwitcherDayFooterParams) -> Footer
 
-    @StateObject var viewModel: CalendarViewModel
-    
     public init(
         providers: [CalendarsProvider] = [],
         dayEventBuilder: @escaping (_ calendarEvent: any CalendarEntity) -> DayEvent = {
@@ -129,110 +129,14 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
 
                 DayInWeekSwitcher(selectedDate: $selectedDate, anchorDate: $anchorDate, calendarDisplayMode: displayMode, hoursLabelsInset: hoursLabelsInset, weekSwitcherDayBuilder: weekSwitcherDayBuilder)
                     .padding(8)
-                    
             }
             .background {
                 HeaderBackgroundView(background: customizationParams.headerBackground)
             }
 
-            switch displayMode {
-            case .day:
-                GeometryReader { g in
-                    InfiniteTabPageView(width: g.size.width, currentPage: $currentPage, didEndAnimation: $viewModel.didEndAnimating, isDragging: $isDragging) { page in
-                        let date = Calendar.current.date(byAdding: .day, value: page - currentPage, to: selectedDate) ?? selectedDate
-                        
-                        VStack(spacing: 0) {
-                            weekSwitcherDayFooterBuilder(weekSwitcherDayFooterParams(selectedDate: date))
-
-                            DayLayout(selectedDate: $selectedDate, currentDate: date, hoursLabelsInset: $hoursLabelsInset, daysCount: displayMode == .day ? 1 : 3, events: viewModel.getEvents(from: date, displayMode: displayMode, selectedDate: selectedDate), reminders: viewModel.getReminders(from: date, displayMode: displayMode, selectedDate: selectedDate), updateID: updateID, isDragging: $isDragging, dayEventBuilder: dayEventBuilder)
-                                .padding(.top, 8)
-                                .background(theme.day.background)
-                        }
-                    }
-                    .simultaneousGesture(
-                        MagnifyGesture()
-                            .onChanged { value in
-                                isDragging = true
-                                currentZoom = (value.magnification - 1) * 3
-                                let hoursToFit = max(3.0, min(currentZoom + totalZoom, 12.0))
-                                customizationParams.hoursToFit = hoursToFit
-                                updateID = UUID()
-                            }
-                            .onEnded { value in
-                                totalZoom += currentZoom
-                                totalZoom = max(3.0, min(12.0, totalZoom))
-                                currentZoom = 0
-                                isDragging = false
-                            }
-                            
-                    )
-                }
-                .padding(.top, -8)
-            case .twoDays:
-                GeometryReader { g in
-                    InfiniteTabPageView(width: g.size.width, currentPage: $currentPage, didEndAnimation: $viewModel.didEndAnimating, isDragging: $isDragging) { page in
-                        let date = Calendar.current.date(byAdding: .day, value: page - currentPage, to: selectedDate) ?? selectedDate
-                        
-                        VStack(spacing: 0) {
-                            weekSwitcherDayFooterBuilder(weekSwitcherDayFooterParams(selectedDate: date, daysCount: 2))
-                            
-                            DayLayout(selectedDate: $selectedDate, currentDate: date, hoursLabelsInset: $hoursLabelsInset, daysCount: 2, events: viewModel.getEvents(from: date, displayMode: displayMode, selectedDate: selectedDate), reminders: viewModel.getReminders(from: date, displayMode: displayMode, selectedDate: selectedDate), updateID: updateID, isDragging: $isDragging, dayEventBuilder: dayEventBuilder)
-                                .padding(.top, 8)
-                                .background(theme.day.background)
-                        }
-                    }
-                    .simultaneousGesture(
-                        MagnifyGesture()
-                            .onChanged { value in
-                                isDragging = true
-                                currentZoom = (value.magnification - 1) * 3
-                                let hoursToFit = max(3.0, min(currentZoom + totalZoom, 12.0))
-                                customizationParams.hoursToFit = hoursToFit
-                                updateID = UUID()
-                            }
-                            .onEnded { value in
-                                totalZoom += currentZoom
-                                totalZoom = max(3.0, min(12.0, totalZoom))
-                                currentZoom = 0
-                                isDragging = false
-                            }
-                        
-                    )
-                }
-                .padding(.top, -8)
-            case .threeDays:
-                GeometryReader { g in
-                    InfiniteTabPageView(width: g.size.width, currentPage: $currentPage, didEndAnimation: $viewModel.didEndAnimating, isDragging: $isDragging) { page in
-                        let date = Calendar.current.date(byAdding: .day, value: page - currentPage, to: selectedDate) ?? selectedDate
-                        
-                        VStack(spacing: 0) {
-                            weekSwitcherDayFooterBuilder(weekSwitcherDayFooterParams(selectedDate: date, daysCount: 3))
-                            
-                            DayLayout(selectedDate: $selectedDate, currentDate: date, hoursLabelsInset: $hoursLabelsInset, daysCount: 3, events: viewModel.getEvents(from: date, displayMode: displayMode, selectedDate: selectedDate), reminders: viewModel.getReminders(from: date, displayMode: displayMode, selectedDate: selectedDate), updateID: updateID, isDragging: $isDragging, dayEventBuilder: dayEventBuilder)
-                                .padding(.top, 8)
-                                .background(theme.day.background)
-                        }
-                    }
-                    .simultaneousGesture(
-                        MagnifyGesture()
-                            .onChanged { value in
-                                isDragging = true
-                                currentZoom = (value.magnification - 1) * 3
-                                let hoursToFit = max(3.0, min(currentZoom + totalZoom, 12.0))
-                                customizationParams.hoursToFit = hoursToFit
-                                updateID = UUID()
-                            }
-                            .onEnded { value in
-                                totalZoom += currentZoom
-                                totalZoom = max(3.0, min(12.0, totalZoom))
-                                currentZoom = 0
-                                isDragging = false
-                            }
-                        
-                    )
-                }
-                .padding(.top, -8)
-            case .month:
+            if displayMode != .month {
+                dayLayoutView
+            } else {
                 DayInMonthSwitcher(selectedDate: $selectedDate, calendarDisplayMode: $displayMode, monthDayBuilder: monthDayBuilder)
                     .padding(.top, 8)
                     .background(theme.month.background)
@@ -283,6 +187,41 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
             EventDetailsView(entity: entity.entity)
                 .environmentObject(viewModel)
         }
+    }
+
+    private var dayLayoutView: some View {
+        GeometryReader { g in
+            InfiniteTabPageView(width: g.size.width, currentPage: $currentPage, didEndAnimation: $viewModel.didEndAnimating, isDragging: $isDragging) { page in
+                let date = Calendar.current.date(byAdding: .day, value: page - currentPage, to: selectedDate) ?? selectedDate
+
+                VStack(spacing: 0) {
+                    weekSwitcherDayFooterBuilder(weekSwitcherDayFooterParams(selectedDate: date, daysCount: displayMode.rawValue))
+
+                    DayLayout(selectedDate: $selectedDate, hoursLabelsInset: $hoursLabelsInset, currentDate: date, daysCount: displayMode.rawValue, events: viewModel.getEvents(from: date, displayMode: displayMode, selectedDate: selectedDate), reminders: viewModel.getReminders(from: date, displayMode: displayMode, selectedDate: selectedDate), isDragging: isDragging, updateID: updateID, dayEventBuilder: dayEventBuilder)
+                        .padding(.top, 8)
+                        .background(theme.day.background)
+                }
+            }
+            .simultaneousGesture(magnifyGesture)
+        }
+        .padding(.top, -8)
+    }
+
+    private var magnifyGesture: some Gesture {
+        MagnifyGesture()
+            .onChanged { value in
+                isDragging = true
+                currentZoom = (value.magnification - 1) * 3
+                let hoursToFit = max(3.0, min(currentZoom + totalZoom, 12.0))
+                customizationParams.hoursToFit = hoursToFit
+                updateID = UUID()
+            }
+            .onEnded { value in
+                totalZoom += currentZoom
+                totalZoom = max(3.0, min(12.0, totalZoom))
+                currentZoom = 0
+                isDragging = false
+            }
     }
 
     func updateData() {

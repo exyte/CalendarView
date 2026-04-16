@@ -38,20 +38,16 @@ public struct CalendarReminder: CalendarEntity {
         case .weekend:
             isSameDay = false
         case .weekly:
-            isSameDay = Calendar.current.dateComponents([.weekday], from: selectedDate).weekday ==
-                        Calendar.current.dateComponents([.weekday], from: startDate).weekday
+            isSameDay = selectedDate.getWeekday() == startDate.getWeekday()
         case .twoWeekly:
             isSameDay = false
         case .monthly:
-            isSameDay = Calendar.current.dateComponents([.day], from: selectedDate).day ==
-            Calendar.current.dateComponents([.day], from: startDate).day
+            isSameDay = selectedDate.getDay() == startDate.getDay()
         case .year:
-            isSameDay = Calendar.current.dateComponents([.month], from: selectedDate).month ==
-                        Calendar.current.dateComponents([.month], from: startDate).month &&
-                        Calendar.current.dateComponents([.day], from: selectedDate).day ==
-                        Calendar.current.dateComponents([.day], from: startDate).day
+            isSameDay = selectedDate.getMonth() == startDate.getMonth() &&
+                        selectedDate.getDay() == startDate.getDay()
         }
-        
+
         return isSameDay
     }
 

@@ -83,9 +83,7 @@ public struct DefaultHeaderView: View {
             .background(RoundedRectangle.styled(20, .white))
         } customize: {
             $0.position(.anchorRelative(.topLeading))
-                .background(.none)
                 .closeOnTapOutside(true)
-                .isBackgroundPassthrough(true)
         }
     }
 

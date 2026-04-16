@@ -28,6 +28,18 @@ extension Array {
             return lhs < rhs
         }
     }
+
+    func sorted<T1: Comparable, T2: Comparable, T3: Comparable>(
+        by primary: KeyPath<Element, T1>,
+        thenBy secondary: KeyPath<Element, T2>,
+        thenBy tertiary: KeyPath<Element, T3>
+    ) -> [Element] {
+        sorted {
+            let lhs = ($0[keyPath: primary], $0[keyPath: secondary], $0[keyPath: tertiary])
+            let rhs = ($1[keyPath: primary], $1[keyPath: secondary], $0[keyPath: tertiary])
+            return lhs < rhs
+        }
+    }
 }
 
 extension View {

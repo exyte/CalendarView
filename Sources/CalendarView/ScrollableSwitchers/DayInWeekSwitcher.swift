@@ -24,7 +24,7 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
 
     @State private var daySize: CGSize?
     @State private var items = Array(-5...5)
-    @State private var onePageitems = Array(-1...1)
+    @State private var pageItems = Array(-1...1)
     @State private var tableUpdateID = UUID()
 
     private var calendar: Calendar { Calendar.current }
@@ -49,7 +49,7 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
         }
         .onChange(of: selectedDate) { _, _ in
             self.weekCellsModel.selectedDate = selectedDate
-            onePageitems = Array(-1...1)
+            pageItems = Array(-1...1)
             items = Array(-5...5)
             tableUpdateID = UUID()
         }
@@ -58,7 +58,7 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
     @ViewBuilder
     var fullWeekView: some View {
         GeometryReader { g in
-            createSimpleInfiniteTableView(items: customizationParams.isDayInWeekSwitcherPagingEnabled ? $onePageitems : $items) { item in
+            createSimpleInfiniteTableView(items: customizationParams.isDayInWeekSwitcherPagingEnabled ? $pageItems : $items) { item in
                 HStack(spacing: 0) {
                     let startOfWeek = selectedDate.startOfWeek(customizationParams.firstDayOfWeek).startOfDay.adding(.day, value: item*7)
                     ForEach(0..<7, id: \.self) { i in

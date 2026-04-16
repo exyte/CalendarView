@@ -21,16 +21,7 @@ struct DayEventsLayout<Content: View>: View {
     private var reminderFrames: [CGRect] = []
 
     init(events: [CalendarEvent], reminders: [CalendarReminder], size: CGSize, horSpacing: CGFloat, verSpacing: CGFloat, dayEventBuilder: @escaping (any CalendarEntity) -> Content) {
-        self.events  = events.sorted {
-            if $0.duration == $1.duration {
-                if $0.title == $1.title {
-                    return $0.id < $1.id
-                } else {
-                    return $0.title < $1.title
-                }
-            }
-            return $0.duration < $1.duration
-        }
+        self.events = events.sorted(by: \.duration, thenBy: \.title, thenBy: \.id)
         self.reminders = reminders
         self.size = size
         self.horSpacing = horSpacing
@@ -150,14 +141,8 @@ fileprivate struct PartiallyOccupiedSpace {
         return occupiedColumns.count - 1
     }
     
-    mutating func countEventsInRow(with range: NSRange) -> Int {
-        var count = 0
-        for index in occupiedColumns.indices {
-            if occupiedColumns[index].isRangeInThisColumn(with: range) {
-                count += 1
-            }
-        }
-        return count
+    func countEventsInRow(with range: NSRange) -> Int {
+        occupiedColumns.filter { $0.isRangeInThisColumn(with: range) }.count
     }
 }
 
@@ -174,13 +159,8 @@ fileprivate struct PartiallyOccupiedColumn {
         return true
     }
     
-    mutating func isRangeInThisColumn(with range: NSRange) -> Bool {
-        for occupied in occupiedRanges {
-            if occupied.intersects(range) {
-                return true
-            }
-        }
-        return false
+    func isRangeInThisColumn(with range: NSRange) -> Bool {
+        occupiedRanges.contains { $0.intersects(range) }
     }
 }
 

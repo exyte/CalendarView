@@ -19,9 +19,7 @@ struct FieldTimeAndDate: View {
     
     var body: some View {
         HStack(alignment: .top) {
-            
             VStack(alignment: .leading, spacing: 8) {
-                
                 HStack {
                     Text("Time and Date")
 

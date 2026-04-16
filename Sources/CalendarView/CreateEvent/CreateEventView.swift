@@ -162,8 +162,7 @@ struct EditCalendarEntityView<Entity: CalendarEntity>: View {
             VStack(spacing: 16) {
                 TextField("Title*", text: $entity.title)
                 
-                Color.blue.opacity(0.3)
-                    .frame(height: 1)
+                SeparatorView
 
                 if let eventBinding {
                     FieldTimeAndDate(isAllDay: eventBinding.isAllDay, startsDay: $entity.startDate, endsDay: eventBinding.endDate)
@@ -172,24 +171,21 @@ struct EditCalendarEntityView<Entity: CalendarEntity>: View {
                     FieldTimeOrDate(type: .time, date: $entity.startDate)
                 }
                 
-                Color.blue.opacity(0.3)
-                    .frame(height: 1)
+                SeparatorView
 
                 FieldCalendarSelection(selectedCalendar: $selectedCalendar)
 
                 FieldEnumPicker(eventFieldType: .repeatField, currentValue: $entity.repeatType)
 
-                if let _ = entity as? CalendarEvent { } else {
+                if ((entity as? CalendarEvent) == nil) {
                     FieldEnumPicker(eventFieldType: .priority, currentValue: $entity.priorityType)
                 }
                 
-                Color.blue.opacity(0.3)
-                    .frame(height: 1)
-                
+                SeparatorView
+
                 FieldDescription(description: $entity.notes)
                 
-                Color.blue.opacity(0.3)
-                    .frame(height: 1)
+                SeparatorView
             }
             .scrollIndicators(.hidden)
             .scrollBounceBehavior(.basedOnSize)
@@ -202,6 +198,11 @@ struct EditCalendarEntityView<Entity: CalendarEntity>: View {
                 entity.calendarColor = selectedCalendar.color
             }
         }
+    }
+
+    var SeparatorView: some View {
+        Color.blue.opacity(0.3)
+            .frame(height: 1)
     }
 }
 
