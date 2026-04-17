@@ -26,6 +26,37 @@ public protocol CalendarEntity: Equatable, Identifiable, Sendable, Codable {
     var vibrationType: VibrationType { get set }
 
     var entityType: EntityType { get }
+
+    func isRepeatToday(selectedDate: Date) -> Bool
+}
+
+extension CalendarEntity {
+    public func isRepeatToday(selectedDate: Date) -> Bool {
+        guard repeatType != .never else { return false }
+        var isSameDay: Bool = false
+
+        switch repeatType {
+        case .never:
+            isSameDay = false
+        case .daily:
+            isSameDay = true
+        case .workingDay:
+            isSameDay = false
+        case .weekend:
+            isSameDay = false
+        case .weekly:
+            isSameDay = selectedDate.getWeekday() == startDate.getWeekday()
+        case .twoWeekly:
+            isSameDay = false
+        case .monthly:
+            isSameDay = selectedDate.getDay() == startDate.getDay()
+        case .year:
+            isSameDay = selectedDate.getMonth() == startDate.getMonth() &&
+                        selectedDate.getDay() == startDate.getDay()
+        }
+
+        return isSameDay
+    }
 }
 
 

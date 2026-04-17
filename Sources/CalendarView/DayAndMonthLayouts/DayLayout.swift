@@ -12,27 +12,25 @@ public struct DayLayout<Content: View>: View {
     @Environment(\.calendarCustomizationParams) var customizationParams
     @Environment(\.showEventDetailsClosure) var showEventDetailsClosure
 
-    @Binding var selectedDate: Date
     @Binding var hoursLabelsInset: CGFloat
 
     var currentDate: Date
     var daysCount: Int
     var events: [CalendarEvent]
     var reminders: [CalendarReminder]
-    var isDragging: Bool
+    var isScrollDisabled: Bool
     var updateID: UUID
     
     @ViewBuilder var dayEventBuilder: (any CalendarEntity)->Content
 
-    init(selectedDate: Binding<Date>, hoursLabelsInset: Binding<CGFloat>, currentDate: Date, daysCount: Int, events: [CalendarEvent], reminders: [CalendarReminder], isDragging: Bool, updateID: UUID, dayEventBuilder: @escaping (any CalendarEntity) -> Content) {
-        self._selectedDate = selectedDate
+    init(hoursLabelsInset: Binding<CGFloat>, currentDate: Date, daysCount: Int, events: [CalendarEvent], reminders: [CalendarReminder], isScrollDisabled: Bool, updateID: UUID, dayEventBuilder: @escaping (any CalendarEntity) -> Content) {
         self._hoursLabelsInset = hoursLabelsInset
         self.currentDate = currentDate
         self.daysCount = daysCount
         self.events = events
         self.reminders = reminders
         self.updateID = updateID
-        self.isDragging = isDragging
+        self.isScrollDisabled = isScrollDisabled
         self.dayEventBuilder = dayEventBuilder
 
         let isAllDayGrouped = Dictionary(grouping: events, by: \.isAllDay)
@@ -89,7 +87,7 @@ public struct DayLayout<Content: View>: View {
                             .padding(.top, hourTextHeight)
                         }
                     }
-                    .scrollDisabled(isDragging)
+                    .scrollDisabled(isScrollDisabled)
                     .onChange(of: updateID) {
                         proxy.scrollTo(firstOccupiedHour, anchor: .top)
                     }
@@ -151,19 +149,9 @@ public struct DayLayout<Content: View>: View {
                         } else {
                             ForEach(Array(stride(from: 0, to: eventsCount, by: 2)), id: \.self) { index in
                                 HStack(spacing: spaceBetweenDays) {
-                                    dayEventBuilder(events[index])
-                                        .frame(height: 30)
-                                        .fixedSize(horizontal: false, vertical: true)
-                                        .onTapGesture {
-                                            showEventDetailsClosure(events[index])
-                                        }
+                                    allDayEventsBuilderView(index: index, events: events)
                                     if index + 1 < eventsCount {
-                                        dayEventBuilder(events[index + 1])
-                                            .frame(height: 30)
-                                            .fixedSize(horizontal: false, vertical: true)
-                                            .onTapGesture {
-                                                showEventDetailsClosure(events[index + 1])
-                                            }
+                                        allDayEventsBuilderView(index: index + 1, events: events)
                                     }
                                 }
                             }
@@ -180,7 +168,7 @@ public struct DayLayout<Content: View>: View {
                 }
                 .frame(height: min(allDaysViewHeight.values.max() ?? 0, allDaysViewMaxHeight))
                 .scrollBounceBehavior(.basedOnSize)
-                .scrollDisabled(isDragging)
+                .scrollDisabled(isScrollDisabled)
             }
         }
         .padding(.trailing, customizationParams.horSpacing)
@@ -190,6 +178,15 @@ public struct DayLayout<Content: View>: View {
                 .systemFont(13, theme.day.hourText)
                 .padding(8, 4)
         }
+    }
+
+    private func allDayEventsBuilderView(index: Int, events: [CalendarEvent]) -> some View {
+        dayEventBuilder(events[index])
+            .frame(height: 30)
+            .fixedSize(horizontal: false, vertical: true)
+            .onTapGesture {
+                showEventDetailsClosure(events[index])
+            }
     }
 
     var dayEventsAndRemindersView: some View {

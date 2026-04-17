@@ -14,7 +14,7 @@ struct ContentView: View {
     @State var mode = CalendarDisplayMode.day
 
     var body: some View {
-        CalendarView()
+        CalendarView(providers: CalendarDefaults.defaultProviders)
 //        { calendarEvent in
 //            ZStack {
 //                Rectangle().foregroundStyle(.red.opacity(0.1))

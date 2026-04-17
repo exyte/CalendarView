@@ -9,6 +9,10 @@ import SwiftUI
 import AnchoredPopup
 import Combine
 
+public struct CalendarDefaults {
+    public static let defaultProviders: [CalendarsProvider] = [AppleCalendarsProvider(), LocalCalendarsProvider()]
+}
+
 public struct MonthDayBuilderParams {
     public var date: Date
     public var events: [any CalendarEntity]
@@ -89,7 +93,6 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
 
     @BindableValue var selectedDate: Date = Date().startOfDay
     @BindableValue var displayMode: CalendarDisplayMode = .day
-    @BindableValue var needUpdate: UUID = UUID()
 
     @State var anchorDate: Date = Date()
     @State var showCalendarFilters = false
@@ -108,6 +111,8 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     
     @State private var currentZoom = 0.0
     @State private var totalZoom = 4.0
+
+    var idForUpdate: UUID = UUID()
 
     public var body: some View {
         VStack(spacing: 0) {
@@ -158,7 +163,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         .onChange(of: displayMode) {
             updateData()
         }
-        .onChange(of: needUpdate) {
+        .onChange(of: idForUpdate) {
             updateData()
         }
         .onReceive(viewModel.$didEndAnimating) { value in
@@ -197,7 +202,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                 VStack(spacing: 0) {
                     weekSwitcherDayFooterBuilder(weekSwitcherDayFooterParams(selectedDate: date, daysCount: displayMode.rawValue))
 
-                    DayLayout(selectedDate: $selectedDate, hoursLabelsInset: $hoursLabelsInset, currentDate: date, daysCount: displayMode.rawValue, events: viewModel.getEvents(from: date, displayMode: displayMode, selectedDate: selectedDate), reminders: viewModel.getReminders(from: date, displayMode: displayMode, selectedDate: selectedDate), isDragging: isDragging, updateID: updateID, dayEventBuilder: dayEventBuilder)
+                    DayLayout(hoursLabelsInset: $hoursLabelsInset, currentDate: date, daysCount: displayMode.rawValue, events: viewModel.getEvents(from: date, displayMode: displayMode, selectedDate: selectedDate), reminders: viewModel.getReminders(from: date, displayMode: displayMode, selectedDate: selectedDate), isScrollDisabled: isDragging, updateID: updateID, dayEventBuilder: dayEventBuilder)
                         .padding(.top, 8)
                         .background(theme.day.background)
                 }
@@ -235,12 +240,6 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     public func selectedDate(_ binding: Binding<Date>) -> CalendarView {
         var copy = self
         copy._selectedDate.bind(binding)
-        return copy
-    }
-    
-    public func needUpdate(_ binding: Binding<UUID>) -> CalendarView {
-        var copy = self
-        copy._needUpdate.bind(binding)
         return copy
     }
 

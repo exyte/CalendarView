@@ -14,8 +14,6 @@ class CalendarViewModel: ObservableObject {
     @Published public var calendars: [ProviderCalendar] = []
     @Published public var deselectedCalendarIDs: [String] = []
 
-    static let defaultProviders: [CalendarsProvider] = [AppleCalendarsProvider(), LocalCalendarsProvider()]
-
     private var eventProviders: [CalendarsProvider] = []
     private var calendarSelectionStore = CalendarSelectionStore()
     private let preloadSize: Int = 4
@@ -23,11 +21,7 @@ class CalendarViewModel: ObservableObject {
     @Published var didEndAnimating: Int = 0
 
     init(providers: [CalendarsProvider]) {
-        if providers.isEmpty {
-            eventProviders = CalendarViewModel.defaultProviders
-        } else {
-            eventProviders.append(contentsOf: providers)
-        }
+        eventProviders = providers
     }
     
     func fetch(_ interval: DateInterval) async {

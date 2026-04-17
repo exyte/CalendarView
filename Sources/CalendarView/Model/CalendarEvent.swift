@@ -49,33 +49,6 @@ public struct CalendarEvent: CalendarEntity, Hashable {
     func toString() -> String {
         title + startDate.formatted(" HH:mm") + endDate.formatted(" - HH:mm")
     }
-    
-    func isRepeatToday (selectedDate: Date) -> Bool {
-        guard repeatType != .never else { return false }
-        var isSameDay: Bool = false
-        
-        switch repeatType {
-        case .never:
-            isSameDay = false
-        case .daily:
-            isSameDay = true
-        case .workingDay:
-            isSameDay = false
-        case .weekend:
-            isSameDay = false
-        case .weekly:
-            isSameDay = selectedDate.getWeekday() == startDate.getWeekday()
-        case .twoWeekly:
-            isSameDay = false
-        case .monthly:
-            isSameDay = selectedDate.getDay() == startDate.getDay()
-        case .year:
-            isSameDay = selectedDate.getMonth() == startDate.getMonth() &&
-                        selectedDate.getDay() == startDate.getDay()
-        }
-        
-        return isSameDay
-    }
 }
 
 extension UIImpactFeedbackGenerator.FeedbackStyle: Codable {

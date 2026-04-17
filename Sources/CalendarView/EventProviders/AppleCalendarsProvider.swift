@@ -9,12 +9,10 @@
 import SwiftUI
 
 /// Fetches events from Apple's Calendar App. Will only fetch events from accounts which Calendar App has access to. If you'd like to add more accounts, add them in Calendar App.
-open class AppleCalendarsProvider: CalendarsProvider {
+final class AppleCalendarsProvider: CalendarsProvider {
     private let eventStore = EKEventStore()
-
-    public init() {}
     
-    open func getEvents(from startDate: Date, to endDate: Date, selectedCalendarIDs: [String]) async throws -> [CalendarEvent] {
+    func getEvents(from startDate: Date, to endDate: Date, selectedCalendarIDs: [String]) async throws -> [CalendarEvent] {
         try await requestAccessIfNeeded(.event)
 
         let calendars = eventStore.calendars(for: .event).filter { selectedCalendarIDs.contains($0.calendarIdentifier) }
@@ -31,13 +29,11 @@ open class AppleCalendarsProvider: CalendarsProvider {
                 startDate: $0.startDate,
                 endDate: $0.endDate,
                 isAllDay: $0.isAllDay,
-                //priority: $0,
-                //vibration: $0,
                 isDetached: $0.isDetached)
         }
     }
 
-    open func getReminders(from startDate: Date, to endDate: Date, selectedCalendarIDs: [String]) async throws -> [CalendarReminder] {
+    func getReminders(from startDate: Date, to endDate: Date, selectedCalendarIDs: [String]) async throws -> [CalendarReminder] {
         try await requestAccessIfNeeded(.reminder)
 
         let calendars = eventStore.calendars(for: .reminder).filter { selectedCalendarIDs.contains($0.calendarIdentifier) }
@@ -83,7 +79,7 @@ open class AppleCalendarsProvider: CalendarsProvider {
         }
     }
 
-    open func getCalendars() async throws -> [ProviderCalendar] {
+    func getCalendars() async throws -> [ProviderCalendar] {
         try await requestAccessIfNeeded(.event)
 
         return eventStore.calendars(for: .event).map {
@@ -97,7 +93,7 @@ open class AppleCalendarsProvider: CalendarsProvider {
         }
     }
 
-    open func addCalendar() {
+    func addCalendar() {
         DispatchQueue.main.async {
             UIApplication.shared.open(URL(string: "App-Prefs:root=CALENDARS")!)
         }

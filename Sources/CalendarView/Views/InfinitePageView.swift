@@ -10,10 +10,10 @@ import SwiftUI
 struct InfiniteTabPageView<Content: View>: View {
     @GestureState private var translation: CGFloat = .zero
     @Binding var currentPage: Int
-    @State private var offset: CGFloat = .zero
-    
     @Binding var didEndAnimation: Int
     @Binding var isDragging: Bool
+    
+    @State private var offset: CGFloat = .zero
 
     private let width: CGFloat
     private let animationDuration: CGFloat = 0.25
@@ -85,12 +85,12 @@ struct InfiniteTabPageView<Content: View>: View {
     }
 
     private func pageIndex(_ x: Int) -> Int {
-        // 0 0 0 3 3 3 6 6 6 ...
+        // Used to determine on which page each of the 3 content elements should be displayed.
         Int((CGFloat(x) / 3).rounded(.down)) * 3
     }
 
     private func offsetIndex(_ x: Int) -> Int {
-        // 0 1 2 0 1 2 0 1 2 ...
+        // Used to determine the order of the three contents in a static state.
         if x >= 0 {
             return x % 3
         } else {

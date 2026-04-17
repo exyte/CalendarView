@@ -9,6 +9,13 @@ import SwiftUI
 
 extension CalendarView {
 
+    /// trigger for updates
+    public func idForUpdate(_ idForUpdate: UUID) -> CalendarView {
+        var copy = self
+        copy.idForUpdate = idForUpdate
+        return copy
+    }
+
     /// how many hours will fit vertically in a day displayMode, default is 12
     public func hoursToFit(_ hoursToFit: CGFloat) -> CalendarView {
         if hoursToFit > 24 {

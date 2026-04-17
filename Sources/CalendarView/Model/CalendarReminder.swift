@@ -23,33 +23,6 @@ public struct CalendarReminder: CalendarEntity {
     public var vibrationType: VibrationType
 
     public var entityType: EntityType { .reminder }
-    
-    func isRepeatToday (selectedDate: Date) -> Bool {
-        guard repeatType != .never else { return false }
-        var isSameDay: Bool = false
-        
-        switch repeatType {
-        case .never:
-            isSameDay = false
-        case .daily:
-            isSameDay = true
-        case .workingDay:
-            isSameDay = false
-        case .weekend:
-            isSameDay = false
-        case .weekly:
-            isSameDay = selectedDate.getWeekday() == startDate.getWeekday()
-        case .twoWeekly:
-            isSameDay = false
-        case .monthly:
-            isSameDay = selectedDate.getDay() == startDate.getDay()
-        case .year:
-            isSameDay = selectedDate.getMonth() == startDate.getMonth() &&
-                        selectedDate.getDay() == startDate.getDay()
-        }
-
-        return isSameDay
-    }
 
     init(id: String = UUID().uuidString, calendarID: String = "", title: String = "", notes: String = "", calendarColor: Color = .gray, startDate: Date = Date(), isCompleted: Bool = false, repeatType: RepeatType = .never, alertType: AlertType = .atTimeOfEvent, priorityType: PriorityType = .none, vibrationType: VibrationType = .none) {
         self.id = id

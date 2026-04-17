@@ -17,7 +17,7 @@ extension Array {
     func sorted<T: Comparable>(by keyPath: KeyPath<Element, T>) -> [Element] {
         self.sorted { $0[keyPath: keyPath] > $1[keyPath: keyPath] }
     }
-    
+
     func sorted<T1: Comparable, T2: Comparable>(
         by primary: KeyPath<Element, T1>,
         thenBy secondary: KeyPath<Element, T2>
