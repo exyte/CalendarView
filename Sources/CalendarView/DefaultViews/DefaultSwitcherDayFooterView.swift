@@ -22,11 +22,11 @@ public struct DefaultWeekSwitcherDayFooterView: View {
     public var body: some View {
         VStack(spacing: 10) {
             HStack {
-                Text(params.selectedDate.formatted("d MMMM yyyy"))
+                Text(params.date.formatted("d MMMM yyyy"))
                     .systemFont(15, .regular, theme.main.text)
                     .lineLimit(1)
                 
-                if  params.selectedDate.startOfDay == today {
+                if  params.date.startOfDay == today {
                     Text("(Today)")
                         .systemFont(15, .semibold, theme.main.text)
                         .lineLimit(1)
@@ -38,7 +38,7 @@ public struct DefaultWeekSwitcherDayFooterView: View {
                     .frame(width: 8, height: 8)
                     .foregroundStyle(theme.main.accent)
                 
-                Text("\(viewModel.getEventsAndRemindersCount(from: params.selectedDate, displayMode: CalendarDisplayMode.init(rawValue: params.daysCount) ?? .day, selectedDate: params.selectedDate)) Events")
+                Text("\(viewModel.getEventsAndRemindersCount(from: params.date, displayMode: CalendarDisplayMode.init(rawValue: params.daysCount) ?? .day, fullscreenDate: params.date)) Events")
                     .systemFont(15, .regular, theme.main.accent)
                     .lineLimit(1)
             }

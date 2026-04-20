@@ -14,7 +14,7 @@ public struct DayLayout<Content: View>: View {
 
     @Binding var hoursLabelsInset: CGFloat
 
-    var currentDate: Date
+    var anchorDate: Date
     var daysCount: Int
     var events: [CalendarEvent]
     var reminders: [CalendarReminder]
@@ -23,9 +23,9 @@ public struct DayLayout<Content: View>: View {
     
     @ViewBuilder var dayEventBuilder: (any CalendarEntity)->Content
 
-    init(hoursLabelsInset: Binding<CGFloat>, currentDate: Date, daysCount: Int, events: [CalendarEvent], reminders: [CalendarReminder], isScrollDisabled: Bool, updateID: UUID, dayEventBuilder: @escaping (any CalendarEntity) -> Content) {
+    init(hoursLabelsInset: Binding<CGFloat>, anchorDate: Date, daysCount: Int, events: [CalendarEvent], reminders: [CalendarReminder], isScrollDisabled: Bool, updateID: UUID, dayEventBuilder: @escaping (any CalendarEntity) -> Content) {
         self._hoursLabelsInset = hoursLabelsInset
-        self.currentDate = currentDate
+        self.anchorDate = anchorDate
         self.daysCount = daysCount
         self.events = events
         self.reminders = reminders
@@ -36,9 +36,9 @@ public struct DayLayout<Content: View>: View {
         let isAllDayGrouped = Dictionary(grouping: events, by: \.isAllDay)
         self.allDayEvents = isAllDayGrouped[true] ?? []
         self.nonAllDayEvents = isAllDayGrouped[false] ?? []
-        self.nonAllDayEventsByDay = daysCount == 1 ? [currentDate: nonAllDayEvents] : nonAllDayEvents.groupedByDay()
-        self.allDayEventsByDay = daysCount == 1 ? [currentDate: allDayEvents] : getAllDayEventsByDate()
-        self.remindersByDay = daysCount == 1 ? [currentDate: reminders] : reminders.groupedByDay()
+        self.nonAllDayEventsByDay = daysCount == 1 ? [anchorDate: nonAllDayEvents] : nonAllDayEvents.groupedByDay()
+        self.allDayEventsByDay = daysCount == 1 ? [anchorDate: allDayEvents] : getAllDayEventsByDate()
+        self.remindersByDay = daysCount == 1 ? [anchorDate: reminders] : reminders.groupedByDay()
     }
     
     private let allDaysViewMaxHeight: CGFloat = 90.0
@@ -79,7 +79,7 @@ public struct DayLayout<Content: View>: View {
 
                             ZStack(alignment: .top) {
                                 separatorsView(oneHourHeight)
-                                if currentDate.getDateWithoutTime() == Date().getDateWithoutTime() {
+                                if anchorDate.getDateWithoutTime() == Date().getDateWithoutTime() {
                                     nowLine(oneHourHeight)
                                 }
                                 dayEventsAndRemindersView
@@ -139,7 +139,7 @@ public struct DayLayout<Content: View>: View {
             Color.clear.frame(width: max(0, hoursLabelsInset - spaceBetweenDays), height: 1)
 
             ForEach(0..<daysCount, id: \.self) { i in
-                let date = currentDate.adding(.day, value: i).startOfDay
+                let date = anchorDate.adding(.day, value: i).startOfDay
                 ScrollView {
                     VStack {
                         let events = allDayEventsByDay[date] ?? []
@@ -194,7 +194,7 @@ public struct DayLayout<Content: View>: View {
             ForEach(0..<daysCount, id: \.self) { i in
                 theme.day.separators.frame(width: 1)
                 GeometryReader { g in
-                    let date = currentDate.adding(.day, value: i).startOfDay
+                    let date = anchorDate.adding(.day, value: i).startOfDay
                     DayEventsLayout(events: nonAllDayEventsByDay[date] ?? [], reminders: remindersByDay[date] ?? [], size: g.size, horSpacing: customizationParams.horSpacing, verSpacing: customizationParams.verSpacing, dayEventBuilder: dayEventBuilder)
                 }
             }
@@ -209,14 +209,14 @@ public struct DayLayout<Content: View>: View {
     private func getAllDayEventsByDate() -> [Date: [CalendarEvent]] {
         var allDayEventsByDay: [Date: [CalendarEvent]] = [:]
         for i in 0..<daysCount {
-            let currentDate = currentDate.adding(.day, value: i)
-            let interval = CalendarDisplayMode.day.interval(currentDate)
+            let date = anchorDate.adding(.day, value: i)
+            let interval = CalendarDisplayMode.day.interval(date)
             let startDate = interval.start
             let endDate = interval.end
             let allDayEvents = allDayEvents
                 .filter{ $0.startDate <= startDate && $0.endDate >= startDate }
             
-            allDayEventsByDay[currentDate.startOfDay] = Array(Set(allDayEvents)).sorted(by: \.id)
+            allDayEventsByDay[date.startOfDay] = Array(Set(allDayEvents)).sorted(by: \.id)
         }
         
         return allDayEventsByDay

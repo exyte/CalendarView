@@ -17,11 +17,11 @@
 ```swift
 import CalendarView
 
-CalendarView()
+CalendarView(providers: CalendarDefaults.defaultProviders)
 ```
 
 ### Available customizations - modifiers
-`selectedDate` - You can pass a binding to read/write currently selected date      
+`fullscreenDate` - You can pass a binding to read/write currently selected date      
 `displayMode` - You can pass a binding to read/write currently selected displayMode: `day`, `threeDays`, `month`    
 `hoursToFit` - How many hours will fit vertically in a day displayMode    
 `hourLabelFormat` - Hour format in a day displayMode    
@@ -50,13 +50,13 @@ override func getCalendars() async throws -> [ProviderCalendar] {
 ```
 
 ### Hints & Tips
-If, when you first load the application, events are displayed only after the current day changes, set the value for `selectedDate`:
+If, when you first load the application, events are displayed only after the current day changes, set the value for `fullscreenDate`:
 ```
-@State var selectedDate = Date().startOfDay
+@State var fullscreenDate = Date().startOfDay
 ```
 
 ```swift
-CalendarView { calendarEvent in
+CalendarView(providers: CalendarDefaults.defaultProviders) { calendarEvent in
     ZStack {
         Rectangle().foregroundStyle(.red.opacity(0.1))
         Text(calendarEvent.title)

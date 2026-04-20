@@ -12,7 +12,7 @@ struct DayInMonthSwitcher<MonthDay: View>: View {
     @Environment(\.calendarTheme) private var theme
     @EnvironmentObject var viewModel: CalendarViewModel
 
-    @Binding var selectedDate: Date
+    @Binding var fullscreenDate: Date
     @Binding var calendarDisplayMode: CalendarDisplayMode
     @ViewBuilder var monthDayBuilder: (MonthDayBuilderParams) -> MonthDay
 
@@ -46,13 +46,13 @@ struct DayInMonthSwitcher<MonthDay: View>: View {
                 }
             } content: { item, model in
                 VStack(alignment: .leading, spacing: 0) {
-                    let monthDate = selectedDate.startOfMonth.adding(.month, value: item)
+                    let monthDate = fullscreenDate.startOfMonth.adding(.month, value: item)
                     let isCurrentMonth = monthDate.startOfMonth == today.startOfMonth
                     Text(monthDate.formatted("MMMM, y")).systemFont(32, .semibold, isCurrentMonth ? theme.year.todayText : theme.year.monthText)
                         .padding(16, 10)
 
                     MonthLayout(date: monthDate, viewModel: model, monthDayBuilder: monthDayBuilder) { day in
-                        selectedDate = day
+                        fullscreenDate = day
                         calendarDisplayMode = .day
                     }
                 }
@@ -63,7 +63,7 @@ struct DayInMonthSwitcher<MonthDay: View>: View {
             .scrollMode(scrollMode: .free(monthCellSize?.height))
             .willDisplayItem { item in
                 Task.detached {
-                    let monthDate = await selectedDate.startOfMonth.adding(.month, value: item)
+                    let monthDate = await fullscreenDate.startOfMonth.adding(.month, value: item)
                     let interval = DateInterval(start: monthDate.adding(.month, value: -1), end: monthDate.adding(.month, value: 2))
                     if await dateInterval == interval { return }
                     await viewModel.fetch(interval)
@@ -76,7 +76,7 @@ struct DayInMonthSwitcher<MonthDay: View>: View {
                 }
             }
         }
-        .onChange(of: selectedDate, initial: true) {
+        .onChange(of: fullscreenDate, initial: true) {
             Task {
                 items = Array(-3...3)
                 models.removeAll()
@@ -84,7 +84,7 @@ struct DayInMonthSwitcher<MonthDay: View>: View {
                     models[item] = MonthCellModel(id: item)
                 }
                 tableUpdateID = UUID()
-                await viewModel.fetch(DateInterval(start: selectedDate.startOfMonth, end: selectedDate.startOfMonth.adding(.month, value: 1)))
+                await viewModel.fetch(DateInterval(start: fullscreenDate.startOfMonth, end: fullscreenDate.startOfMonth.adding(.month, value: 1)))
                 models[0]?.events = viewModel.events
             }
         }

@@ -27,11 +27,11 @@ public protocol CalendarEntity: Equatable, Identifiable, Sendable, Codable {
 
     var entityType: EntityType { get }
 
-    func isRepeatToday(selectedDate: Date) -> Bool
+    func repeatableEventOccursOn(date: Date) -> Bool
 }
 
 extension CalendarEntity {
-    public func isRepeatToday(selectedDate: Date) -> Bool {
+    public func repeatableEventOccursOn(date: Date) -> Bool {
         guard repeatType != .never else { return false }
         var isSameDay: Bool = false
 
@@ -45,14 +45,14 @@ extension CalendarEntity {
         case .weekend:
             isSameDay = false
         case .weekly:
-            isSameDay = selectedDate.getWeekday() == startDate.getWeekday()
+            isSameDay = date.getWeekday() == startDate.getWeekday()
         case .twoWeekly:
             isSameDay = false
         case .monthly:
-            isSameDay = selectedDate.getDay() == startDate.getDay()
+            isSameDay = date.getDay() == startDate.getDay()
         case .year:
-            isSameDay = selectedDate.getMonth() == startDate.getMonth() &&
-                        selectedDate.getDay() == startDate.getDay()
+            isSameDay = date.getMonth() == startDate.getMonth() &&
+            date.getDay() == startDate.getDay()
         }
 
         return isSameDay

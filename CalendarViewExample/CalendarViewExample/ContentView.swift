@@ -10,7 +10,7 @@ import CalendarView
 
 struct ContentView: View {
 
-    @State var selectedDate = Date().startOfDay
+    @State var date = Date().startOfDay
     @State var mode = CalendarDisplayMode.day
 
     var body: some View {
@@ -36,7 +36,7 @@ struct ContentView: View {
 //            }
 //        }
 
-        .selectedDate($selectedDate)
+        .fullscreenDate($date)
         .firstDayOfWeek(2)
         .hoursToFit(6)
         .hourLabelFormat("HH:mm")

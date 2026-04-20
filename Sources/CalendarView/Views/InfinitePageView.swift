@@ -8,24 +8,18 @@
 import SwiftUI
 
 struct InfiniteTabPageView<Content: View>: View {
-    @GestureState private var translation: CGFloat = .zero
     @Binding var currentPage: Int
-    @Binding var didEndAnimation: Int
     @Binding var isDragging: Bool
-    
-    @State private var offset: CGFloat = .zero
 
-    private let width: CGFloat
-    private let animationDuration: CGFloat = 0.25
+    let width: CGFloat
+
+    let didEndAnimation: (_ direction: Int) -> ()
     let content: (_ page: Int) -> Content
-    
-    init(width: CGFloat = 390, currentPage: Binding<Int>, didEndAnimation: Binding<Int>, isDragging: Binding<Bool>, @ViewBuilder content: @escaping (_ page: Int) -> Content) {
-        self.width = width
-        self.content = content
-        self._currentPage = currentPage
-        self._didEndAnimation = didEndAnimation
-        self._isDragging = isDragging
-    }
+
+    @State private var offset: CGFloat = .zero
+    @GestureState private var translation: CGFloat = .zero
+
+    private let animationDuration: CGFloat = 0.25
     
     var body: some View {
         ZStack {
@@ -61,10 +55,10 @@ struct InfiniteTabPageView<Content: View>: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + animationDuration) {
                     if offset < 0 {
                         currentPage += 1
-                        didEndAnimation = 1
+                        didEndAnimation(1)
                     } else if offset > 0 {
                         currentPage -= 1
-                        didEndAnimation = -1
+                        didEndAnimation(-1)
                     }
                     offset = 0
                     isDragging = false
@@ -73,28 +67,30 @@ struct InfiniteTabPageView<Content: View>: View {
     }
 
     private func pageView(index: Int) -> some View {
-        var offset: Int {
+        content(determineGeneralPageIndex(index))
+            .offset(x: determinePageOffset(index))
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    // Used to determine on which page each of the 3 content elements should be displayed.
+    func determineGeneralPageIndex(_ index: Int) -> Int {
+        let generalPageIndex = currentPage + 1 - index
+        let periodicIndex = Int((CGFloat(generalPageIndex) / 3).rounded(.down)) // 0 0 0 1 1 1 2 2 2 ...
+        let resultPeriodicIndex = periodicIndex * 3 // 0 0 0 3 3 3 6 6 6 ...
+        return resultPeriodicIndex + index
+    }
+
+    // Used to determine the order of the three contents in a static state.
+    func determinePageOffset(_ index: Int) -> CGFloat {
+        var indexOffset: Int {
             if index == -1 { -1 }
             else if index == 0 { 1 }
             else { 0 }
         }
 
-        return content(pageIndex(currentPage + (1 - index)) + index)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .offset(x: CGFloat(1 - offsetIndex(currentPage + offset)) * width)
-    }
-
-    private func pageIndex(_ x: Int) -> Int {
-        // Used to determine on which page each of the 3 content elements should be displayed.
-        Int((CGFloat(x) / 3).rounded(.down)) * 3
-    }
-
-    private func offsetIndex(_ x: Int) -> Int {
-        // Used to determine the order of the three contents in a static state.
-        if x >= 0 {
-            return x % 3
-        } else {
-            return (x % 3 + 3) % 3
-        }
+        let generalPageIndex = currentPage + indexOffset
+        let periodicPagePlacement = (generalPageIndex % 3 + 3) % 3 // 0 1 2 0 1 2 0 1 2 ...
+        let resultPeriodicPagePlacement = 1 - periodicPagePlacement
+        return CGFloat(resultPeriodicPagePlacement) * width
     }
 }

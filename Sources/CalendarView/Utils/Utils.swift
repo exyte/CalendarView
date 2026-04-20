@@ -18,26 +18,30 @@ extension Array {
         self.sorted { $0[keyPath: keyPath] > $1[keyPath: keyPath] }
     }
 
-    func sorted<T1: Comparable, T2: Comparable>(
-        by primary: KeyPath<Element, T1>,
-        thenBy secondary: KeyPath<Element, T2>
+    func sorted(
+        by comparators: [(Element, Element) -> Bool?]
     ) -> [Element] {
-        sorted {
-            let lhs = ($0[keyPath: primary], $0[keyPath: secondary])
-            let rhs = ($1[keyPath: primary], $1[keyPath: secondary])
-            return lhs < rhs
+        sorted { lhs, rhs in
+            for cmp in comparators {
+                if let result = cmp(lhs, rhs) {
+                    return result
+                }
+            }
+            return false
         }
     }
+}
 
-    func sorted<T1: Comparable, T2: Comparable, T3: Comparable>(
-        by primary: KeyPath<Element, T1>,
-        thenBy secondary: KeyPath<Element, T2>,
-        thenBy tertiary: KeyPath<Element, T3>
-    ) -> [Element] {
-        sorted {
-            let lhs = ($0[keyPath: primary], $0[keyPath: secondary], $0[keyPath: tertiary])
-            let rhs = ($1[keyPath: primary], $1[keyPath: secondary], $0[keyPath: tertiary])
-            return lhs < rhs
+struct ArrayUtils {
+    static func cmp<Element, T: Comparable>(
+        _ keyPath: KeyPath<Element, T>,
+        ascending: Bool = true
+    ) -> (Element, Element) -> Bool? {
+        { lhs, rhs in
+            let l = lhs[keyPath: keyPath]
+            let r = rhs[keyPath: keyPath]
+            if l == r { return nil }
+            return ascending ? (l < r) : (l > r)
         }
     }
 }

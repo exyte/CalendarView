@@ -26,7 +26,7 @@ public struct WeekSwitcherDayBuilderParams {
 }
 
 public struct HeaderBuilderParams {
-    public var selectedDate: Binding<Date>
+    public var fullscreenDate: Binding<Date>
     public var displayMode: Binding<CalendarDisplayMode>
     public var anchorDate: Date
     public var tapSelectDisplayModeClosure: ()->()
@@ -35,7 +35,7 @@ public struct HeaderBuilderParams {
 }
 
 public struct weekSwitcherDayFooterParams {
-    public var selectedDate: Date
+    public var date: Date
     public var daysCount: Int = 1
 }
 
@@ -91,7 +91,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
 
     @Environment(\.calendarTheme) var theme
 
-    @BindableValue var selectedDate: Date = Date().startOfDay
+    @BindableValue var fullscreenDate: Date = Date().startOfDay
     @BindableValue var displayMode: CalendarDisplayMode = .day
 
     @State var anchorDate: Date = Date()
@@ -118,7 +118,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         VStack(spacing: 0) {
             VStack(spacing: 8) {
                 headerBuilder(HeaderBuilderParams(
-                    selectedDate: $selectedDate,
+                    fullscreenDate: $fullscreenDate,
                     displayMode: $displayMode,
                     anchorDate: anchorDate,
                     tapSelectDisplayModeClosure: {
@@ -132,7 +132,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                     })
                 )
 
-                DayInWeekSwitcher(selectedDate: $selectedDate, anchorDate: $anchorDate, calendarDisplayMode: displayMode, hoursLabelsInset: hoursLabelsInset, weekSwitcherDayBuilder: weekSwitcherDayBuilder)
+                DayInWeekSwitcher(fullscreenDate: $fullscreenDate, anchorDate: $anchorDate, calendarDisplayMode: displayMode, hoursLabelsInset: hoursLabelsInset, weekSwitcherDayBuilder: weekSwitcherDayBuilder)
                     .padding(8)
             }
             .background {
@@ -142,7 +142,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
             if displayMode != .month {
                 dayLayoutView
             } else {
-                DayInMonthSwitcher(selectedDate: $selectedDate, calendarDisplayMode: $displayMode, monthDayBuilder: monthDayBuilder)
+                DayInMonthSwitcher(fullscreenDate: $fullscreenDate, calendarDisplayMode: $displayMode, monthDayBuilder: monthDayBuilder)
                     .padding(.top, 8)
                     .background(theme.month.background)
             }
@@ -156,8 +156,8 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                 displayedEventDetails = CalendarEntityWrapper(entity)
             }
         })
-        .onChange(of: selectedDate, initial: true) {
-            anchorDate = selectedDate
+        .onChange(of: fullscreenDate, initial: true) {
+            anchorDate = fullscreenDate
             updateData()
         }
         .onChange(of: displayMode) {
@@ -165,11 +165,6 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         }
         .onChange(of: idForUpdate) {
             updateData()
-        }
-        .onReceive(viewModel.$didEndAnimating) { value in
-            let date = selectedDate.adding(.day, value: value)
-            
-            selectedDate = date
         }
 
         .sheet(isPresented: $showCalendarFilters) {
@@ -196,15 +191,23 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
 
     private var dayLayoutView: some View {
         GeometryReader { g in
-            InfiniteTabPageView(width: g.size.width, currentPage: $currentPage, didEndAnimation: $viewModel.didEndAnimating, isDragging: $isDragging) { page in
-                let date = Calendar.current.date(byAdding: .day, value: page - currentPage, to: selectedDate) ?? selectedDate
+            InfiniteTabPageView(currentPage: $currentPage,
+                                isDragging: $isDragging,
+                                width: g.size.width,
+                                didEndAnimation: { direction in
+                let date = fullscreenDate.adding(.day, value: direction)
+                fullscreenDate = date
+            }) { page in
+                Group {
+                    let date = Calendar.current.date(byAdding: .day, value: page - currentPage, to: fullscreenDate) ?? fullscreenDate
 
-                VStack(spacing: 0) {
-                    weekSwitcherDayFooterBuilder(weekSwitcherDayFooterParams(selectedDate: date, daysCount: displayMode.rawValue))
+                    VStack(spacing: 0) {
+                        weekSwitcherDayFooterBuilder(weekSwitcherDayFooterParams(date: date, daysCount: displayMode.rawValue))
 
-                    DayLayout(hoursLabelsInset: $hoursLabelsInset, currentDate: date, daysCount: displayMode.rawValue, events: viewModel.getEvents(from: date, displayMode: displayMode, selectedDate: selectedDate), reminders: viewModel.getReminders(from: date, displayMode: displayMode, selectedDate: selectedDate), isScrollDisabled: isDragging, updateID: updateID, dayEventBuilder: dayEventBuilder)
-                        .padding(.top, 8)
-                        .background(theme.day.background)
+                        DayLayout(hoursLabelsInset: $hoursLabelsInset, anchorDate: date, daysCount: displayMode.rawValue, events: viewModel.getEvents(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate), reminders: viewModel.getReminders(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate), isScrollDisabled: isDragging, updateID: updateID, dayEventBuilder: dayEventBuilder)
+                            .padding(.top, 8)
+                            .background(theme.day.background)
+                    }
                 }
             }
             .simultaneousGesture(magnifyGesture)
@@ -231,15 +234,15 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
 
     func updateData() {
         Task {
-            await viewModel.fetch(displayMode.interval(selectedDate))
+            await viewModel.fetch(displayMode.interval(fullscreenDate))
             updateID = UUID()
         }
     }
 
-    // can't move this one to an extension, because _selectedDate is always private
-    public func selectedDate(_ binding: Binding<Date>) -> CalendarView {
+    // can't move this one to an extension, because _fullscreenDate is always private
+    public func fullscreenDate(_ binding: Binding<Date>) -> CalendarView {
         var copy = self
-        copy._selectedDate.bind(binding)
+        copy._fullscreenDate.bind(binding)
         return copy
     }
 

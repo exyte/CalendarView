@@ -52,8 +52,8 @@ public struct DefaultHeaderView: View {
         }
         .padding(.horizontal, 10)
         .sheet(isPresented: $showMonthPicker) {
-            MonthInYearSwitcher(date: params.selectedDate.wrappedValue.startOfYear) { month in
-                params.selectedDate.wrappedValue = month
+            MonthInYearSwitcher(date: params.fullscreenDate.wrappedValue.startOfYear) { month in
+                params.fullscreenDate.wrappedValue = month
                 params.displayMode.wrappedValue = .month
                 showMonthPicker = false
             }

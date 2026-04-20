@@ -21,7 +21,11 @@ struct DayEventsLayout<Content: View>: View {
     private var reminderFrames: [CGRect] = []
 
     init(events: [CalendarEvent], reminders: [CalendarReminder], size: CGSize, horSpacing: CGFloat, verSpacing: CGFloat, dayEventBuilder: @escaping (any CalendarEntity) -> Content) {
-        self.events = events.sorted(by: \.duration, thenBy: \.title, thenBy: \.id)
+        self.events = events.sorted(by: [
+            ArrayUtils.cmp(\.duration),
+            ArrayUtils.cmp(\.title),
+            ArrayUtils.cmp(\.id)
+        ])
         self.reminders = reminders
         self.size = size
         self.horSpacing = horSpacing
