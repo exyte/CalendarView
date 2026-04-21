@@ -21,7 +21,7 @@ public struct DefaultDayInWeekView: View {
     }
 
     public var body: some View {
-        let isSelected = viewModel.selectedDate == params.day
+        let isSelected = viewModel.date == params.day
         let isToday = DefaultDayInWeekView.today == params.day
         let isWeekend = params.day.isWeekend
 

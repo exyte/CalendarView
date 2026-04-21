@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-public struct CalendarEvent: CalendarEntity {
+public struct CalendarEvent: CalendarEntity, Hashable {
     public let id: String
     public var calendarID: String
 
@@ -23,9 +23,6 @@ public struct CalendarEvent: CalendarEntity {
     public var alertType: AlertType
     public var priorityType: PriorityType
     public var vibrationType: VibrationType
-
-    //public var payload: [String: Codable]
-    //var jayeBlockValue: JayeBlockType = .none
 
     public var entityType: EntityType { .event }
 
@@ -47,7 +44,6 @@ public struct CalendarEvent: CalendarEntity {
         self.alertType = alertType
         self.priorityType = priorityType
         self.vibrationType = vibrationType
-        //self.payload = payload
     }
 
     func toString() -> String {

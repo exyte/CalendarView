@@ -9,8 +9,15 @@ import SwiftUI
 
 extension CalendarView {
 
+    /// trigger for updates
+    public func idForUpdate(_ idForUpdate: UUID) -> CalendarView {
+        var copy = self
+        copy.idForUpdate = idForUpdate
+        return copy
+    }
+
     /// how many hours will fit vertically in a day displayMode, default is 12
-    public func hoursToFit(_ hoursToFit: Int) -> CalendarView {
+    public func hoursToFit(_ hoursToFit: CGFloat) -> CalendarView {
         if hoursToFit > 24 {
             print("Please specify hoursToFit's value less or equal to 24")
             return self
@@ -39,6 +46,16 @@ extension CalendarView {
 
     public func headerBackground<Content: View>(viewBuilder: @escaping () -> Content) -> CalendarView {
         self.customizationParams.headerBackground = HeaderBackground(viewBuilder: viewBuilder)
+        return self
+    }
+    
+    public func eventDetailsClosure(_ closure: @escaping (any CalendarEntity)->()) -> CalendarView {
+        self.customizationParams.eventDetailsClosure = closure
+        return self
+    }
+    
+    public func isDayInWeekSwitcherPagingEnabled(_ value: Bool) -> CalendarView {
+        self.customizationParams.isDayInWeekSwitcherPagingEnabled = value
         return self
     }
 }

@@ -44,13 +44,6 @@ public struct DefaultHeaderView: View {
             .styleLikeButton()
 
             Button {
-
-            } label: {
-                Image(.search)
-            }
-            .styleLikeButton()
-
-            Button {
                 params.tapAddEventClosure()
             } label: {
                 Image(.add)
@@ -59,8 +52,8 @@ public struct DefaultHeaderView: View {
         }
         .padding(.horizontal, 10)
         .sheet(isPresented: $showMonthPicker) {
-            MonthInYearSwitcher(date: params.selectedDate.wrappedValue.startOfYear) { month in
-                params.selectedDate.wrappedValue = month
+            MonthInYearSwitcher(date: params.fullscreenDate.wrappedValue.startOfYear) { month in
+                params.fullscreenDate.wrappedValue = month
                 params.displayMode.wrappedValue = .month
                 showMonthPicker = false
             }
@@ -72,7 +65,7 @@ public struct DefaultHeaderView: View {
             switch params.displayMode.wrappedValue {
             case .day:
                 Image(.day)
-            case .threeDays:
+            case .twoDays, .threeDays:
                 Image(.three)
             case .month:
                 Image(.month)
@@ -83,15 +76,14 @@ public struct DefaultHeaderView: View {
             VStack(alignment: .leading) {
                 makeModeSwitcherButton("Month", .month, .month)
                 makeModeSwitcherButton("Day", .day, .day)
+                makeModeSwitcherButton("2 Day", .three, .twoDays)
                 makeModeSwitcherButton("3 Day", .three, .threeDays)
             }
             .padding(18, 10)
             .background(RoundedRectangle.styled(20, .white))
         } customize: {
             $0.position(.anchorRelative(.topLeading))
-                .background(.none)
                 .closeOnTapOutside(true)
-                .isBackgroundPassthrough(true)
         }
     }
 

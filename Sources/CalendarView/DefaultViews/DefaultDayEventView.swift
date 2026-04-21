@@ -35,7 +35,7 @@ public struct DefaultDayEventView: View {
                 RoundedRectangle.styled(8, color)
                     .layoutPriority(1)
 
-                HStack(alignment: .top) {
+                HStack {
                     if let reminder = entity as? CalendarReminder {
                         checkmarkView(reminder)
                             .padding(.horizontal, 6)
@@ -45,6 +45,7 @@ public struct DefaultDayEventView: View {
                         entity.calendarColor
                             .frame(width: 2)
                             .cornerRadius(6)
+                            .padding(.vertical, 8)
                     }
 
                     Text(entity.title)
@@ -52,7 +53,7 @@ public struct DefaultDayEventView: View {
 
                     Spacer()
                 }
-                .padding(4, 12)
+                .padding(.horizontal,  4)
             }
         }
     }

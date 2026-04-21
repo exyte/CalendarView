@@ -23,21 +23,14 @@ struct FieldTimeOrDate: View {
     var body: some View {
         HStack(alignment: .top) {
             
-//            Image(type == .date ? .calendar : .bigClock)
-//                .renderingMode(.template)
-//                .foregroundColor(.cadetGrey)
-//                .frame(width: 24, height: 24)
-            
             VStack(alignment: .leading, spacing: 8) {
                 
                 HStack {
                     Text(type.rawValue)
-                       // .sfProText(.regular, 17)
 
                     Spacer()
                     
                     Text(getCurrentDateStringValue())
-                        //.sfProText(.regular, 17, .cadet)
                 }
                 .gesture(
                     TapGesture()
@@ -54,14 +47,14 @@ struct FieldTimeOrDate: View {
                     DatePicker("Start Date", selection: $date, displayedComponents: .date)
                         .labelsHidden()
                         .datePickerStyle(.graphical)
-                        //.tint(.policeBlue)
+                        .tint(.blue.opacity(0.3))
                 }
                 
                 if showTimePicker {
                     DatePicker("Start Date", selection: $date, displayedComponents: .hourAndMinute)
                         .labelsHidden()
                         .datePickerStyle(.wheel)
-                        //.tint(.policeBlue)
+                        .tint(.blue.opacity(0.3))
                 }
             }
         }

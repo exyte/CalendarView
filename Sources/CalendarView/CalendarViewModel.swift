@@ -14,9 +14,14 @@ class CalendarViewModel: ObservableObject {
     @Published public var calendars: [ProviderCalendar] = []
     @Published public var deselectedCalendarIDs: [String] = []
 
-    private let eventProviders: [CalendarsProvider] = [AppleCalendarsProvider(), LocalCalendarsProvider()]
+    private var eventProviders: [CalendarsProvider] = []
     private var calendarSelectionStore = CalendarSelectionStore()
+    private let preloadSize: Int = 4
 
+    init(providers: [CalendarsProvider]) {
+        eventProviders = providers
+    }
+    
     func fetch(_ interval: DateInterval) async {
         await fetchCalendars()
         let selectedIDs = calendarSelectionStore.getSelectedIDs(calendars: calendars)
@@ -27,21 +32,32 @@ class CalendarViewModel: ObservableObject {
             return
         }
 
+        events = await fetchEvents(interval, selectedIDs: selectedIDs)
+        reminders = await fetchReminders(interval, selectedIDs: selectedIDs)
+    }
+    
+    private func fetchEvents(_ interval: DateInterval, selectedIDs: [String]) async -> [CalendarEvent] {
         var resultE = [CalendarEvent]()
         for eventProvider in eventProviders {
-            if let providerResult = try? await eventProvider.getEvents(from: interval.start, to: interval.end, selectedCalendarIDs: selectedIDs) {
+            let start = interval.start.adding(.day, value: -preloadSize)
+            let end = interval.end.adding(.day, value: preloadSize)
+            if let providerResult = try? await eventProvider.getEvents(from: start, to: end, selectedCalendarIDs: selectedIDs) {
                 resultE.append(contentsOf: providerResult)
             }
         }
-        events = resultE
-
+        return resultE
+    }
+    
+    private func fetchReminders(_ interval: DateInterval, selectedIDs: [String]) async -> [CalendarReminder] {
         var resultR = [CalendarReminder]()
         for eventProvider in eventProviders {
-            if let providerResult = try? await eventProvider.getReminders(from: interval.start, to: interval.end, selectedCalendarIDs: selectedIDs) {
+            let start = interval.start.adding(.day, value: -preloadSize)
+            let end = interval.end.adding(.day, value: preloadSize)
+            if let providerResult = try? await eventProvider.getReminders(from: start, to: end, selectedCalendarIDs: selectedIDs) {
                 resultR.append(contentsOf: providerResult)
             }
         }
-        reminders = resultR
+        return resultR
     }
 
     func fetchCalendars() async {
@@ -125,5 +141,61 @@ class CalendarViewModel: ObservableObject {
                 print(error)
             }
         }
+    }
+    
+    func getEventsAndRemindersCount(from date: Date, displayMode: CalendarDisplayMode, fullscreenDate: Date) -> Int {
+        var count = 0
+        
+        count += getEvents(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate).count
+        count += getReminders(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate).count
+
+        return count
+    }
+    
+    func getEvents(from date: Date, displayMode: CalendarDisplayMode, fullscreenDate: Date) -> [CalendarEvent] {
+        let interval = displayMode.interval(date)
+        let startDate = interval.start
+        let endDate = interval.end
+        var events = self.events
+            .filter { !$0.isAllDay }
+            .filter { $0.repeatType == .never }
+            .filter { $0.startDate >= startDate && $0.startDate <= endDate }
+
+        for i in 0..<displayMode.rawValue {
+            let currentDate = date.adding(.day, value: i)
+            let interval = CalendarDisplayMode.day.interval(currentDate)
+            let startDate = interval.start
+            let allDayEvents = self.events
+                .filter { $0.isAllDay }
+                .filter { $0.repeatType == .never }
+                .filter { $0.startDate <= startDate && $0.endDate >= startDate }
+
+            events.append(contentsOf: allDayEvents)
+        }
+        
+        let repeatEvents = self.events
+            .filter { $0.repeatType != .never }
+            .filter { $0.repeatableEventOccursOn(date: fullscreenDate) }
+
+        events.append(contentsOf: repeatEvents)
+        
+        return events
+    }
+    
+    func getReminders(from date: Date, displayMode: CalendarDisplayMode, fullscreenDate: Date) -> [CalendarReminder] {
+        let interval = displayMode.interval(date)
+        let startDate = interval.start
+        let endDate = interval.end
+        var reminders = self.reminders
+            .filter { $0.repeatType == .never }
+            .filter { $0.startDate >= startDate && $0.startDate <= endDate }
+        
+        let repeatReminders = self.reminders
+            .filter { $0.repeatType != .never }
+            .filter { $0.repeatableEventOccursOn(date: fullscreenDate) }
+
+        reminders.append(contentsOf: repeatReminders)
+        
+        return reminders
     }
 }

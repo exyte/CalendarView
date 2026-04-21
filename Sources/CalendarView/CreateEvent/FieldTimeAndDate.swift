@@ -19,35 +19,28 @@ struct FieldTimeAndDate: View {
     
     var body: some View {
         HStack(alignment: .top) {
-            
-            //Image(.bigClock)
-
             VStack(alignment: .leading, spacing: 8) {
-                
                 HStack {
                     Text("Time and Date")
-                        //.sfProText(.regular, 17)
 
                     Spacer()
                     
                     Text("All day")
-                        //.sfProText(.regular, 17)
 
                     Toggle("", isOn: $isAllDay)
                         .labelsHidden()
-                        //.toggleStyle(CustomToggleStyle())
+                        .tint(.blue.opacity(0.3))
+                        .padding(.trailing, 3)
                 }
                 
                 HStack {
                     Text("Starts")
-                        //.sfProText(.regular, 17)
 
                     Spacer()
                     
                     Text(startsDay.formatted("d MMM yyyy"))
-                        //.sfProText(.regular, 17, .cadet)
                         .padding(12, 8)
-                        //.background(.azureishWhite)
+                        .background(.blue.opacity(0.3))
                         .cornerRadius(6)
                         .gesture(TapGesture().onEnded({
                             self.showEndsDatePicker = false
@@ -58,9 +51,8 @@ struct FieldTimeAndDate: View {
                     
                     if !isAllDay {
                         Text(startsDay.formatted("HH:mm"))
-                            //.sfProText(.regular, 17, .cadet)
                             .padding(12, 8)
-                            //.background(.azureishWhite)
+                            .background(.blue.opacity(0.3))
                             .cornerRadius(6)
                             .gesture(TapGesture().onEnded({
                                 self.showEndsDatePicker = false
@@ -75,26 +67,24 @@ struct FieldTimeAndDate: View {
                     DatePicker("Start Date", selection: $startsDay, displayedComponents: .date)
                         .labelsHidden()
                         .datePickerStyle(.graphical)
-                        //.tint(.policeBlue)
+                        .tint(.blue.opacity(0.3))
                 }
                 
                 if showStartsTimePicker {
                     DatePicker("Start Date", selection: $startsDay, displayedComponents: .hourAndMinute)
                         .labelsHidden()
                         .datePickerStyle(.wheel)
-                        //.tint(.policeBlue)
+                        .tint(.blue.opacity(0.3))
                 }
                 
                 HStack {
                     Text("Ends")
-                        //.sfProText(.regular, 17)
 
                     Spacer()
                     
                     Text(endsDay.formatted("d MMM yyyy"))
-                        //.sfProText(.regular, 17, .cadet)
                         .padding(12, 8)
-                        //.background(.azureishWhite)
+                        .background(.blue.opacity(0.3))
                         .cornerRadius(6)
                         .gesture(TapGesture().onEnded({
                             self.showStartsDatePicker = false
@@ -105,9 +95,8 @@ struct FieldTimeAndDate: View {
                     
                     if !isAllDay {
                         Text(endsDay.formatted("HH:mm"))
-                            //.sfProText(.regular, 17, .cadet)
                             .padding(12, 8)
-                            //.background(.azureishWhite)
+                            .background(.blue.opacity(0.3))
                             .cornerRadius(6)
                             .gesture(TapGesture().onEnded({
                                 self.showStartsDatePicker = false
@@ -122,14 +111,14 @@ struct FieldTimeAndDate: View {
                     DatePicker("End Date", selection: $endsDay, displayedComponents: .date)
                         .labelsHidden()
                         .datePickerStyle(.graphical)
-                        //.tint(.policeBlue)
+                        .tint(.blue.opacity(0.3))
                 }
                 
                 if showEndsTimePicker {
                     DatePicker("End Date", selection: $endsDay, displayedComponents: .hourAndMinute)
                         .labelsHidden()
                         .datePickerStyle(.wheel)
-                        //.tint(.policeBlue)
+                        .tint(.blue.opacity(0.3))
                 }
             }
             .onChange(of: isAllDay) { _,_ in

@@ -15,17 +15,13 @@ struct FieldDescription: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-//                Image(.description)
-//                    .frame(width: 24, height: 24)
                 
                 Text("Description")
-                   // .sfProText(.regular, 17)
 
                 Spacer()
             }
             
             TextField("", text: $description, prompt: Text("Type here..."), axis: .vertical)
-                //.sfProText(.regular, 15)
                 .focused($isFocused)
                 .submitLabel(.done)
                 .onChange(of: description) {

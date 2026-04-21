@@ -15,19 +15,18 @@ struct FieldCalendarSelection: View {
 
     var body: some View {
         HStack(alignment: .top) {
-            VStack {
-                HStack {
-                    Text("Calendar")
-                    Spacer()
-                    if let title = selectedCalendar?.title {
-                        Text(title)
-                    }
-
-                    Image(systemName: "arrow.right")
-                        .frame(width: 24, height: 24)
-                        .border(Color.blue, width: 2)
-                }
+            Text("Calendar*")
+            Spacer()
+            if let title = selectedCalendar?.title {
+                Text(title)
+                    .padding(12, 8)
+                    .background(Color(selectedCalendar?.color ?? .clear).opacity(0.3))
+                    .cornerRadius(6)
             }
+
+            Image(systemName: "arrow.right")
+                .frame(width: 24, height: 24)
+                .foregroundStyle(.blue)
         }
         .onTapGesture {
             showSelectionPopup = true

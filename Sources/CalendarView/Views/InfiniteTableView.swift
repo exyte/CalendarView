@@ -22,8 +22,9 @@ public enum InfiniteScrollMode {
 public class InfiniteTableViewCustomizationParams {
     var scrollLayout: InfiniteScrollLayout = .vertical
     var scrollMode: InfiniteScrollMode = .free()
+    var isPagingEnabled: Bool = false
     var threshold: Int = 0
-    var pageSize: Int = 5
+    var pageSize: Int = 1
     var updateID: UUID = UUID() // use to perform a full reload with re-centering
 }
 
@@ -35,6 +36,12 @@ extension InfiniteTableView {
 
     func scrollMode(scrollMode: InfiniteScrollMode) -> InfiniteTableView {
         self.params.scrollMode = scrollMode
+        return self
+    }
+    
+    func isPagingEnabled(_ isPagingEnabled: Bool) -> InfiniteTableView {
+        self.params.isPagingEnabled = isPagingEnabled
+        self.params.pageSize = isPagingEnabled ? 1 : 5
         return self
     }
 
@@ -112,6 +119,7 @@ public struct InfiniteTableView<Data, UpdatableModel, Content, UpdatableContent>
         tableView.dataSource = context.coordinator
         tableView.delegate = context.coordinator
         tableView.scrollsToTop = false
+        tableView.isPagingEnabled = params.isPagingEnabled
         tableView.showsVerticalScrollIndicator = false
         tableView.separatorStyle = .none
         if case let .paged(cellSize) = params.scrollMode {
@@ -238,7 +246,7 @@ public struct InfiniteTableView<Data, UpdatableModel, Content, UpdatableContent>
 
         public func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
             guard !isBusy else { return }
-            if case .free = parent.params.scrollMode, let item = self.data[safe: indexPath.row] {
+            if let item = self.data[safe: indexPath.row] {
                 self.parent.willDisplayItem?(item)
             }
             let count = data.count
@@ -250,7 +258,7 @@ public struct InfiniteTableView<Data, UpdatableModel, Content, UpdatableContent>
         }
 
         public func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
-            guard case let .paged(cellSize) = parent.params.scrollMode else { return }
+            guard case let .paged(cellSize) = parent.params.scrollMode, !parent.params.isPagingEnabled else { return }
             isBusy = true
             let targetY = targetContentOffset.pointee.y
 

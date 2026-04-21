@@ -41,17 +41,14 @@ struct FieldEnumPicker<S: PickerEnum>: View {
     var body: some View {
         HStack {
             Text(eventFieldType.rawValue)
-            //.sfProText(.regular, 17)
 
             Spacer()
 
             Text(currentValue.stringValue)
-                .border(Color.red, width: 2)
-            //.sfProText(.regular, 17, .cadet)
 
             Image(systemName: "arrow.right")
                 .frame(width: 24, height: 24)
-                .border(Color.blue, width: 2)
+                .foregroundStyle(.blue)
         }
         .onTapGesture {
             showSelectionPopup = true

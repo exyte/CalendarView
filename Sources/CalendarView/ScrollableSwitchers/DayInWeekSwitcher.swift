@@ -11,8 +11,9 @@ import SwiftUI
 struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
     @Environment(\.calendarTheme) private var theme
     @Environment(\.calendarCustomizationParams) var customizationParams
+    @EnvironmentObject var viewModel: CalendarViewModel
 
-    @Binding var selectedDate: Date
+    @Binding var fullscreenDate: Date
     @Binding var anchorDate: Date // first day of currently on screen week. selectedData could be off screen, so need to track this through another variable
 
     var calendarDisplayMode: CalendarDisplayMode
@@ -23,6 +24,7 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
 
     @State private var daySize: CGSize?
     @State private var items = Array(-5...5)
+    @State private var pageItems = Array(-1...1)
     @State private var tableUpdateID = UUID()
 
     private var calendar: Calendar { Calendar.current }
@@ -30,29 +32,35 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
     var body: some View {
         ZStack {
             MeasuringTrickView(size: $daySize) {
-                weekSwitcherDayBuilder(WeekSwitcherDayBuilderParams(viewModel: weekCellsModel, day: selectedDate, monthDisplayMode: false))
+                weekSwitcherDayBuilder(WeekSwitcherDayBuilderParams(viewModel: weekCellsModel, day: fullscreenDate, monthDisplayMode: false))
             }
 
             switch calendarDisplayMode {
-            case .day:
+            case .day, .twoDays:
                 fullWeekView
             case .threeDays:
-                threeDayWeekView
+                fullWeekView
             case .month:
                 weekdaysOnlyView
             }
         }
         .onAppear {
-            self.weekCellsModel.selectedDate = selectedDate
+            self.weekCellsModel.date = fullscreenDate
+        }
+        .onChange(of: fullscreenDate) { _, _ in
+            self.weekCellsModel.date = fullscreenDate
+            pageItems = Array(-1...1)
+            items = Array(-5...5)
+            tableUpdateID = UUID()
         }
     }
 
     @ViewBuilder
     var fullWeekView: some View {
         GeometryReader { g in
-            createSimpleInfiniteTableView(items: $items) { item in
+            createSimpleInfiniteTableView(items: customizationParams.isDayInWeekSwitcherPagingEnabled ? $pageItems : $items) { item in
                 HStack(spacing: 0) {
-                    let startOfWeek = selectedDate.startOfWeek(customizationParams.firstDayOfWeek).startOfDay.adding(.day, value: item*7)
+                    let startOfWeek = fullscreenDate.startOfWeek(customizationParams.firstDayOfWeek).startOfDay.adding(.day, value: item*7)
                     ForEach(0..<7, id: \.self) { i in
                         dayView(startDay: startOfWeek, index: i, monthDisplayMode: false)
                     }
@@ -60,8 +68,9 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
             }
             .scrollLayout(.horizontal)
             .scrollMode(scrollMode: .paged(g.size.width))
+            .isPagingEnabled(customizationParams.isDayInWeekSwitcherPagingEnabled)
             .willDisplayItem { item in
-                anchorDate = selectedDate.startOfWeek(customizationParams.firstDayOfWeek).startOfDay.adding(.day, value: item*7)
+                anchorDate = fullscreenDate.startOfWeek(customizationParams.firstDayOfWeek).startOfDay.adding(.day, value: item*7)
             }
             .reloadTrigger(updateID: tableUpdateID)
         }
@@ -71,12 +80,12 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
     var threeDayWeekView: some View {
         GeometryReader { g in
             createSimpleInfiniteTableView(items: $items) { item in
-                dayView(startDay: selectedDate, index: item, monthDisplayMode: false)
+                dayView(startDay: fullscreenDate, index: item, monthDisplayMode: false)
             }
             .scrollLayout(.horizontal)
             .scrollMode(scrollMode: .paged(g.size.width / 3))
             .willDisplayItem { item in
-                anchorDate = selectedDate.startOfDay.adding(.day, value: item)
+                anchorDate = fullscreenDate.startOfDay.adding(.day, value: item)
             }
         }
         .frame(height: daySize?.height)
@@ -104,8 +113,8 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
             .applyIf(!monthDisplayMode) {
                 $0.simultaneousGesture(
                     TapGesture().onEnded {
-                        self.selectedDate = day
-                        self.weekCellsModel.selectedDate = day
+                        self.fullscreenDate = day
+                        self.weekCellsModel.date = day
                     }
                 )
             }
@@ -113,5 +122,5 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
 }
 
 class WeekCellsModel: ObservableObject {
-    @Published var selectedDate: Date?
+    @Published var date: Date?
 }

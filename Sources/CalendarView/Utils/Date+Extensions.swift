@@ -67,6 +67,21 @@ public extension Date {
     var isWeekend: Bool {
         Calendar.current.isDateInWeekend(self)
     }
+    
+    func getDateWithoutTime() -> Date? {
+        let calendar = Calendar.current
+        var dateComponents = calendar.dateComponents([.year, .month, .day], from: self)
+        dateComponents.timeZone = TimeZone.current
+        return calendar.date(from: dateComponents)
+    }
+    
+    func nextDay() -> Date? {
+        Calendar.current.date(byAdding: .day, value: 1, to: self)
+    }
+    
+    func previousDay() -> Date? {
+        Calendar.current.date(byAdding: .day, value: -1, to: self)
+    }
 
     // MARK: - Set Full Time or Date
 

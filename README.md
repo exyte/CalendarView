@@ -3,8 +3,6 @@
 <a href="https://exyte.com/"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/exyte/media/master/common/our-site-dark.png" width="80" height="16"><img src="https://raw.githubusercontent.com/exyte/media/master/common/our-site-light.png" width="80" height="16"></picture></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://twitter.com/exyteHQ"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/exyte/media/master/common/twitter-dark.png" width="74" height="16"><img src="https://raw.githubusercontent.com/exyte/media/master/common/twitter-light.png" width="74" height="16">
 </picture></a> <a href="https://exyte.com/contacts"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/exyte/media/master/common/get-in-touch-dark.png" width="128" height="24" align="right"><img src="https://raw.githubusercontent.com/exyte/media/master/common/get-in-touch-light.png" width="128" height="24" align="right"></picture></a>
 
-![demo](https://user-images.githubusercontent.com/9447630/217482148-8594b3ce-e6be-4e84-a65d-29915566a61a.gif)
-
 <p><h1 align="left">Calendar View</h1></p>
 
 <p><h4>CalendarView is a library to display events in day/month modes</h4></p>
@@ -19,25 +17,46 @@
 ```swift
 import CalendarView
 
-CalendarView()
+CalendarView(providers: CalendarDefaults.defaultProviders)
 ```
 
 ### Available customizations - modifiers
-`selectedDate` - You can pass a binding to read/write currently selected date      
+`fullscreenDate` - You can pass a binding to read/write currently selected date      
 `displayMode` - You can pass a binding to read/write currently selected displayMode: `day`, `threeDays`, `month`    
 `hoursToFit` - How many hours will fit vertically in a day displayMode    
 `hourLabelFormat` - Hour format in a day displayMode    
 `firstDayOfWeek` - What day to start a week from in all views, default is taken from current locale    
-`headerBackground` - Background for header including week switcher: `none`, `color`, `view`      
+`headerBackground` - Background for header including week switcher: `none`, `color`, `view` 
+`isDayInWeekSwitcherPagingEnabled` - Swipe just one week at a time or several at once in week switcher     
+`eventDetailsClosure` - Closure for handling tap on an event, returns the event object
+`needUpdate` - You can pass a binding to update calendar layout
 
 ### UI Customization
 `dayEventBuilder` - in a .day `displayMode`, a rectangle view for one event. Has to have a greedy size to strech according to space available. Height available depends on event's duration and width on how many events there are in this day. So using `ViewThatFits` could be a good approach here. Also a good idea - applying `.clipped()` when even the smallest option doesn't fit, so the events don't intersect.     
 `monthDayBuilder` - in a .month `displayMode`, a view to show for each day. It should be something like a month number with day's events list.   
 `weekSwitcherDayBuilder` - in week picker in the header, a view for one day of week    
 `headerBuilder` - this will be displayed above the week picker
+`weekSwitcherDayFooterBuilder` - this will be displayed below the week picker
+
+### Events
+If you want to implement your own event manager for complete event control:
+You can create your own `CalendarProvider` and pass it a `CalendarView(providers: [...Your provider...])`.
+In a custom provider, you need to override the `getEvents` method, in which you will independently pass the necessary events. 
+You also need to override the `getCalendars` method and always return at least one element.
+```
+override func getCalendars() async throws -> [ProviderCalendar] {
+    [ ProviderCalendar() ]
+}
+```
+
+### Hints & Tips
+If, when you first load the application, events are displayed only after the current day changes, set the value for `fullscreenDate`:
+```
+@State var fullscreenDate = Date().startOfDay
+```
 
 ```swift
-CalendarView { calendarEvent in
+CalendarView(providers: CalendarDefaults.defaultProviders) { calendarEvent in
     ZStack {
         Rectangle().foregroundStyle(.red.opacity(0.1))
         Text(calendarEvent.title)

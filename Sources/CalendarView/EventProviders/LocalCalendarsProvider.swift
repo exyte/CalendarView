@@ -7,11 +7,13 @@
 
 import SwiftUI
 
-public final actor LocalCalendarsProvider: EditableCalendarsProvider {
+public final class LocalCalendarsProvider: EditableCalendarsProvider {
     private let calendarStore = CodableStore<ProviderCalendar>()
     private let eventStore = CalendarEntityStore<CalendarEvent>()
     private let reminderStore = CalendarEntityStore<CalendarReminder>()
 
+    public init() {}
+    
     public func getCalendars() async throws -> [ProviderCalendar] {
         try await calendarStore.load()
     }
@@ -32,25 +34,25 @@ public final actor LocalCalendarsProvider: EditableCalendarsProvider {
         }
     }
 
-    func addEvent(_ event: CalendarEvent) {
+    public func addEvent(_ event: CalendarEvent) {
         Task {
             try await eventStore.add(event)
         }
     }
 
-    func addReminder(_ reminder: CalendarReminder) {
+    public func addReminder(_ reminder: CalendarReminder) {
         Task {
             try await reminderStore.add(reminder)
         }
     }
 
-    func updateEvent(_ event: CalendarEvent, oldStartDate: Date) {
+    public func updateEvent(_ event: CalendarEvent, oldStartDate: Date) {
         Task {
             try await eventStore.update(event, oldStartDate: oldStartDate)
         }
     }
 
-    func updateReminder(_ reminder: CalendarReminder, oldStartDate: Date) {
+    public func updateReminder(_ reminder: CalendarReminder, oldStartDate: Date) {
         Task {
             try await reminderStore.update(reminder, oldStartDate: oldStartDate)
         }

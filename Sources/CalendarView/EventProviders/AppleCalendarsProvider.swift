@@ -11,7 +11,7 @@ import SwiftUI
 /// Fetches events from Apple's Calendar App. Will only fetch events from accounts which Calendar App has access to. If you'd like to add more accounts, add them in Calendar App.
 final class AppleCalendarsProvider: CalendarsProvider {
     private let eventStore = EKEventStore()
-
+    
     func getEvents(from startDate: Date, to endDate: Date, selectedCalendarIDs: [String]) async throws -> [CalendarEvent] {
         try await requestAccessIfNeeded(.event)
 
@@ -29,8 +29,6 @@ final class AppleCalendarsProvider: CalendarsProvider {
                 startDate: $0.startDate,
                 endDate: $0.endDate,
                 isAllDay: $0.isAllDay,
-                //priority: $0,
-                //vibration: $0,
                 isDetached: $0.isDetached)
         }
     }

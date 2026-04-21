@@ -19,20 +19,18 @@ struct SelectionPopupView<Selection: PickerEnum>: View {
                 .frame(height: 12)
             
             Text(selection.title)
-                //.sfProText(.semibold, 20)
                 .padding(.bottom, 20)
             
             ForEach(Selection.allCases, id: \.self) { value in
                 HStack {
                     Text(value.stringValue)
-                        //.sfProText(.regular, 17)
 
                     Spacer()
                     
-                    Image(value == selection ? "checkBox-radio-fill" : "checkBox-radio-empty")
+                    Image(value == selection ? .checkboxRadioFill : .checkboxRadioEmpty)
                         .resizable()
                         .renderingMode(.template)
-                        //.foreground(.policeBlue)
+                        .foregroundStyle(Color.blue.opacity(0.3))
                         .frame(width: 24, height: 24)
                 }
                 .padding(.bottom, 20)
