@@ -9,9 +9,9 @@ import SwiftUI
 
 struct InfiniteTabPageView<Content: View>: View {
     @Binding var currentPage: Int
-    @Binding var isDragging: Bool
+    @Binding var isDaySwiping: Bool
 
-    var isScrolling: Bool
+    var isCalendarScrolling: Bool
     let width: CGFloat
 
     let didEndAnimation: (_ direction: Int) -> ()
@@ -38,12 +38,12 @@ struct InfiniteTabPageView<Content: View>: View {
         DragGesture(minimumDistance: 100)
             .updating($translation) { value, state, _ in
                 let translation = min(width, max(-width, value.translation.width))
-                if isScrolling { return }
-                isDragging = true
+                if isCalendarScrolling { return }
+                isDaySwiping = true
                 state = translation
             }
             .onEnded { value in
-                if isScrolling { return }
+                if isCalendarScrolling { return }
                 offset = min(width, max(-width, value.translation.width))
                 let predictEndOffset = value.predictedEndTranslation.width
                 withAnimation(.easeOut(duration: animationDuration)) {
@@ -64,7 +64,7 @@ struct InfiniteTabPageView<Content: View>: View {
                         didEndAnimation(-1)
                     }
                     offset = 0
-                    isDragging = false
+                    isDaySwiping = false
                 }
             }
     }

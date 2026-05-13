@@ -13,7 +13,7 @@ public struct DayLayout<Content: View>: View {
     @Environment(\.showEventDetailsClosure) var showEventDetailsClosure
 
     @Binding var hoursLabelsInset: CGFloat
-    @Binding var isScrolling: Bool
+    @Binding var isCalendarScrolling: Bool
 
     var anchorDate: Date
     var daysCount: Int
@@ -35,9 +35,9 @@ public struct DayLayout<Content: View>: View {
     @State private var lastHours: CGFloat = 12
     var pinchAnchor: CGFloat = 0.5
 
-    init(hoursLabelsInset: Binding<CGFloat>, isScrolling: Binding<Bool>, anchorDate: Date, daysCount: Int, events: [CalendarEvent], reminders: [CalendarReminder], isScrollDisabled: Bool, updateID: UUID, pinchAnchor: CGFloat = 0.5, dayEventBuilder: @escaping (any CalendarEntity) -> Content) {
+    init(hoursLabelsInset: Binding<CGFloat>, isCalendarScrolling: Binding<Bool>, anchorDate: Date, daysCount: Int, events: [CalendarEvent], reminders: [CalendarReminder], isScrollDisabled: Bool, updateID: UUID, pinchAnchor: CGFloat = 0.5, dayEventBuilder: @escaping (any CalendarEntity) -> Content) {
         self._hoursLabelsInset = hoursLabelsInset
-        self._isScrolling = isScrolling
+        self._isCalendarScrolling = isCalendarScrolling
         self.anchorDate = anchorDate
         self.daysCount = daysCount
         self.events = events
@@ -128,14 +128,14 @@ public struct DayLayout<Content: View>: View {
                             lastHours = customizationParams.hoursToFit
                         }
                     }
-                    .onChange(of: scrollInfo, { old, new in
+                    .onChange(of: scrollInfo) {
                         if isScrollDisabled {
-                            let clamped = max(0, min(targetOffset, new.maxOffset))
+                            let clamped = max(0, min(targetOffset, scrollInfo.maxOffset))
                             if clamped != targetOffset {
                                 targetOffset = clamped
                             }
                         }
-                    })
+                    }
                     .scrollPosition($scrollPosition, anchor: .topLeading)
                     .onScrollGeometryChange(for: ScrollInfo.self) { geo in
                         ScrollInfo(
@@ -146,10 +146,10 @@ public struct DayLayout<Content: View>: View {
                         scrollInfo = newVal
                     }
                     .onScrollPhaseChange { _, newVal in
-                        isScrolling = newVal != .idle
+                        isCalendarScrolling = newVal != .idle
                     }
                     .task(id: targetOffset) {
-                        if !isScrolling && targetOffset != scrollInfo.yOffset {
+                        if !isCalendarScrolling && targetOffset != scrollInfo.yOffset {
                             var t = Transaction()
                             t.disablesAnimations = true
                             withTransaction(t) {
@@ -158,7 +158,7 @@ public struct DayLayout<Content: View>: View {
                         }
                     }
                     .task(id: scrollInfo) {
-                        if isScrolling {
+                        if isCalendarScrolling {
                             let yOffset = max(0, min(scrollInfo.yOffset.rounded(), scrollInfo.maxOffset))
                             if yOffset != targetOffset {
                                 targetOffset = yOffset

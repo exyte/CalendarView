@@ -23,7 +23,7 @@ public extension Date {
     }
 
     func formatted(_ format: String) -> String {
-		return DateFormatterCache.shared.string(from: self, withFormat: format)
+        DateFormatterCache.shared.string(from: self, withFormat: format)
     }
 
     func adding(_ component: Calendar.Component, value: Int) -> Date {

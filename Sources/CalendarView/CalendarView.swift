@@ -103,8 +103,8 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     @State var displayedEventDetails: CalendarEntityWrapper?
     @State var updateID = UUID() // triggers downstream updates
     
-    @State var isDragging: Bool = false
-    @State var isScrolling = false
+    @State var isDaySwiping = false
+    @State var isCalendarScrolling = false
     @State var currentPage: Int = 0
 
     // layout helpers
@@ -115,7 +115,6 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     @State private var currentZoom = 0.0
     @State private var totalZoom = 4.0
     @State private var pinchAnchor: CGFloat = 0.5
-    @State private var lastAppliedHoursToFit: CGFloat = 4.0
 
     var idForUpdate: UUID = UUID()
 
@@ -193,16 +192,15 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                 .environmentObject(viewModel)
         }
         .onAppear {
-            customizationParams.hoursToFit = totalZoom
-            lastAppliedHoursToFit = totalZoom
+            totalZoom = customizationParams.hoursToFit
         }
     }
 
     private var dayLayoutView: some View {
         GeometryReader { g in
             InfiniteTabPageView(currentPage: $currentPage,
-                                isDragging: $isDragging,
-                                isScrolling: isScrolling,
+                                isDaySwiping: $isDaySwiping,
+                                isCalendarScrolling: isCalendarScrolling,
                                 width: g.size.width,
                                 didEndAnimation: { direction in
                 let date = fullscreenDate.adding(.day, value: direction)
@@ -214,7 +212,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                     VStack(spacing: 0) {
                         weekSwitcherDayFooterBuilder(weekSwitcherDayFooterParams(date: date, daysCount: displayMode.rawValue))
 
-                        DayLayout(hoursLabelsInset: $hoursLabelsInset, isScrolling: $isScrolling, anchorDate: date, daysCount: displayMode.rawValue, events: viewModel.getEvents(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate), reminders: viewModel.getReminders(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate), isScrollDisabled: isDragging, updateID: updateID, pinchAnchor: pinchAnchor, dayEventBuilder: dayEventBuilder)
+                        DayLayout(hoursLabelsInset: $hoursLabelsInset, isCalendarScrolling: $isCalendarScrolling, anchorDate: date, daysCount: displayMode.rawValue, events: viewModel.getEvents(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate), reminders: viewModel.getReminders(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate), isScrollDisabled: isDaySwiping, updateID: updateID, pinchAnchor: pinchAnchor, dayEventBuilder: dayEventBuilder)
                             .padding(.top, 8)
                             .background(theme.day.background)
                     }
@@ -235,12 +233,11 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     private var magnifyGesture: some Gesture {
         MagnifyGesture()
             .onChanged { value in
-                isDragging = true
+                isDaySwiping = true
                 let delta = (value.magnification - 1) * 3
                 let desired = max(3.0, min(totalZoom - delta, 12.0))
-                if abs(desired - lastAppliedHoursToFit) > 0.05 {
+                if abs(desired - customizationParams.hoursToFit) > 0.05 {
                     customizationParams.hoursToFit = desired
-                    lastAppliedHoursToFit = desired
                     updateID = UUID()
                 }
             }
@@ -249,7 +246,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                 totalZoom = max(3.0, min(totalZoom - delta, 12.0))
                 currentZoom = 0
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                    isDragging = false
+                    isDaySwiping = false
                 }
             }
     }
