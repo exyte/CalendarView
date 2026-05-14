@@ -23,8 +23,7 @@ public extension Date {
     }
 
     func formatted(_ format: String) -> String {
-        let formatter = DateFormatterCache.formatter(for: format)
-        return formatter.string(from: self)
+        DateFormatterCache.shared.string(from: self, withFormat: format)
     }
 
     func adding(_ component: Calendar.Component, value: Int) -> Date {
@@ -194,10 +193,15 @@ public extension Date {
     }
 }
 
-actor DateFormatterCache {
-    static var formatters: [String: DateFormatter] = [:]
+final class DateFormatterCache: @unchecked Sendable {
 
-    static func formatter(for format: String) -> DateFormatter {
+	static let shared = DateFormatterCache()
+
+	private let lock = NSLock()
+
+	private var formatters: [String: DateFormatter] = [:]
+
+    func formatter(for format: String) -> DateFormatter {
         if let existing = formatters[format] {
             return existing
         } else {
@@ -208,4 +212,10 @@ actor DateFormatterCache {
             return formatter
         }
     }
+
+	func string(from date: Date, withFormat format: String) -> String {
+		lock.lock()
+		defer { lock.unlock() }
+		return formatter(for: format).string(from: date)
+	}
 }

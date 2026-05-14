@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-public final class LocalCalendarsProvider: EditableCalendarsProvider {
+public final class LocalCalendarsProvider: EditableCalendarsProvider, @unchecked Sendable  {
     private let calendarStore = CodableStore<ProviderCalendar>()
     private let eventStore = CalendarEntityStore<CalendarEvent>()
     private let reminderStore = CalendarEntityStore<CalendarReminder>()
