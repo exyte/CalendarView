@@ -151,6 +151,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                     .background(theme.month.background)
             }
         }
+        .background(theme.main.background)
         .environmentObject(viewModel)
         .environment(\.calendarCustomizationParams, customizationParams)
         .environment(\.showEventDetailsClosure, { (entity: any CalendarEntity) in
@@ -187,7 +188,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                 .environmentObject(viewModel)
         }
 
-        .sheet(item: $displayedEventDetails) {
+        .fullScreenCover(item: $displayedEventDetails) {
             updateData() // onDismiss
         } content: { entity in
             EventDetailsView(entity: entity.entity)

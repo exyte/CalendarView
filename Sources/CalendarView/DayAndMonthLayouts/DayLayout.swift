@@ -246,6 +246,9 @@ public struct DayLayout<Content: View>: View {
                 .frame(height: min(allDaysViewHeight.values.max() ?? 0, allDaysViewMaxHeight))
                 .scrollBounceBehavior(.basedOnSize)
                 .scrollDisabled(isScrollDisabled)
+                .onScrollPhaseChange { _, newVal in
+                    isCalendarScrolling = newVal != .idle
+                }
             }
         }
         .padding(.trailing, customizationParams.horSpacing)
