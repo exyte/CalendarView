@@ -24,8 +24,9 @@ final class AppleCalendarsProvider: CalendarsProvider, @unchecked Sendable {
                 id: $0.eventIdentifier,
                 calendarID: $0.calendar.calendarIdentifier,
                 title: $0.title ?? "Untitled",
-                notes: $0.description,
+                notes: $0.notes ?? "",
                 calendarColor: Color(cgColor: $0.calendar.cgColor ?? UIColor.systemGray.cgColor),
+                calendarName: $0.calendar.title,
                 startDate: $0.startDate,
                 endDate: $0.endDate,
                 isAllDay: $0.isAllDay,
@@ -69,6 +70,7 @@ final class AppleCalendarsProvider: CalendarsProvider, @unchecked Sendable {
                         calendarID: reminder.calendar.calendarIdentifier, title: reminder.title ?? "Untitled",
                         notes: reminder.notes ?? "",
                         calendarColor: Color(cgColor: reminder.calendar.cgColor ?? UIColor.systemGray.cgColor),
+                        calendarName: reminder.calendar.title,
                         startDate: reminder.dueDateComponents?.date ?? Date(),
                         isCompleted: isCompleted
                     )

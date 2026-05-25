@@ -15,19 +15,35 @@ struct FieldCalendarSelection: View {
 
     var body: some View {
         HStack(alignment: .top) {
-            Text("Calendar*")
-            Spacer()
-            if let title = selectedCalendar?.title {
-                Text(title)
-                    .padding(12, 8)
-                    .background(Color(selectedCalendar?.color ?? .clear).opacity(0.3))
-                    .cornerRadius(6)
+            HStack(spacing: 0) {
+                Text("Calendar")
+                    .systemFont(17, .regular)
+
+                Text("*")
+                    .systemFont(17, .regular, .red)
+                    .padding(.leading, 4)
+
+                Spacer()
             }
 
-            Image(systemName: "arrow.right")
+            Spacer()
+
+            if let title = selectedCalendar?.title {
+                Text(title)
+                    .frame(height: 34)
+                    .padding(.horizontal, 12)
+                    .background(Color(selectedCalendar?.color ?? .clear).opacity(0.3))
+                    .cornerRadius(17)
+            } else {
+                Text("Not selected")
+                    .systemFont(17, .regular, Color.named("appGrey"))
+            }
+
+            Image(.rightArrow)
                 .frame(width: 24, height: 24)
-                .foregroundStyle(.blue)
+                .foregroundStyle(Color.named("appLightGrey"))
         }
+        .contentShape(Rectangle())
         .onTapGesture {
             showSelectionPopup = true
         }
@@ -72,20 +88,12 @@ struct CalendarSelectionPopupView: View {
 
                     Spacer()
                 }
+                .contentShape(Rectangle())
                 .onTapGesture {
                     selectedCalendar = calendar
                     dismiss?()
                 }
             }
-
-            Button("+ New calendar") {
-                showCreateCalendar = true
-            }
-            .systemFont(20, .semibold)
-
-            //if showCreateCalendar {
-                CreateCalendarView()
-            //}
         }
         .sizeGetter($size)
         .onChange(of: viewModel.calendars, initial: true) { _, newValue in

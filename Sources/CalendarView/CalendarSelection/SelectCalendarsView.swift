@@ -19,24 +19,7 @@ public struct SelectCalendarsView: View {
 
     public var body: some View {
         VStack {
-            ZStack {
-                HStack {
-                    Button("Add") {
-                      //  viewModel.ad
-                    }
-                    .systemFont(17, .semibold, theme.main.accent)
-
-                    Spacer()
-
-                    Button("Done") {
-                        dismiss()
-                    }
-                    .systemFont(17, .semibold, theme.main.accent)
-                }
-
-                Text("Filter").systemFont(17, .semibold, theme.main.text)
-            }
-            .padding(16)
+            headerView
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
@@ -52,6 +35,45 @@ public struct SelectCalendarsView: View {
         .background(theme.main.background)
         .task {
             await viewModel.fetchCalendars()
+        }
+    }
+
+    var headerView: some View {
+        ZStack {
+            HStack {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(.cross)
+                }
+                .frame(width: 44, height: 44)
+                .background(Circle().styled(theme.button.background))
+
+                Spacer()
+
+                Button {
+                    dismiss()
+                } label: {
+                    Image(.checkmark)
+                        .resizable()
+                        .frame(width: 14, height: 12)
+                }
+                .frame(width: 44, height: 44)
+                .background(Circle().styled(theme.button.accent))
+            }
+
+            Text("Filter").systemFont(17, .semibold, theme.main.text)
+        }
+        .padding(16)
+        .overlay {
+            VStack {
+                Capsule()
+                    .frame(width: 36, height: 5)
+                    .foregroundStyle(theme.main.secondaryText)
+                    .padding(.top, 5)
+
+                Spacer()
+            }
         }
     }
 

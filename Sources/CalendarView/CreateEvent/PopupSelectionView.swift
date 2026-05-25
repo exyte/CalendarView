@@ -34,6 +34,7 @@ struct SelectionPopupView<Selection: PickerEnum>: View {
                         .frame(width: 24, height: 24)
                 }
                 .padding(.bottom, 20)
+                .contentShape(Rectangle())
                 .onTapGesture {
                     selection = value
                     dismiss?()

@@ -14,6 +14,7 @@ public struct CalendarTheme: Sendable {
     public let day: Day
     public let month: Month
     public let year: Year
+    public let button: Button
 
     public init(
         main: Main = .init(),
@@ -21,7 +22,8 @@ public struct CalendarTheme: Sendable {
         week: Week = .init(),
         day: Day = .init(),
         month: Month = .init(),
-        year: Year = .init()
+        year: Year = .init(),
+        button: Button = .init()
     ) {
         self.main = main
         self.header = header.resolved(using: main)
@@ -29,6 +31,7 @@ public struct CalendarTheme: Sendable {
         self.day = day.resolved(using: main)
         self.month = month.resolved(using: main)
         self.year = year.resolved(using: main)
+        self.button = button
     }
 
     public struct Main: Sendable {
@@ -41,7 +44,7 @@ public struct CalendarTheme: Sendable {
             text: Color = .named("appBlack"),
             secondaryText: Color = .named("appGrey"),
             accent: Color = .named("AccentColor"),
-            background: Color = .white
+            background: Color = .named("appLightBG")
         ) {
             self.text = text
             self.secondaryText = secondaryText
@@ -212,6 +215,22 @@ public struct CalendarTheme: Sendable {
             self.dateText = dateText
             self.monthText = monthText
             self.todayText = todayText
+            self.background = background
+        }
+    }
+
+    public struct Button: Sendable {
+        public var accent: Color
+        public var disabled: Color
+        public var background: Color
+
+        public init(
+            accent: Color = .named("AccentColor"),
+            disabled: Color = .named("appLightGrey"),
+            background: Color = .named("appLightGrey")
+        ) {
+            self.accent = accent
+            self.disabled = disabled
             self.background = background
         }
     }

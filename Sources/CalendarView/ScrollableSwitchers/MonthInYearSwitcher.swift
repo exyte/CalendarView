@@ -26,7 +26,24 @@ struct MonthInYearSwitcher: View {
     var body: some View {
         VStack {
             headerView
-                .padding(16, 8)
+
+            Group {
+                TextField("\(Image(systemName: "magnifyingglass")) Search a year", text: $searchText)
+                    .frame(height: 44)
+                    .padding(.horizontal, 16)
+                    .background(
+                        RoundedRectangle(cornerRadius: 22)
+                            .fill(Color.white)
+                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                    )
+                    .submitLabel(.search)
+                    .focused($isSearchFocused)
+                    .onSubmit {
+                        centerOnYear()
+                        isSearchFocused = false
+                    }
+            }
+            .padding(.horizontal, 16)
 
             createSimpleInfiniteTableView(items: $items) { item in
                 let yearDate = date.startOfYear.adding(.year, value: item)
@@ -49,27 +66,31 @@ struct MonthInYearSwitcher: View {
     }
 
     var headerView: some View {
-        HStack {
-            Button("Cancel") {
-                dismiss()
-            }
-            .systemFont(17, .semibold, theme.main.accent)
-            .padding(.trailing, 20)
-
-            TextField("Enter a year", text: $searchText)
-                .textFieldStyle(.roundedBorder)
-                .submitLabel(.search)
-                .focused($isSearchFocused)
-                .onSubmit {
-                    centerOnYear()
-                    isSearchFocused = false
+        ZStack {
+            HStack {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(.cross)
                 }
+                .frame(width: 44, height: 44)
+                .background(Circle().styled(theme.button.background))
 
-            Button("Search") {
-                centerOnYear()
-                isSearchFocused = false
+                Spacer()
             }
-            .systemFont(17, .semibold, theme.main.accent)
+
+            Text("Year").systemFont(17, .semibold, theme.main.text)
+        }
+        .padding(16)
+        .overlay {
+            VStack {
+                Capsule()
+                    .frame(width: 36, height: 5)
+                    .foregroundStyle(theme.main.secondaryText)
+                    .padding(.top, 5)
+
+                Spacer()
+            }
         }
     }
 

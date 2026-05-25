@@ -48,7 +48,8 @@ public struct DefaultHeaderView: View {
             } label: {
                 Image(.add)
             }
-            .styleLikeButton()
+            .padding(8)
+            .background(Circle().styled(theme.button.accent))
         }
         .padding(.horizontal, 10)
         .sheet(isPresented: $showMonthPicker) {
@@ -102,7 +103,7 @@ public struct DefaultHeaderView: View {
 
 fileprivate extension View {
     func styleLikeButton() -> some View {
-        self.padding(5)
+        self.padding(8)
             .background(Circle().styled(.white.opacity(0.12), border: .white.opacity(0.4), 0.5))
     }
 }

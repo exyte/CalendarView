@@ -13,6 +13,8 @@ enum TimeOrDateViewType: String, CaseIterable {
 }
 
 struct FieldTimeOrDate: View {
+    @Environment(\.calendarTheme) private var theme
+
     @State var type: TimeOrDateViewType = .date
     
     @Binding var date: Date
@@ -31,17 +33,24 @@ struct FieldTimeOrDate: View {
                     Spacer()
                     
                     Text(getCurrentDateStringValue())
+                        .frame(height: 34)
+                        .padding(.horizontal, 12)
+                        .background(Color.named("appLightGrey"))
+                        .cornerRadius(17)
+                        .systemFont(17, .regular, theme.main.accent)
+                        .gesture(
+                            TapGesture()
+                                .onEnded {
+                                    withAnimation(.easeInOut) {
+                                        if type == .date {
+                                            showDatePicker.toggle()
+                                        } else {
+                                            showTimePicker.toggle()
+                                        }
+                                    }
+                                }
+                        )
                 }
-                .gesture(
-                    TapGesture()
-                        .onEnded {
-                            if type == .date {
-                                showDatePicker.toggle()
-                            } else {
-                                showTimePicker.toggle()
-                            }
-                        }
-                )
                 
                 if showDatePicker {
                     DatePicker("Start Date", selection: $date, displayedComponents: .date)
@@ -57,6 +66,7 @@ struct FieldTimeOrDate: View {
                         .tint(.blue.opacity(0.3))
                 }
             }
+            .clipped()
         }
     }
     

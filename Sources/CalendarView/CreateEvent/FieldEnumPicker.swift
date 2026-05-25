@@ -45,11 +45,13 @@ struct FieldEnumPicker<S: PickerEnum>: View {
             Spacer()
 
             Text(currentValue.stringValue)
+                .systemFont(17, .regular, Color.named("appGrey"))
 
-            Image(systemName: "arrow.right")
+            Image(.rightArrow)
                 .frame(width: 24, height: 24)
-                .foregroundStyle(.blue)
+                .foregroundStyle(Color.named("appLightGrey"))
         }
+        .contentShape(Rectangle())
         .onTapGesture {
             showSelectionPopup = true
         }

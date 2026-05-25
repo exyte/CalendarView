@@ -51,6 +51,7 @@ public struct MonthLayout<MonthDay: View>: View {
                         monthDayBuilder(MonthDayBuilderParams(date: date, events: eventsFor(date), viewHeight: rowHeight))
                             .frame(height: rowHeight)
                     }
+                    .id(UUID())
                 }
             }
             .frame(height: g.size.height)

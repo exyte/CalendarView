@@ -46,6 +46,18 @@ public final class LocalCalendarsProvider: EditableCalendarsProvider, @unchecked
         }
     }
 
+    public func deleteEvent(_ event: CalendarEvent) {
+        Task {
+            try await eventStore.delete(id: event.id, calendarID: event.calendarID, from: event.startDate)
+        }
+    }
+
+    public func deleteReminder(_ reminder: CalendarReminder) {
+        Task {
+            try await reminderStore.delete(id: reminder.id, calendarID: reminder.calendarID, from: reminder.startDate)
+        }
+    }
+
     public func updateEvent(_ event: CalendarEvent, oldStartDate: Date) {
         Task {
             try await eventStore.update(event, oldStartDate: oldStartDate)

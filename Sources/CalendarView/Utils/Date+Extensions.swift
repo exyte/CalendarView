@@ -82,6 +82,30 @@ public extension Date {
         Calendar.current.date(byAdding: .day, value: -1, to: self)
     }
 
+    var dateFullFormat: String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "EEEE, d MMM yyyy"
+        return dateFormatter.string(from: self)
+    }
+
+    var dateFormat: String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "d MMM yyyy"
+        return dateFormatter.string(from: self)
+    }
+
+    var shortDateFormat: String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "dd MMM"
+        return dateFormatter.string(from: self)
+    }
+
+    var timeFormat: String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "HH:mm"
+        return dateFormatter.string(from: self)
+    }
+
     // MARK: - Set Full Time or Date
 
     func setTime(to time: String) -> Date? {

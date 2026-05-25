@@ -14,6 +14,7 @@ public struct CalendarReminder: CalendarEntity {
     public var title: String
     public var notes: String
     public var calendarColor: Color
+    public var calendarName: String
     public var startDate: Date
     public var isCompleted: Bool
 
@@ -24,12 +25,13 @@ public struct CalendarReminder: CalendarEntity {
 
     public var entityType: EntityType { .reminder }
 
-    init(id: String = UUID().uuidString, calendarID: String = "", title: String = "", notes: String = "", calendarColor: Color = .gray, startDate: Date = Date(), isCompleted: Bool = false, repeatType: RepeatType = .never, alertType: AlertType = .atTimeOfEvent, priorityType: PriorityType = .none, vibrationType: VibrationType = .none) {
+    init(id: String = "Local-\(UUID().uuidString)", calendarID: String = "", title: String = "", notes: String = "", calendarColor: Color = .gray, calendarName: String = "", startDate: Date = Date(), isCompleted: Bool = false, repeatType: RepeatType = .never, alertType: AlertType = .atTimeOfEvent, priorityType: PriorityType = .none, vibrationType: VibrationType = .none) {
         self.id = id
         self.calendarID = calendarID
         self.title = title
         self.notes = notes
         self.calendarColor = calendarColor
+        self.calendarName = calendarName
         self.startDate = startDate
         self.isCompleted = isCompleted
         self.repeatType = repeatType

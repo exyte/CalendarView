@@ -18,6 +18,7 @@ public protocol CalendarEntity: Equatable, Identifiable, Sendable, Codable {
     var title: String { get set }
     var notes: String { get set }
     var calendarColor: Color { get set }
+    var calendarName: String { get set }
     var startDate: Date { get set }
 
     var repeatType: RepeatType { get set }
@@ -28,6 +29,7 @@ public protocol CalendarEntity: Equatable, Identifiable, Sendable, Codable {
     var entityType: EntityType { get }
 
     func repeatableEventOccursOn(date: Date) -> Bool
+    func isLocalEntity() -> Bool
 }
 
 extension CalendarEntity {
@@ -56,6 +58,10 @@ extension CalendarEntity {
         }
 
         return isSameDay
+    }
+
+    public func isLocalEntity() -> Bool {
+        id.contains("Local")
     }
 }
 

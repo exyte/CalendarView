@@ -122,6 +122,25 @@ class CalendarViewModel: ObservableObject {
         }
     }
 
+    func deleteEvent(_ event: CalendarEvent) async {
+        if let provider = getProvider() {
+            do {
+                try await provider.deleteEvent(event)
+            } catch {
+                print(error)
+            }
+        }
+    }
+
+    func deleteReminder(_ reminder: CalendarReminder) async {
+        if let provider = getProvider() {
+            do {
+                try await provider.deleteReminder(reminder)
+            } catch {
+                print(error)
+            }
+        }
+    }
 
     func updateEvent(_ event: CalendarEvent, oldStartDate: Date) async {
         if let provider = getProvider() {

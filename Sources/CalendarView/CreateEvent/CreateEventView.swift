@@ -8,8 +8,12 @@
 import SwiftUI
 
 struct CreateOrEditEventView<Entity: CalendarEntity>: View {
+    @Environment(\.calendarTheme) private var theme
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var viewModel: CalendarViewModel
+
+    @State var saveNewEvent: (()->())?
+    @State var saveDisabled: Bool = false
 
     var entity: Binding<Entity>?
     var didEditEntity: (()->())?
@@ -20,45 +24,66 @@ struct CreateOrEditEventView<Entity: CalendarEntity>: View {
 
     var body: some View {
         NavigationStack {
+            headerView
+
             Group {
                 if let entity {
                     EditCalendarEntityView(entity: entity)
                 } else {
-                    CreateEventView()
+                    CreateEventView(saveNewEvent: $saveNewEvent, saveDisabled: $saveDisabled)
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarBackButtonHidden()
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Text("New")
-                        .systemFont(17, .semibold)
-                }
+        }
+        .background(theme.main.background)
+    }
 
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button {
+    var headerView: some View {
+        ZStack {
+            HStack {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(.cross)
+                }
+                .frame(width: 44, height: 44)
+                .background(Circle().styled(theme.button.background))
+
+                Spacer()
+
+                Button {
+                    if isEdit {
                         dismiss()
-                    } label: {
-                        Text("Cancel")
-                            .systemFont(17)
+                        didEditEntity?()
+                    } else {
+                        saveNewEvent?()
                     }
+                } label: {
+                    Image(.checkmark)
+                        .resizable()
+                        .frame(width: 14, height: 12)
                 }
+                .frame(width: 44, height: 44)
+                .background(Circle().styled(saveDisabled ? theme.button.disabled : theme.button.accent))
+                .disabled(saveDisabled)
+            }
 
-                if isEdit {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button {
-                            Task {
-                                dismiss()
-                                didEditEntity?()
-                            }
-                        } label: {
-                            Text("Save")
-                        }
-                    }
-                }
+            Text(isEdit ? "Edit" : "New").systemFont(17, .semibold, theme.main.text)
+        }
+        .padding(16)
+        .overlay {
+            VStack {
+                Capsule()
+                    .frame(width: 36, height: 5)
+                    .foregroundStyle(theme.main.secondaryText)
+                    .padding(.top, 5)
+
+                Spacer()
             }
         }
     }
+
 }
 
 struct CreateEventView: View {
@@ -68,6 +93,9 @@ struct CreateEventView: View {
     @State private var isEvent: Bool = true
     @State private var event: CalendarEvent = CalendarEvent()
     @State private var reminder: CalendarReminder = CalendarReminder()
+
+    @Binding var saveNewEvent: (()->())?
+    @Binding var saveDisabled: Bool
 
     var body: some View {
         VStack {
@@ -81,22 +109,19 @@ struct CreateEventView: View {
         }
         .onChange(of: event) {
             reminder.syncFields(from: event)
+            saveDisabled = event.title.isEmpty || event.calendarID.isEmpty
         }
         .onChange(of: reminder) {
             event.syncFields(from: reminder)
+            saveDisabled = event.title.isEmpty || event.calendarID.isEmpty
         }
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    Task {
-                        dismiss()
-                        isEvent ? await viewModel.addEvent(event) : await viewModel.addReminder(reminder)
-                    }
-                } label: {
-                    Text("Create")
-                        .systemFont(17, .semibold, event.title.isEmpty || event.calendarID.isEmpty ? .gray : .blue.opacity(1))
+        .onAppear {
+            saveDisabled = true
+            saveNewEvent = {
+                Task {
+                    dismiss()
+                    isEvent ? await viewModel.addEvent(event) : await viewModel.addReminder(reminder)
                 }
-                .disabled(event.title.isEmpty || event.calendarID.isEmpty)
             }
         }
     }
@@ -110,11 +135,10 @@ struct CreateEventView: View {
                     .systemFont(15, .semibold)
                     .frame(height: 32)
                     .greedyWidth()
-                    .background(isEvent ? Color.blue.opacity(0.3) : Color.clear)
-                    .cornerRadius(6)
-                    .padding(2)
+                    .background(isEvent ? Color.white : Color.clear)
+                    .cornerRadius(16)
+                    .padding(3)
             }
-            .padding(.leading, 3)
 
             Button {
                 self.isEvent = false
@@ -123,17 +147,16 @@ struct CreateEventView: View {
                     .systemFont(15, .semibold)
                     .frame(height: 32)
                     .greedyWidth()
-                    .background(!isEvent ? Color.blue.opacity(0.3) : Color.clear)
-                    .cornerRadius(6)
-                    .padding(2)
+                    .background(!isEvent ? Color.white : Color.clear)
+                    .cornerRadius(16)
+                    .padding(3)
             }
-            .padding(.trailing, 3)
         }
         .greedyWidth()
-        .background(.blue.opacity(0.1))
-        .frame(height: 38)
-        .cornerRadius(8)
-        .padding(.horizontal, 8)
+        .background(Color.named("appLightGrey"))
+        .frame(height: 36)
+        .cornerRadius(18)
+        .padding(.horizontal, 16)
     }
 }
 
@@ -160,8 +183,20 @@ struct EditCalendarEntityView<Entity: CalendarEntity>: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                TextField("Title*", text: $entity.title)
-                
+                HStack(spacing: 0) {
+                    Text("Title")
+                        .systemFont(15, .regular)
+
+                    Text("*")
+                        .systemFont(15, .regular, .red)
+                        .padding(.leading, 4)
+
+                    Spacer()
+                }
+
+                TextField("Event title...", text: $entity.title)
+                    .systemFont(20, .semibold)
+
                 separatorView
 
                 if let eventBinding {
@@ -196,12 +231,13 @@ struct EditCalendarEntityView<Entity: CalendarEntity>: View {
             if let selectedCalendar {
                 entity.calendarID = selectedCalendar.id
                 entity.calendarColor = selectedCalendar.color
+                entity.calendarName = selectedCalendar.title
             }
         }
     }
 
     var separatorView: some View {
-        Color.blue.opacity(0.3)
+        Color.named("appLightGrey")
             .frame(height: 1)
     }
 }
@@ -212,6 +248,7 @@ fileprivate extension CalendarEntity {
         self.title = other.title
         self.notes = other.notes
         self.calendarColor = other.calendarColor
+        self.calendarName = other.calendarName
         self.startDate = other.startDate
         self.repeatType = other.repeatType
         self.alertType = other.alertType

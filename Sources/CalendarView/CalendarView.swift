@@ -168,7 +168,9 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
             updateData()
         }
         .onChange(of: idForUpdate) {
-            updateData()
+            DispatchQueue.main.async {
+                updateData()
+            }
         }
 
         .sheet(isPresented: $showCalendarFilters) {

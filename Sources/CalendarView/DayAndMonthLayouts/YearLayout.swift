@@ -40,10 +40,11 @@ struct YearLayout: View {
     }
 }
 
-struct YearMonthLayout: View {
+struct YearMonthLayout: View, Identifiable {
     @Environment(\.calendarTheme) private var theme
     @Environment(\.calendarCustomizationParams) var customizationParams
 
+    let id = UUID()
     var date: Date // 1st of some month
 
     let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
@@ -70,16 +71,18 @@ struct YearMonthLayout: View {
                 let maxMonthDay = date.maxMonthDay
                 ForEach(1...maxMonthDay, id: \.self) { day in
                     Text("\(day)").systemFont(8, theme.year.dateText)
+                        .id(UUID())
                 }
             }
         }
     }
 }
 
-struct YearCurrentMonthLayout: View {
+struct YearCurrentMonthLayout: View, Identifiable {
     @Environment(\.calendarTheme) private var theme
     @Environment(\.calendarCustomizationParams) var customizationParams
 
+    let id = UUID()
     var date: Date // 1st of some month
 
     let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
@@ -106,11 +109,13 @@ struct YearCurrentMonthLayout: View {
 
                 let maxMonthDay = date.maxMonthDay
                 ForEach(1...maxMonthDay, id: \.self) { day in
-                    Text("\(day)").systemFont(8, theme.year.dateText)
-                        .applyIf(day == today.getDay()) {
-                            $0.overlay {
-                                Circle().styled(theme.year.todayText)
-                            }
+                    let isToday = day == today.getDay()
+                    Text("\(day)").systemFont(8, isToday ? .white : theme.year.dateText)
+                        .id(UUID())
+                        .applyIf(isToday) {
+                            $0
+                                .frame(width: 14, height: 14)
+                                .background(Circle().styled(theme.year.todayText))
                         }
                 }
             }

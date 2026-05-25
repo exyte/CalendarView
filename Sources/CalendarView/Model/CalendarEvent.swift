@@ -14,6 +14,7 @@ public struct CalendarEvent: CalendarEntity, Hashable {
     public var title: String
     public var notes: String
     public var calendarColor: Color
+    public var calendarName: String
     public var startDate: Date
     public var endDate: Date
     public var isAllDay: Bool
@@ -30,12 +31,13 @@ public struct CalendarEvent: CalendarEntity, Hashable {
         endDate.timeIntervalSinceNow - startDate.timeIntervalSinceNow
     }
 
-    public init(id: String = UUID().uuidString, calendarID: String = "", title: String = "", notes: String = "", calendarColor: Color = .gray, startDate: Date = Date(), endDate: Date? = nil, isAllDay: Bool = false, isDetached: Bool = false, repeatType: RepeatType = .never, alertType: AlertType = .none, priorityType: PriorityType = .none, vibrationType: VibrationType = .none, payload: [String : Sendable] = [:]) {
+    public init(id: String = "Local-\(UUID().uuidString)", calendarID: String = "", title: String = "", notes: String = "", calendarColor: Color = .gray, calendarName: String = "", startDate: Date = Date(), endDate: Date? = nil, isAllDay: Bool = false, isDetached: Bool = false, repeatType: RepeatType = .never, alertType: AlertType = .none, priorityType: PriorityType = .none, vibrationType: VibrationType = .none, payload: [String : Sendable] = [:]) {
         self.id = id
         self.calendarID = calendarID
         self.title = title
         self.notes = notes
         self.calendarColor = calendarColor
+        self.calendarName = calendarName
         self.startDate = startDate
         self.endDate = endDate ?? startDate.adding(.hour, value: 1)
         self.isAllDay = isAllDay
