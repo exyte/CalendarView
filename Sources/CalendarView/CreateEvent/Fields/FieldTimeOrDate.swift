@@ -33,23 +33,19 @@ struct FieldTimeOrDate: View {
                     Spacer()
                     
                     Text(getCurrentDateStringValue())
-                        .frame(height: 34)
-                        .padding(.horizontal, 12)
+                        .padding(12, 6)
                         .background(Color.named("appLightGrey"))
-                        .cornerRadius(17)
+                        .clipShape(Capsule())
                         .systemFont(17, .regular, theme.main.accent)
-                        .gesture(
-                            TapGesture()
-                                .onEnded {
-                                    withAnimation(.easeInOut) {
-                                        if type == .date {
-                                            showDatePicker.toggle()
-                                        } else {
-                                            showTimePicker.toggle()
-                                        }
-                                    }
+                        .onTapGesture {
+                            withAnimation(.easeInOut) {
+                                if type == .date {
+                                    showDatePicker.toggle()
+                                } else {
+                                    showTimePicker.toggle()
                                 }
-                        )
+                            }
+                        }
                 }
                 
                 if showDatePicker {
@@ -79,10 +75,10 @@ struct FieldTimeOrDate: View {
             } else if Calendar.current.isDateInTomorrow(date) {
                 return "Tomorrow"
             } else {
-                return date.formatted("d MMM yyyy")
+                return date.dateFormat
             }
         } else {
-            return date.formatted("HH:mm")
+            return date.timeFormat
         }
     }
 }

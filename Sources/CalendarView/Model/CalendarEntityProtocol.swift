@@ -27,9 +27,9 @@ public protocol CalendarEntity: Equatable, Identifiable, Sendable, Codable {
     var vibrationType: VibrationType { get set }
 
     var entityType: EntityType { get }
+    var isLocalEntity: Bool { get }
 
     func repeatableEventOccursOn(date: Date) -> Bool
-    func isLocalEntity() -> Bool
 }
 
 extension CalendarEntity {
@@ -60,7 +60,7 @@ extension CalendarEntity {
         return isSameDay
     }
 
-    public func isLocalEntity() -> Bool {
+    public var isLocalEntity: Bool {
         id.contains("Local")
     }
 }

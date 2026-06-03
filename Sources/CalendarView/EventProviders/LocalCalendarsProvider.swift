@@ -26,47 +26,33 @@ public final class LocalCalendarsProvider: EditableCalendarsProvider, @unchecked
         try await reminderStore.events(from: startDate, to: endDate, calendarIDs: selectedCalendarIDs)
     }
 
-    public func addCalendar(_ calendar: ProviderCalendar) {
-        Task {
-            var existing = await (try? calendarStore.load()) ?? []
-            existing.append(calendar)
-            try await calendarStore.save(existing)
-        }
+    public func addCalendar(_ calendar: ProviderCalendar) async throws {
+        var existing = await (try? calendarStore.load()) ?? []
+        existing.append(calendar)
+        try await calendarStore.save(existing)
     }
 
-    public func addEvent(_ event: CalendarEvent) {
-        Task {
-            try await eventStore.add(event)
-        }
+    public func addEvent(_ event: CalendarEvent) async throws {
+        try await eventStore.add(event)
     }
 
-    public func addReminder(_ reminder: CalendarReminder) {
-        Task {
-            try await reminderStore.add(reminder)
-        }
+    public func addReminder(_ reminder: CalendarReminder) async throws {
+        try await reminderStore.add(reminder)
     }
 
-    public func deleteEvent(_ event: CalendarEvent) {
-        Task {
-            try await eventStore.delete(id: event.id, calendarID: event.calendarID, from: event.startDate)
-        }
+    public func deleteEvent(_ event: CalendarEvent) async throws {
+        try await eventStore.delete(id: event.id, calendarID: event.calendarID, from: event.startDate)
     }
 
-    public func deleteReminder(_ reminder: CalendarReminder) {
-        Task {
-            try await reminderStore.delete(id: reminder.id, calendarID: reminder.calendarID, from: reminder.startDate)
-        }
+    public func deleteReminder(_ reminder: CalendarReminder) async throws {
+        try await reminderStore.delete(id: reminder.id, calendarID: reminder.calendarID, from: reminder.startDate)
     }
 
-    public func updateEvent(_ event: CalendarEvent, oldStartDate: Date) {
-        Task {
-            try await eventStore.update(event, oldStartDate: oldStartDate)
-        }
+    public func updateEvent(_ event: CalendarEvent, oldStartDate: Date) async throws {
+        try await eventStore.update(event, oldStartDate: oldStartDate)
     }
 
-    public func updateReminder(_ reminder: CalendarReminder, oldStartDate: Date) {
-        Task {
-            try await reminderStore.update(reminder, oldStartDate: oldStartDate)
-        }
+    public func updateReminder(_ reminder: CalendarReminder, oldStartDate: Date) async throws {
+        try await reminderStore.update(reminder, oldStartDate: oldStartDate)
     }
 }

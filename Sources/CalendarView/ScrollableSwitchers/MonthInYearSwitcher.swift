@@ -29,8 +29,7 @@ struct MonthInYearSwitcher: View {
 
             Group {
                 TextField("\(Image(systemName: "magnifyingglass")) Search a year", text: $searchText)
-                    .frame(height: 44)
-                    .padding(.horizontal, 16)
+                    .padding(16, 12)
                     .background(
                         RoundedRectangle(cornerRadius: 22)
                             .fill(Color.white)

@@ -83,26 +83,22 @@ public extension Date {
     }
 
     var dateFullFormat: String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "EEEE, d MMM yyyy"
+        let dateFormatter = DateFormatter.dateFullFormatter
         return dateFormatter.string(from: self)
     }
 
     var dateFormat: String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "d MMM yyyy"
+        let dateFormatter = DateFormatter.dateFormatter
         return dateFormatter.string(from: self)
     }
 
     var shortDateFormat: String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd MMM"
+        let dateFormatter = DateFormatter.shortDateFormatter
         return dateFormatter.string(from: self)
     }
 
     var timeFormat: String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "HH:mm"
+        let dateFormatter = DateFormatter.timeFormatter
         return dateFormatter.string(from: self)
     }
 
@@ -242,4 +238,41 @@ final class DateFormatterCache: @unchecked Sendable {
 		defer { lock.unlock() }
 		return formatter(for: format).string(from: date)
 	}
+}
+
+extension DateFormatter {
+    static let dateFullFormatter = {
+        let formatter = DateFormatter()
+
+        formatter.dateStyle = .full
+        formatter.timeStyle = .none
+
+        return formatter
+    }()
+
+    static let dateFormatter = {
+        let formatter = DateFormatter()
+
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+
+        return formatter
+    }()
+
+    static let shortDateFormatter = {
+        let formatter = DateFormatter()
+
+        formatter.dateFormat = "dd MMM"
+
+        return formatter
+    }()
+
+    static let timeFormatter = {
+        let formatter = DateFormatter()
+
+        formatter.dateStyle = .none
+        formatter.timeStyle = .short
+
+        return formatter
+    }()
 }

@@ -214,11 +214,10 @@ extension Color: Codable, Sendable {
 
 public extension ToolbarContent {
 
-    @available(iOS 17, macOS 13, *)
     @ToolbarContentBuilder
     func removeSharedBackground() -> some ToolbarContent {
         Group {
-            if #available(iOS 26, macOS 26, *) {
+            if #available(iOS 26, *) {
                 self.sharedBackgroundVisibility(.hidden)
             } else {
                 self

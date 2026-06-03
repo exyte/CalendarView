@@ -38,118 +38,35 @@ struct EventDetailsView: View {
                     }
                 
                 VStack {
-                    VStack(alignment: .leading) {
+                    headerView
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.vertical, 16)
 
-                        Text(entity.title)
-                            .systemFont(20, .semibold)
-                            .padding(.bottom, 8)
+                    separatorView
 
-                        // MARK: Date
-
-                        VStack(alignment: .leading) {
-                            if let event = entity as? CalendarEvent {
-                                if numberOfDaysBetween(event.startDate, event.endDate) <= 1 {
-                                    Text(event.startDate.dateFullFormat)
-                                        .systemFont(13, .regular)
-                                        .opacity(0.6)
-
-                                    if event.isAllDay {
-                                        Text("All day")
-                                            .systemFont(13, .regular)
-                                            .opacity(0.6)
-                                    } else {
-                                        Text("From \(event.startDate.timeFormat) to \(event.endDate.timeFormat)")
-                                            .systemFont(13, .regular)
-                                            .opacity(0.6)
-                                    }
-                                } else {
-                                    Text("From \(event.startDate.dateFormat) \(event.startDate.timeFormat)")
-                                        .systemFont(13, .regular)
-                                        .opacity(0.6)
-
-                                    Text("To \(event.endDate.dateFormat) \(event.endDate.timeFormat)")
-                                        .systemFont(13, .regular)
-                                        .opacity(0.6)
-                                }
-                            } else {
-                                Text(entity.startDate.dateFullFormat)
-                                    .systemFont(13, .regular)
-                                    .opacity(0.6)
-
-                                Text("\(entity.startDate.timeFormat)")
-                                    .systemFont(13, .regular)
-                                    .opacity(0.6)
-                            }
-
-                            Text("Repeats \(entity.repeatType.rawValue)")
-                                .systemFont(13, .regular)
-                                .padding(.top, 8)
-                        }
-
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.vertical, 16)
-                    .padding(.horizontal, 16)
-
-                    // MARK: Calendar
-
-                    VStack {
-                        separatorView
-
-                        HStack {
-                            Text("Calendar")
-                                .systemFont(17, .regular)
-
-                            Spacer()
-
-                            Color(entity.calendarColor)
-                                .frame(width: 16, height: 16)
-                                .cornerRadius(8)
-
-                            Text(entity.calendarName)
-                                .systemFont(17, .regular)
-                                .opacity(0.6)
-                        }
+                    calendarFieldView
                         .padding(.vertical, 6)
 
-                        separatorView
-                    }
-                    .padding(.horizontal, 16)
+                    separatorView
 
                     // MARK: Description
 
                     if !entity.notes.isEmpty {
-                        VStack(alignment: .leading) {
-                            Text("Description")
-                                .systemFont(17, .regular)
-                                .padding(.top, 6)
+                        descriptionFiledView
 
-                            Text(entity.notes)
-                                .systemFont(15, .regular)
-                                .padding(.vertical, 6)
-
-                            separatorView
-                        }
-                        .padding(.horizontal, 16)
+                        separatorView
                     }
 
                     Spacer()
 
-                    if entity.isLocalEntity() {
-                        Button {
-                            showDeleteAlert = true
-                        } label: {
-                            Text("Delete \(entity.entityType == .reminder ? "Reminder" : "Event")")
-                                .systemFont(15, .regular, .red)
-                                .frame(maxWidth: .infinity)
-                        }
-                        .padding(.top, 12)
-                        .padding(.horizontal, 16)
-                        
+                    if entity.isLocalEntity {
+                        deleteButton
+
                         Spacer()
                             .frame(height: 15)
                     }
                 }
+                .padding(.horizontal, 16)
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -159,9 +76,9 @@ struct EventDetailsView: View {
                 }
 
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: {
+                    Button {
                         dismiss()
-                    }, label: {
+                    } label: {
                         HStack(spacing: 4) {
                             Image(.rightArrow)
                                 .renderingMode(.template)
@@ -173,11 +90,11 @@ struct EventDetailsView: View {
                                 .padding(.trailing, 8)
                         }
                         .opacity(0.6)
-                    })
+                    }
                 }
                 .removeSharedBackground()
 
-                if entity.isLocalEntity() {
+                if entity.isLocalEntity {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         NavigationLink("Edit") {
                             if let event = editableEntity as? CalendarEvent,
@@ -217,6 +134,94 @@ struct EventDetailsView: View {
                 }
             }
         }
+    }
+
+    private var headerView: some View {
+        VStack(alignment: .leading) {
+
+            Text(entity.title)
+                .systemFont(20, .semibold)
+                .padding(.bottom, 8)
+
+            if let event = entity as? CalendarEvent {
+                if numberOfDaysBetween(event.startDate, event.endDate) <= 1 {
+                    Text(event.startDate.dateFullFormat)
+                        .systemFont(13, .regular)
+                        .opacity(0.6)
+
+                    if event.isAllDay {
+                        Text("All day")
+                            .systemFont(13, .regular)
+                            .opacity(0.6)
+                    } else {
+                        Text("From \(event.startDate.timeFormat) to \(event.endDate.timeFormat)")
+                            .systemFont(13, .regular)
+                            .opacity(0.6)
+                    }
+                } else {
+                    Text("From \(event.startDate.dateFormat) \(event.startDate.timeFormat)")
+                        .systemFont(13, .regular)
+                        .opacity(0.6)
+
+                    Text("To \(event.endDate.dateFormat) \(event.endDate.timeFormat)")
+                        .systemFont(13, .regular)
+                        .opacity(0.6)
+                }
+            } else {
+                Text(entity.startDate.dateFullFormat)
+                    .systemFont(13, .regular)
+                    .opacity(0.6)
+
+                Text("\(entity.startDate.timeFormat)")
+                    .systemFont(13, .regular)
+                    .opacity(0.6)
+            }
+
+            Text("Repeats \(entity.repeatType.rawValue)")
+                .systemFont(13, .regular)
+                .padding(.top, 8)
+        }
+    }
+
+    private var calendarFieldView: some View {
+        HStack {
+            Text("Calendar")
+                .systemFont(17, .regular)
+
+            Spacer()
+
+            Color(entity.calendarColor)
+                .frame(width: 16, height: 16)
+                .cornerRadius(8)
+
+            Text(entity.calendarName)
+                .systemFont(17, .regular)
+                .opacity(0.6)
+        }
+    }
+
+    private var descriptionFiledView: some View {
+        VStack(alignment: .leading) {
+            Text("Description")
+                .systemFont(17, .regular)
+                .padding(.top, 6)
+
+            Text(entity.notes)
+                .systemFont(15, .regular)
+                .padding(.vertical, 6)
+        }
+    }
+
+    private var deleteButton: some View {
+        Button {
+            showDeleteAlert = true
+        } label: {
+            Text("Delete \(entity.entityType == .reminder ? "Reminder" : "Event")")
+                .systemFont(15, .regular, .red)
+                .frame(maxWidth: .infinity)
+        }
+        .padding(.top, 12)
+        .padding(.horizontal, 16)
     }
 
     private var separatorView: some View {

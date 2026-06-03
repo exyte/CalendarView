@@ -14,7 +14,7 @@ public struct CalendarTheme: Sendable {
     public let day: Day
     public let month: Month
     public let year: Year
-    public let button: Button
+    public let button: CalendarButtonTheme
 
     public init(
         main: Main = .init(),
@@ -23,7 +23,7 @@ public struct CalendarTheme: Sendable {
         day: Day = .init(),
         month: Month = .init(),
         year: Year = .init(),
-        button: Button = .init()
+        button: CalendarButtonTheme = .init()
     ) {
         self.main = main
         self.header = header.resolved(using: main)
@@ -219,7 +219,7 @@ public struct CalendarTheme: Sendable {
         }
     }
 
-    public struct Button: Sendable {
+    public struct CalendarButtonTheme: Sendable {
         public var accent: Color
         public var disabled: Color
         public var background: Color
