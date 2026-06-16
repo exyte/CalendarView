@@ -145,42 +145,34 @@ struct EventDetailsView: View {
 
             if let event = entity as? CalendarEvent {
                 if numberOfDaysBetween(event.startDate, event.endDate) <= 1 {
-                    Text(event.startDate.dateFullFormat)
-                        .systemFont(13, .regular)
-                        .opacity(0.6)
+                    headerDateText(event.startDate.dateFullFormat)
 
                     if event.isAllDay {
-                        Text("All day")
-                            .systemFont(13, .regular)
-                            .opacity(0.6)
+                        headerDateText("All day")
                     } else {
-                        Text("From \(event.startDate.timeFormat) to \(event.endDate.timeFormat)")
-                            .systemFont(13, .regular)
-                            .opacity(0.6)
+                        headerDateText("From \(event.startDate.timeFormat) to \(event.endDate.timeFormat)")
                     }
                 } else {
-                    Text("From \(event.startDate.dateFormat) \(event.startDate.timeFormat)")
-                        .systemFont(13, .regular)
-                        .opacity(0.6)
+                    headerDateText("From \(event.startDate.dateFormat) \(event.startDate.timeFormat)")
 
-                    Text("To \(event.endDate.dateFormat) \(event.endDate.timeFormat)")
-                        .systemFont(13, .regular)
-                        .opacity(0.6)
+                    headerDateText("To \(event.endDate.dateFormat) \(event.endDate.timeFormat)")
                 }
             } else {
-                Text(entity.startDate.dateFullFormat)
-                    .systemFont(13, .regular)
-                    .opacity(0.6)
+                headerDateText(entity.startDate.dateFullFormat)
 
-                Text("\(entity.startDate.timeFormat)")
-                    .systemFont(13, .regular)
-                    .opacity(0.6)
+                headerDateText("\(entity.startDate.timeFormat)")
             }
 
             Text("Repeats \(entity.repeatType.rawValue)")
                 .systemFont(13, .regular)
                 .padding(.top, 8)
         }
+    }
+
+    private func headerDateText(_ text: String) -> some View {
+        Text(text)
+            .systemFont(13, .regular)
+            .opacity(0.6)
     }
 
     private var calendarFieldView: some View {

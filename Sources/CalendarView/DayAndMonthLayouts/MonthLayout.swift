@@ -39,19 +39,25 @@ public struct MonthLayout<MonthDay: View>: View {
             let rowHeight = g.size.height/CGFloat(numberOfRows)
 
             LazyVGrid(columns: columns, spacing: 0) {
-                ForEach(0..<inset, id: \.self) { _ in
-                    Color.clear
+                let maxMonthDay = startOfMonth.daysInMonth
+                let allCells: [AnyView] = (0..<inset + maxMonthDay).map { index in
+                    if index < inset {
+                        return AnyView(Color.clear)
+                    } else {
+                        let date = startOfMonth.adding(.day, value: index - inset)
+                        return AnyView(
+                            Button {
+                                didSelectDay(date)
+                            } label: {
+                                monthDayBuilder(MonthDayBuilderParams(date: date, events: eventsFor(date), viewHeight: rowHeight))
+                                    .frame(height: rowHeight)
+                            }
+                        )
+                    }
                 }
 
-                ForEach(0..<startOfMonth.daysInMonth, id: \.self) { index in
-                    let date = startOfMonth.adding(.day, value: index)
-                    Button {
-                        didSelectDay(date)
-                    } label: {
-                        monthDayBuilder(MonthDayBuilderParams(date: date, events: eventsFor(date), viewHeight: rowHeight))
-                            .frame(height: rowHeight)
-                    }
-                    .id(UUID())
+                ForEach(allCells.indices, id: \.self) { i in
+                    allCells[i]
                 }
             }
             .frame(height: g.size.height)

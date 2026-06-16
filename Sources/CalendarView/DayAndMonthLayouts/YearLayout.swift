@@ -64,14 +64,21 @@ struct YearMonthLayout: View, Identifiable {
             Text(date.formatted("MMM")).systemFont(20, .semibold, theme.year.monthText)
 
             LazyVGrid(columns: columns, spacing: 4) {
-                ForEach(0..<inset, id: \.self) { _ in
-                    Color.clear
+                let maxMonthDay = date.maxMonthDay
+                let allCells: [AnyView] = (0..<inset + maxMonthDay).map { index in
+                    if index < inset {
+                        return AnyView(Color.clear)
+                    } else {
+                        let day = index - inset + 1
+                        return AnyView(
+                            Text("\(day)")
+                                .systemFont(8, theme.year.dateText)
+                        )
+                    }
                 }
 
-                let maxMonthDay = date.maxMonthDay
-                ForEach(1...maxMonthDay, id: \.self) { day in
-                    Text("\(day)").systemFont(8, theme.year.dateText)
-                        .id(UUID())
+                ForEach(allCells.indices, id: \.self) { i in
+                    allCells[i]
                 }
             }
         }
@@ -103,20 +110,27 @@ struct YearCurrentMonthLayout: View, Identifiable {
             Text(date.formatted("MMM")).systemFont(20, .semibold, theme.year.todayText)
 
             LazyVGrid(columns: columns, spacing: 4) {
-                ForEach(0..<inset, id: \.self) { _ in
-                    Color.clear
+                let maxMonthDay = date.maxMonthDay
+                let allCells: [AnyView] = (0..<inset + maxMonthDay).map { index in
+                    if index < inset {
+                        return AnyView(Color.clear)
+                    } else {
+                        let day = index - inset + 1
+                        let isToday = day == today.getDay()
+                        return AnyView(
+                            Text("\(day)")
+                                .systemFont(8, isToday ? .white : theme.year.dateText)
+                                .applyIf(isToday) {
+                                    $0
+                                        .frame(width: 14, height: 14)
+                                        .background(Circle().styled(theme.year.todayText))
+                                }
+                        )
+                    }
                 }
 
-                let maxMonthDay = date.maxMonthDay
-                ForEach(1...maxMonthDay, id: \.self) { day in
-                    let isToday = day == today.getDay()
-                    Text("\(day)").systemFont(8, isToday ? .white : theme.year.dateText)
-                        .id(UUID())
-                        .applyIf(isToday) {
-                            $0
-                                .frame(width: 14, height: 14)
-                                .background(Circle().styled(theme.year.todayText))
-                        }
+                ForEach(allCells.indices, id: \.self) { i in
+                    allCells[i]
                 }
             }
         }
