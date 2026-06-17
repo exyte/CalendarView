@@ -41,15 +41,24 @@ public struct CalendarTheme: Sendable {
         public let background: Color
 
         public init(
-            text: Color = .named("appBlack"),
-            secondaryText: Color = .named("appGrey"),
-            accent: Color = .named("AccentColor"),
-            background: Color = .named("appLightBG")
+            text: Color,
+            secondaryText: Color,
+            accent: Color,
+            background: Color
         ) {
             self.text = text
             self.secondaryText = secondaryText
             self.accent = accent
             self.background = background
+        }
+
+        public init() {
+            self.init(
+                text: Color(.appBlack),
+                secondaryText: Color(.appGrey),
+                accent: Color(.accent),
+                background: Color(.appLightBG)
+            )
         }
     }
 
@@ -128,10 +137,10 @@ public struct CalendarTheme: Sendable {
 
         func resolved(using main: Main) -> Day {
             .init(
-                hourText: hourText.resolve(.named("appDarkGrey")),
+                hourText: hourText.resolve(Color(.appDarkGrey)),
                 eventText: eventText.resolve(main.text),
                 background: background.resolve(main.background),
-                separators: separators.resolve(.named("appLightGrey")),
+                separators: separators.resolve(Color(.appLightGrey)),
                 todayLine: todayLine.resolve(.red)
             )
         }
@@ -168,7 +177,7 @@ public struct CalendarTheme: Sendable {
                 plusMoreEventsText: plusMoreEventsText.resolve(main.secondaryText),
                 background: background.resolve(main.background),
                 todayBackground: todayBackground.resolve(main.accent),
-                separators: separators.resolve(.named("appLightGrey"))
+                separators: separators.resolve(Color(.appLightGrey))
             )
         }
 
@@ -225,13 +234,21 @@ public struct CalendarTheme: Sendable {
         public var background: Color
 
         public init(
-            accent: Color = .named("AccentColor"),
-            disabled: Color = .named("appLightGrey"),
-            background: Color = .named("appLightGrey")
+            accent: Color,
+            disabled: Color,
+            background: Color
         ) {
             self.accent = accent
             self.disabled = disabled
             self.background = background
+        }
+
+        public init() {
+            self.init(
+                accent: Color(.accent),
+                disabled: Color(.appLightGrey),
+                background: Color(.appLightBG)
+            )
         }
     }
 }

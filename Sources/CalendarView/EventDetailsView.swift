@@ -52,7 +52,7 @@ struct EventDetailsView: View {
                     // MARK: Description
 
                     if !entity.notes.isEmpty {
-                        descriptionFiledView
+                        descriptionFieldView
 
                         separatorView
                     }
@@ -143,25 +143,9 @@ struct EventDetailsView: View {
                 .systemFont(20, .semibold)
                 .padding(.bottom, 8)
 
-            if let event = entity as? CalendarEvent {
-                if numberOfDaysBetween(event.startDate, event.endDate) <= 1 {
-                    headerDateText(event.startDate.dateFullFormat)
-
-                    if event.isAllDay {
-                        headerDateText("All day")
-                    } else {
-                        headerDateText("From \(event.startDate.timeFormat) to \(event.endDate.timeFormat)")
-                    }
-                } else {
-                    headerDateText("From \(event.startDate.dateFormat) \(event.startDate.timeFormat)")
-
-                    headerDateText("To \(event.endDate.dateFormat) \(event.endDate.timeFormat)")
-                }
-            } else {
-                headerDateText(entity.startDate.dateFullFormat)
-
-                headerDateText("\(entity.startDate.timeFormat)")
-            }
+            headerDateTextView
+                .systemFont(13, .regular)
+                .opacity(0.6)
 
             Text("Repeats \(entity.repeatType.rawValue)")
                 .systemFont(13, .regular)
@@ -169,10 +153,27 @@ struct EventDetailsView: View {
         }
     }
 
-    private func headerDateText(_ text: String) -> some View {
-        Text(text)
-            .systemFont(13, .regular)
-            .opacity(0.6)
+    @ViewBuilder
+    private var headerDateTextView: some View {
+        if let event = entity as? CalendarEvent,
+           numberOfDaysBetween(event.startDate, event.endDate) <= 1,
+           event.isAllDay {
+            Text(event.startDate.dateFullFormat)
+            Text("All day")
+        }
+        else if let event = entity as? CalendarEvent,
+                numberOfDaysBetween(event.startDate, event.endDate) <= 1 {
+            Text(event.startDate.dateFullFormat)
+            Text("From \(event.startDate.timeFormat) to \(event.endDate.timeFormat)")
+        }
+        else if let event = entity as? CalendarEvent {
+            Text("From \(event.startDate.dateFormat) \(event.startDate.timeFormat)")
+            Text("To \(event.endDate.dateFormat) \(event.endDate.timeFormat)")
+        }
+        else {
+            Text(entity.startDate.dateFullFormat)
+            Text("\(entity.startDate.timeFormat)")
+        }
     }
 
     private var calendarFieldView: some View {
@@ -192,7 +193,7 @@ struct EventDetailsView: View {
         }
     }
 
-    private var descriptionFiledView: some View {
+    private var descriptionFieldView: some View {
         VStack(alignment: .leading) {
             Text("Description")
                 .systemFont(17, .regular)

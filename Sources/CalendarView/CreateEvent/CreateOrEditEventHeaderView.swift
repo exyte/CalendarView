@@ -14,12 +14,12 @@ struct CreateOrEditEventHeaderView: View {
     @Binding var rightButtonEnabled: Bool
 
     var title: String
-    var dismissClosure: ()->()
+    var onDismiss: () async -> ()
 
-    init(rightButtonEnabled: Binding<Bool>? = nil, title: String, dismissClosure: @escaping ()->() = {}) {
+    init(rightButtonEnabled: Binding<Bool>? = nil, title: String, onDismiss: @escaping () async -> () = {}) {
         self._rightButtonEnabled = rightButtonEnabled ?? .constant(true)
         self.title = title
-        self.dismissClosure = dismissClosure
+        self.onDismiss = onDismiss
     }
 
     var body: some View {
@@ -36,8 +36,10 @@ struct CreateOrEditEventHeaderView: View {
                 Spacer()
 
                 Button {
-                    dismiss()
-                    dismissClosure()
+                    Task {
+                        await onDismiss()
+                        dismiss()
+                    }
                 } label: {
                     Image(.checkmark)
                         .resizable()

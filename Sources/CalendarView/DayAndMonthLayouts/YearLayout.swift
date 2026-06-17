@@ -65,20 +65,17 @@ struct YearMonthLayout: View, Identifiable {
 
             LazyVGrid(columns: columns, spacing: 4) {
                 let maxMonthDay = date.maxMonthDay
-                let allCells: [AnyView] = (0..<inset + maxMonthDay).map { index in
+                let totalCount = inset + maxMonthDay
+
+                ForEach(0..<totalCount, id: \.self) { index in
                     if index < inset {
-                        return AnyView(Color.clear)
+                        Color.clear
                     } else {
                         let day = index - inset + 1
-                        return AnyView(
-                            Text("\(day)")
-                                .systemFont(8, theme.year.dateText)
-                        )
-                    }
-                }
 
-                ForEach(allCells.indices, id: \.self) { i in
-                    allCells[i]
+                        Text("\(day)")
+                            .systemFont(8, theme.year.dateText)
+                    }
                 }
             }
         }
@@ -111,26 +108,23 @@ struct YearCurrentMonthLayout: View, Identifiable {
 
             LazyVGrid(columns: columns, spacing: 4) {
                 let maxMonthDay = date.maxMonthDay
-                let allCells: [AnyView] = (0..<inset + maxMonthDay).map { index in
+                let totalCount = inset + maxMonthDay
+
+                ForEach(0..<totalCount, id: \.self) { index in
                     if index < inset {
-                        return AnyView(Color.clear)
+                        Color.clear
                     } else {
                         let day = index - inset + 1
                         let isToday = day == today.getDay()
-                        return AnyView(
-                            Text("\(day)")
-                                .systemFont(8, isToday ? .white : theme.year.dateText)
-                                .applyIf(isToday) {
-                                    $0
-                                        .frame(width: 14, height: 14)
-                                        .background(Circle().styled(theme.year.todayText))
-                                }
-                        )
-                    }
-                }
 
-                ForEach(allCells.indices, id: \.self) { i in
-                    allCells[i]
+                        Text("\(day)")
+                            .systemFont(8, isToday ? .white : theme.year.dateText)
+                            .applyIf(isToday) {
+                                $0
+                                    .frame(width: 14, height: 14)
+                                    .background(Circle().styled(theme.year.todayText))
+                            }
+                    }
                 }
             }
         }

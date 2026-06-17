@@ -20,9 +20,7 @@ struct CreateEventView: View {
     var body: some View {
         VStack {
             CreateOrEditEventHeaderView(rightButtonEnabled: $saveEnabled, title: "New") {
-                Task {
-                    isEvent ? await viewModel.addEvent(event) : await viewModel.addReminder(reminder)
-                }
+                isEvent ? await viewModel.addEvent(event) : await viewModel.addReminder(reminder)
             }
 
             eventTypeSwitcher

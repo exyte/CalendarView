@@ -9,10 +9,11 @@ import SwiftUI
 
 struct FieldTimeAndDate: View {
     enum PickersEnum: CaseIterable {
-        case StartsDatePicker
-        case StartsTimePicker
-        case EndsDatePicker
-        case EndsTimePicker
+        case none
+        case startsDatePicker
+        case startsTimePicker
+        case endsDatePicker
+        case endsTimePicker
     }
 
     @Environment(\.calendarTheme) private var theme
@@ -20,11 +21,8 @@ struct FieldTimeAndDate: View {
     @Binding var isAllDay: Bool
     @Binding var startsDate: Date
     @Binding var endsDate: Date
-    
-    @State private var showStartsDatePicker: Bool = false
-    @State private var showStartsTimePicker: Bool = false
-    @State private var showEndsDatePicker: Bool = false
-    @State private var showEndsTimePicker: Bool = false
+
+    @State private var displayedPicker: PickersEnum = .none
 
     @State private var height = CGFloat.zero
 
@@ -48,10 +46,7 @@ struct FieldTimeAndDate: View {
                 timeAndDateRow(text: "Ends", isStartsDate: false)
             }
             .onChange(of: isAllDay) { _,_ in
-                self.showEndsDatePicker = false
-                self.showEndsTimePicker = false
-                self.showStartsTimePicker = false
-                self.showStartsDatePicker = false
+                self.displayedPicker = .none
             }
         }
     }
@@ -65,39 +60,25 @@ struct FieldTimeAndDate: View {
 
                 Spacer()
 
-                Text(date.dateFormat)
-                    .padding(12, 6)
-                    .background(Color.named("appLightGrey"))
-                    .clipShape(Capsule())
-                    .systemFont(17, .regular, theme.main.accent)
-                    .onTapGesture {
-                        withAnimation(.easeInOut) {
-                            showPicker(isStartsDate ? .StartsDatePicker : .EndsDatePicker)
-                        }
-                    }
+                dateCell(title: date.dateFormat) {
+                    showPicker(isStartsDate ? .startsDatePicker : .endsDatePicker)
+                }
 
                 if !isAllDay {
-                    Text(date.timeFormat)
-                        .padding(12, 6)
-                        .background(Color.named("appLightGrey"))
-                        .clipShape(Capsule())
-                        .systemFont(17, .regular, theme.main.accent)
-                        .onTapGesture {
-                            withAnimation(.easeInOut) {
-                                showPicker(isStartsDate ? .StartsTimePicker : .EndsTimePicker)
-                            }
-                        }
+                    dateCell(title: date.timeFormat) {
+                        showPicker(isStartsDate ? .startsTimePicker : .endsTimePicker)
+                    }
                 }
             }
 
-            if isStartsDate ? showStartsDatePicker : showEndsDatePicker {
+            if isStartsDate ? displayedPicker == .startsDatePicker : displayedPicker == .endsDatePicker {
                 DatePicker(text, selection: isStartsDate ? $startsDate : $endsDate, displayedComponents: .date)
                     .labelsHidden()
                     .datePickerStyle(.graphical)
                     .tint(.blue.opacity(0.3))
             }
 
-            if isStartsDate ? showStartsTimePicker : showEndsTimePicker {
+            if isStartsDate ? displayedPicker == .startsTimePicker : displayedPicker == .endsTimePicker {
                 DatePicker(text, selection: isStartsDate ? $startsDate : $endsDate, displayedComponents: .hourAndMinute)
                     .labelsHidden()
                     .datePickerStyle(.wheel)
@@ -107,28 +88,20 @@ struct FieldTimeAndDate: View {
         .clipped()
     }
 
+    private func dateCell(title: String, onTap: @escaping ()->()) -> some View {
+        Text(title)
+            .padding(12, 6)
+            .background(Color.named("appLightGrey"))
+            .clipShape(Capsule())
+            .systemFont(17, .regular, theme.main.accent)
+            .onTapGesture {
+                withAnimation(.easeInOut) {
+                    onTap()
+                }
+            }
+    }
+
     private func showPicker(_ picker: PickersEnum) {
-        switch picker {
-        case .StartsDatePicker:
-            self.showEndsDatePicker = false
-            self.showEndsTimePicker = false
-            self.showStartsTimePicker = false
-            self.showStartsDatePicker.toggle()
-        case .StartsTimePicker:
-            self.showEndsDatePicker = false
-            self.showEndsTimePicker = false
-            self.showStartsTimePicker.toggle()
-            self.showStartsDatePicker = false
-        case .EndsDatePicker:
-            self.showEndsDatePicker.toggle()
-            self.showEndsTimePicker = false
-            self.showStartsTimePicker = false
-            self.showStartsDatePicker = false
-        case .EndsTimePicker:
-            self.showEndsDatePicker = false
-            self.showEndsTimePicker.toggle()
-            self.showStartsTimePicker = false
-            self.showStartsDatePicker = false
-        }
+        displayedPicker = displayedPicker == picker ? .none : picker
     }
 }

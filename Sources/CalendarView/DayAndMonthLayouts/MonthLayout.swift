@@ -36,28 +36,29 @@ public struct MonthLayout<MonthDay: View>: View {
     public var body: some View {
         GeometryReader { g in
             let numberOfRows = numberOfCalendarRows()
-            let rowHeight = g.size.height/CGFloat(numberOfRows)
+            let rowHeight = g.size.height / CGFloat(numberOfRows)
+            let maxMonthDay = startOfMonth.daysInMonth
+            let totalCount = inset + maxMonthDay
 
             LazyVGrid(columns: columns, spacing: 0) {
-                let maxMonthDay = startOfMonth.daysInMonth
-                let allCells: [AnyView] = (0..<inset + maxMonthDay).map { index in
+                ForEach(0..<totalCount, id: \.self) { index in
                     if index < inset {
-                        return AnyView(Color.clear)
+                        Color.clear
                     } else {
                         let date = startOfMonth.adding(.day, value: index - inset)
-                        return AnyView(
-                            Button {
-                                didSelectDay(date)
-                            } label: {
-                                monthDayBuilder(MonthDayBuilderParams(date: date, events: eventsFor(date), viewHeight: rowHeight))
-                                    .frame(height: rowHeight)
-                            }
-                        )
+                        Button {
+                            didSelectDay(date)
+                        } label: {
+                            monthDayBuilder(
+                                MonthDayBuilderParams(
+                                    date: date,
+                                    events: eventsFor(date),
+                                    viewHeight: rowHeight
+                                )
+                            )
+                            .frame(height: rowHeight)
+                        }
                     }
-                }
-
-                ForEach(allCells.indices, id: \.self) { i in
-                    allCells[i]
                 }
             }
             .frame(height: g.size.height)
