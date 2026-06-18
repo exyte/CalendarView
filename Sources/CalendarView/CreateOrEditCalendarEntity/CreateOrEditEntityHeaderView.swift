@@ -1,5 +1,5 @@
 //
-//  CreateOrEditEventHeaderView.swift
+//  CreateOrEditEntityHeaderView.swift
 //  CalendarView
 //
 //  Created by Exyte on 03.06.2026.
@@ -7,20 +7,13 @@
 
 import SwiftUI
 
-struct CreateOrEditEventHeaderView: View {
+struct CreateOrEditEntityHeaderView: View {
     @Environment(\.calendarTheme) private var theme
     @Environment(\.dismiss) private var dismiss
 
-    @Binding var rightButtonEnabled: Bool
-
     var title: String
-    var onDismiss: () async -> ()
-
-    init(rightButtonEnabled: Binding<Bool>? = nil, title: String, onDismiss: @escaping () async -> () = {}) {
-        self._rightButtonEnabled = rightButtonEnabled ?? .constant(true)
-        self.title = title
-        self.onDismiss = onDismiss
-    }
+    var saveButtonEnabled: Bool = true
+    var onSave: () async -> ()
 
     var body: some View {
         ZStack {
@@ -37,7 +30,7 @@ struct CreateOrEditEventHeaderView: View {
 
                 Button {
                     Task {
-                        await onDismiss()
+                        await onSave()
                         dismiss()
                     }
                 } label: {
@@ -46,8 +39,8 @@ struct CreateOrEditEventHeaderView: View {
                         .frame(width: 14, height: 12)
                 }
                 .frame(width: 44, height: 44)
-                .background(Circle().styled(rightButtonEnabled ? theme.button.accent : theme.button.disabled))
-                .disabled(!rightButtonEnabled)
+                .background(Circle().styled(saveButtonEnabled ? theme.button.accent : theme.button.disabled))
+                .disabled(!saveButtonEnabled)
             }
 
             Text(title)

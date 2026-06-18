@@ -19,7 +19,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/exyte/PopupView.git",
-            from: "4.0.0"
+            from: "5.0.0"
         )
     ],
     targets: [

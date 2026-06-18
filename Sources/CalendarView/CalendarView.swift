@@ -154,13 +154,13 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         .background(theme.main.background)
         .environmentObject(viewModel)
         .environment(\.calendarCustomizationParams, customizationParams)
-        .environment(\.showEventDetailsClosure, { (entity: any CalendarEntity) in
+        .environment(\.showEventDetailsClosure) { (entity: any CalendarEntity) in
             if let eventDetailsClosure = customizationParams.eventDetailsClosure {
                 eventDetailsClosure(entity)
             } else {
                 displayedEventDetails = CalendarEntityWrapper(entity)
             }
-        })
+        }
         .onChange(of: fullscreenDate, initial: true) {
             anchorDate = fullscreenDate
             updateData()
@@ -184,15 +184,22 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         .sheet(isPresented: $showCreateEvent) {
             updateData() // onDismiss
         } content: {
-            CreateOrEditEventView()
-                .environmentObject(viewModel)
+            CreateEntityView() { entity in
+                await viewModel.add(entity)
+            }
         }
 
         .fullScreenCover(item: $displayedEventDetails) {
             updateData() // onDismiss
-        } content: { entity in
-            EventDetailsView(entity: entity.entity)
-                .environmentObject(viewModel)
+        } content: { wrappedEntity in
+            if let event = wrappedEntity.entity as? CalendarEvent {
+                EventDetailsView(entity: event)
+                    .environmentObject(viewModel)
+            }
+            if let reminder = wrappedEntity.entity as? CalendarReminder {
+                EventDetailsView(entity: reminder)
+                    .environmentObject(viewModel)
+            }
         }
         .onAppear {
             totalZoom = customizationParams.hoursToFit
@@ -296,6 +303,7 @@ public enum CalendarDisplayMode: Int,  Sendable {
     }
 }
 
+// a trick to be able to use an existential as fullScreenCover's item
 struct CalendarEntityWrapper: Identifiable {
     let id: String
     let entity: any CalendarEntity
@@ -305,4 +313,3 @@ struct CalendarEntityWrapper: Identifiable {
         self.entity = entity
     }
 }
-

@@ -47,16 +47,15 @@ struct FieldCalendarSelection: View {
         .onTapGesture {
             showSelectionPopup = true
         }
-        .popup(isPresented: $showSelectionPopup) {
+        .scrollPopup(isPresented: $showSelectionPopup) {
             CalendarSelectionPopupView(selectedCalendar: $selectedCalendar)
+        } header: {
+            PopupHeaderView()
         } customize: {
             $0
-                .type(.scroll(headerView: AnyView(PopupHeaderView())))
-                .displayMode(.sheet)
                 .closeOnTap(false)
                 .closeOnTapOutside(true)
                 .dragToDismiss(true)
-                .position(.bottom)
                 .backgroundColor(.black.opacity(0.5))
         }
     }

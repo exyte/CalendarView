@@ -7,20 +7,14 @@
 
 import SwiftUI
 
-struct EventDetailsView: View {
+struct EventDetailsView<Entity: CalendarEntity>: View {
     @Environment(\.calendarTheme) private var theme
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var viewModel: CalendarViewModel
 
-    let entity: any CalendarEntity
-    @State private var editableEntity: any CalendarEntity
+    var entity: Entity
 
     @State private var showDeleteAlert = false
-
-    init(entity: any CalendarEntity) {
-        self.entity = entity
-        self._editableEntity = State(initialValue: entity)
-    }
 
     var body: some View {
         NavigationStack {
@@ -97,20 +91,8 @@ struct EventDetailsView: View {
                 if entity.isLocalEntity {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         NavigationLink("Edit") {
-                            if let event = editableEntity as? CalendarEvent,
-                               let binding = bindingForEditableEntity(as: CalendarEvent.self) {
-                                CreateOrEditEventView(entity: binding) {
-                                    Task {
-                                        await viewModel.updateEvent(event, oldStartDate: entity.startDate)
-                                    }
-                                }
-                            } else if let reminder = editableEntity as? CalendarReminder,
-                                      let binding = bindingForEditableEntity(as: CalendarReminder.self) {
-                                CreateOrEditEventView(entity: binding) {
-                                    Task {
-                                        await viewModel.updateReminder(reminder, oldStartDate: entity.startDate)
-                                    }
-                                }
+                            EditEntityView(entity: entity) { editedEntity in
+                                await viewModel.update(editedEntity, oldStartDate: entity.startDate)
                             }
                         }
                         .foregroundStyle(Color(theme.button.accent))
@@ -121,14 +103,8 @@ struct EventDetailsView: View {
             .alert("Are you sure you want to delete this event?", isPresented: $showDeleteAlert) {
                 Button("No", role: .cancel) { }
                 Button("Yes", role: .destructive) {
-                    if let event = entity as? CalendarEvent {
-                        Task{
-                            await viewModel.deleteEvent(event)
-                        }
-                    } else if let reminder = entity as? CalendarReminder {
-                        Task {
-                            await viewModel.deleteReminder(reminder)
-                        }
+                    Task {
+                        await viewModel.delete(entity)
                     }
                     dismiss()
                 }
@@ -221,17 +197,8 @@ struct EventDetailsView: View {
         Color(.appLightGrey).frame(height: 1)
     }
 
-    private func bindingForEditableEntity<T: CalendarEntity>(as type: T.Type) -> Binding<T>? {
-        guard let casted = editableEntity as? T else { return nil }
-        return Binding(
-            get: { casted },
-            set: { newValue in editableEntity = newValue }
-        )
-    }
-
     private func numberOfDaysBetween(_ from: Date, _ to: Date) -> Int {
         let numberOfDays = Calendar.current.dateComponents([.day], from: from, to: to)
-
         return numberOfDays.day ?? 0
     }
 }

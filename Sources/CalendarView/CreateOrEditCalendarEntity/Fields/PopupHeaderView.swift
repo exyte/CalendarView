@@ -25,7 +25,7 @@ struct PopupHeaderView: View {
                 topTrailingRadius: 32
             )
         )
-        .offset(y: 4    )
+        .offset(y: 4)
         .shadow(
             color: .black,
             radius: 15,

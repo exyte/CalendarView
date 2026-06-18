@@ -1,13 +1,14 @@
 //
-//  File.swift
+//  EditEntityFieldsView.swift
 //  CalendarView
 //
-//  Created by Exyte on 03.06.2026.
+//  Created by Alisa Mylnikova on 18.06.2026.
 //
 
 import SwiftUI
 
-struct EditCalendarEntityView<Entity: CalendarEntity>: View {
+struct EditEntityFieldsView<Entity: CalendarEntity>: View {
+
     @Binding var entity: Entity
 
     @State private var selectedCalendar: ProviderCalendar?
@@ -60,16 +61,10 @@ struct EditCalendarEntityView<Entity: CalendarEntity>: View {
                 if entity as? CalendarEvent == nil {
                     FieldEnumPicker(eventFieldType: .priority, currentValue: $entity.priorityType)
                 }
-
-                separatorView
-
-                FieldDescription(description: $entity.notes)
-
-                separatorView
             }
-            .scrollIndicators(.hidden)
-            .scrollBounceBehavior(.basedOnSize)
         }
+        .scrollIndicators(.hidden)
+        .scrollBounceBehavior(.basedOnSize)
         .greedyWidth()
         .padding(16)
         .onChange(of: selectedCalendar) {

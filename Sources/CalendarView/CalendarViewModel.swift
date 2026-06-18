@@ -91,73 +91,57 @@ class CalendarViewModel: ObservableObject {
         eventProviders.first(where: { $0 is EditableCalendarsProvider }) as? EditableCalendarsProvider
     }
 
+    private func withProvider(_ op: (EditableCalendarsProvider) async throws -> Void) async {
+        guard let provider = getProvider() else { return }
+        do {
+            try await op(provider)
+        } catch {
+            print(error)
+        }
+    }
+
     func addCalendar(_ calendar: ProviderCalendar) async {
-        if let provider = getProvider() {
-            do {
-                try await provider.addCalendar(calendar)
-                await fetchCalendars()
-            } catch {
-                print(error)
-            }
+        await withProvider { provider in
+            try await provider.addCalendar(calendar)
+            await self.fetchCalendars()
         }
     }
 
-    func addEvent(_ event: CalendarEvent) async {
-        if let provider = getProvider() {
-            do {
+    func add<E: CalendarEntity>(_ entity: E) async {
+        await withProvider { provider in
+            switch entity {
+            case let event as CalendarEvent:
                 try await provider.addEvent(event)
-            } catch {
-                print(error)
-            }
-        }
-    }
-
-    func addReminder(_ reminder: CalendarReminder) async {
-        if let provider = getProvider() {
-            do {
+            case let reminder as CalendarReminder:
                 try await provider.addReminder(reminder)
-            } catch {
-                print(error)
+            default:
+                assertionFailure("Unsupported CalendarEntity type: \(type(of: entity))")
             }
         }
     }
 
-    func deleteEvent(_ event: CalendarEvent) async {
-        if let provider = getProvider() {
-            do {
+    func delete<E: CalendarEntity>(_ entity: E) async {
+        await withProvider { provider in
+            switch entity {
+            case let event as CalendarEvent:
                 try await provider.deleteEvent(event)
-            } catch {
-                print(error)
-            }
-        }
-    }
-
-    func deleteReminder(_ reminder: CalendarReminder) async {
-        if let provider = getProvider() {
-            do {
+            case let reminder as CalendarReminder:
                 try await provider.deleteReminder(reminder)
-            } catch {
-                print(error)
+            default:
+                assertionFailure("Unsupported CalendarEntity type: \(type(of: entity))")
             }
         }
     }
 
-    func updateEvent(_ event: CalendarEvent, oldStartDate: Date) async {
-        if let provider = getProvider() {
-            do {
+    func update<E: CalendarEntity>(_ entity: E, oldStartDate: Date) async {
+        await withProvider { provider in
+            switch entity {
+            case let event as CalendarEvent:
                 try await provider.updateEvent(event, oldStartDate: oldStartDate)
-            } catch {
-                print(error)
-            }
-        }
-    }
-
-    func updateReminder(_ reminder: CalendarReminder, oldStartDate: Date) async {
-        if let provider = getProvider() {
-            do {
+            case let reminder as CalendarReminder:
                 try await provider.updateReminder(reminder, oldStartDate: oldStartDate)
-            } catch {
-                print(error)
+            default:
+                assertionFailure("Unsupported CalendarEntity type: \(type(of: entity))")
             }
         }
     }

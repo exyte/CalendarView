@@ -1,5 +1,5 @@
 //
-//  CreateEventView.swift
+//  CreateEntityView.swift
 //  Jaye
 //
 //  Created by Exyte on 01.04.2025.
@@ -7,28 +7,28 @@
 
 import SwiftUI
 
-struct CreateEventView: View {
+struct CreateEntityView: View {
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject var viewModel: CalendarViewModel
 
-    @State private var isEvent: Bool = true
-    @State private var event: CalendarEvent = CalendarEvent()
-    @State private var reminder: CalendarReminder = CalendarReminder()
+    var shouldSave: (any CalendarEntity) async -> ()
 
-    @State var saveEnabled: Bool = false
+    @State private var saveEnabled = false
+    @State private var isEvent = true
+    @State private var event = CalendarEvent()
+    @State private var reminder = CalendarReminder()
 
     var body: some View {
         VStack {
-            CreateOrEditEventHeaderView(rightButtonEnabled: $saveEnabled, title: "New") {
-                isEvent ? await viewModel.addEvent(event) : await viewModel.addReminder(reminder)
+            CreateOrEditEntityHeaderView(title: "New", saveButtonEnabled: saveEnabled) {
+                await shouldSave(isEvent ? event : reminder)
             }
 
             eventTypeSwitcher
 
             if isEvent {
-                EditCalendarEntityView(entity: $event)
+                EditEntityFieldsView(entity: $event)
             } else {
-                EditCalendarEntityView(entity: $reminder)
+                EditEntityFieldsView(entity: $reminder)
             }
         }
         .onChange(of: event) {
@@ -50,29 +50,25 @@ struct CreateEventView: View {
                 self.isEvent = true
             } label: {
                 Text("Event")
-                    .systemFont(15, .semibold)
-                    .frame(height: 32)
                     .greedyWidth()
                     .background(isEvent ? Color.white : Color.clear)
                     .cornerRadius(16)
-                    .padding(3)
+                    .padding(3, 10)
             }
 
             Button {
                 self.isEvent = false
             } label: {
                 Text("Reminder")
-                    .systemFont(15, .semibold)
-                    .frame(height: 32)
                     .greedyWidth()
                     .background(!isEvent ? Color.white : Color.clear)
                     .cornerRadius(16)
-                    .padding(3)
+                    .padding(3, 10)
             }
         }
+        .systemFont(15, .semibold)
         .greedyWidth()
         .background(Color.named("appLightGrey"))
-        .frame(height: 36)
         .cornerRadius(18)
         .padding(.horizontal, 16)
     }
