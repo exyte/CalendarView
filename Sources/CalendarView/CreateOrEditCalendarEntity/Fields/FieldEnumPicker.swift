@@ -1,5 +1,5 @@
 //
-//  EventFieldView.swift
+//  EventFieldType.swift
 //  Jaye
 //
 //  Created by Exyte on 02.04.2025.

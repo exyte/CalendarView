@@ -11,7 +11,7 @@ struct FieldCalendarSelection: View {
     @EnvironmentObject var viewModel: CalendarViewModel
     @Binding var selectedCalendar: ProviderCalendar?
 
-    @State private var showSelectionPopup: Bool = false
+    @State var showSelectionPopup: Bool = false
 
     var body: some View {
         HStack(alignment: .top) {
@@ -67,10 +67,10 @@ struct CalendarSelectionPopupView: View {
 
     @Binding var selectedCalendar: ProviderCalendar?
 
-    @State private var calendars: [ProviderCalendar] = []
-    @State private var showCreateCalendar = false
-    @State private var id = UUID()
-    @State private var size: CGSize = .zero
+    @State var calendars: [ProviderCalendar] = []
+    @State var showCreateCalendar = false
+    @State var id = UUID()
+    @State var size: CGSize = .zero
 
     var body: some View {
         VStack(spacing: 20) {

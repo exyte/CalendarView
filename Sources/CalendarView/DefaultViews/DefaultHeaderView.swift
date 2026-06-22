@@ -13,11 +13,11 @@ public struct DefaultHeaderView: View {
 
     var params: HeaderBuilderParams
 
+    @State var showMonthPicker = false
+
     public init(params: HeaderBuilderParams) {
         self.params = params
     }
-
-    @State private var showMonthPicker = false
 
     public var body: some View {
         HStack {

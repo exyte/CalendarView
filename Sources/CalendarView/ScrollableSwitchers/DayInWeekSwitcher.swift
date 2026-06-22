@@ -21,10 +21,10 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
 
     @StateObject private var weekCellsModel = WeekCellsModel()
 
-    @State private var daySize: CGSize?
-    @State private var items = Array(-5...5)
-    @State private var pageItems = Array(-1...1)
-    @State private var tableUpdateID = UUID()
+    @State var daySize: CGSize?
+    @State var items = Array(-5...5)
+    @State var pageItems = Array(-1...1)
+    @State var tableUpdateID = UUID()
 
     private var calendar: Calendar { Calendar.current }
 

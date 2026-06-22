@@ -1,5 +1,5 @@
 //
-//  DescriptionFieldView.swift
+//  FieldDescription.swift
 //  Jaye
 //
 //  Created by Exyte on 02.04.2025.

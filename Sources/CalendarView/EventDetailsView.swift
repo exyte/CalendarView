@@ -14,7 +14,7 @@ struct EventDetailsView<Entity: CalendarEntity>: View {
 
     var entity: Entity
 
-    @State private var showDeleteAlert = false
+    @State var showDeleteAlert = false
 
     var body: some View {
         NavigationStack {

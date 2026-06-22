@@ -109,12 +109,11 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     // layout helpers
     @State var hoursLabelsInset: CGFloat = 0
 
+    @State var hoursFittingCurrentZoom: CGFloat?
+    @State var currentZoom = 0.0
+    @State var pinchAnchor: CGFloat = 0.5
+
     var customizationParams = CalendarViewCustomizationParams()
-
-    @State private var hoursFittingCurrentZoom: CGFloat?
-    @State private var currentZoom = 0.0
-    @State private var pinchAnchor: CGFloat = 0.5
-
     var idForUpdate: UUID = UUID()
 
     public var body: some View {
@@ -220,7 +219,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                     VStack(spacing: 0) {
                         selectedDayHeaderBuilder(SelectedDayHeaderParams(date: date, daysCount: displayMode.rawValue))
 
-                        DayLayout(hoursLabelsInset: $hoursLabelsInset, isCalendarScrolling: $isCalendarScrolling, anchorDate: date, daysCount: displayMode.rawValue, events: viewModel.getEvents(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate), reminders: viewModel.getReminders(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate), isScrollDisabled: isDaySwiping, updateID: updateID, pinchAnchor: pinchAnchor, dayEventBuilder: dayEventBuilder)
+                        DayLayout(hoursLabelsInset: $hoursLabelsInset, isCalendarScrolling: $isCalendarScrolling, anchorDate: date, daysCount: displayMode.rawValue, events: viewModel.getEvents(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate), reminders: viewModel.getReminders(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate), isScrollDisabled: isDaySwiping, pinchAnchor: pinchAnchor, updateID: updateID, dayEventBuilder: dayEventBuilder)
                             .padding(.top, 8)
                             .background(theme.day.background)
                     }

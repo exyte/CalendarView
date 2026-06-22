@@ -11,7 +11,7 @@ struct EditEntityFieldsView<Entity: CalendarEntity>: View {
 
     @Binding var entity: Entity
 
-    @State private var selectedCalendar: ProviderCalendar?
+    @State var selectedCalendar: ProviderCalendar?
 
     var eventBinding: Binding<CalendarEvent>? {
         guard let event = entity as? CalendarEvent else { return nil }
@@ -46,7 +46,7 @@ struct EditEntityFieldsView<Entity: CalendarEntity>: View {
                 separatorView
 
                 if let eventBinding {
-                    FieldTimeAndDate(isAllDay: eventBinding.isAllDay, startsDate: $entity.startDate, endsDate: eventBinding.endDate)
+                    FieldTimeAndDate(isAllDay: eventBinding.isAllDay, startDate: $entity.startDate, endDate: eventBinding.endDate)
                 } else {
                     FieldTimeOrDate(type: .date, date: $entity.startDate)
                     FieldTimeOrDate(type: .time, date: $entity.startDate)

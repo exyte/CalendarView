@@ -15,12 +15,12 @@ struct MonthInYearSwitcher: View {
     var date: Date
     var didSelectMonth: (Date)->()
 
-    @State private var items: [Int] = Array(-5...5)
-    @State private var tableUpdateID = UUID() // triggers table update
+    @State var items: [Int] = Array(-5...5)
+    @State var tableUpdateID = UUID() // triggers table update
 
-    @State private var yearCellSize: CGSize?
+    @State var yearCellSize: CGSize?
 
-    @State private var searchText = ""
+    @State var searchText = ""
     @FocusState private var isSearchFocused: Bool
 
     var body: some View {

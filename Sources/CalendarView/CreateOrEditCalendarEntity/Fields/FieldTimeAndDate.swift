@@ -1,5 +1,5 @@
 //
-//  TimeAndDateView.swift
+//  FieldTimeAndDate.swift
 //  Jaye
 //
 //  Created by Exyte on 01.04.2025.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-enum PickersEnum: CaseIterable {
+enum PickerDateType: CaseIterable {
     case starts
     case ends
 
@@ -24,7 +24,7 @@ struct FieldTimeAndDate: View {
     @Binding var startDate: Date
     @Binding var endDate: Date
 
-    @State private var displayedPicker: PickersEnum?
+    @State var displayedPicker: PickerDateType?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -40,8 +40,8 @@ struct FieldTimeAndDate: View {
                     .padding(.trailing, 3)
             }
 
-            TimeAndDateRow(kind: .starts, date: $startDate, showTime: !isAllDay, displayedPicker: $displayedPicker)
-            TimeAndDateRow(kind: .ends,   date: $endDate,   showTime: !isAllDay, displayedPicker: $displayedPicker)
+            TimeAndDateRow(displayedPicker: $displayedPicker, date: $startDate, pickerDateType: .starts, showTime: !isAllDay)
+            TimeAndDateRow(displayedPicker: $displayedPicker, date: $endDate, pickerDateType: .ends, showTime: !isAllDay)
         }
         .onChange(of: isAllDay) { _, _ in
             displayedPicker = nil
@@ -50,23 +50,23 @@ struct FieldTimeAndDate: View {
 }
 
 struct TimeAndDateRow: View {
-    private enum PickerKind { case date, time }
+    enum PickerKind { case date, time }
 
     @Environment(\.calendarTheme) private var theme
 
-    let kind: PickersEnum
+    @Binding var displayedPicker: PickerDateType?
     @Binding var date: Date
-    let showTime: Bool
-    @Binding var displayedPicker: PickersEnum?
+    var pickerDateType: PickerDateType
+    var showTime: Bool
 
-    @State private var openKind: PickerKind?
+    @State var openKind: PickerKind?
 
-    private var isMine: Bool { displayedPicker == kind }
+    var isCurrentlyDisplayed: Bool { displayedPicker == pickerDateType }
 
     var body: some View {
         VStack {
             HStack {
-                Text(kind.label)
+                Text(pickerDateType.label)
 
                 Spacer()
 
@@ -81,15 +81,15 @@ struct TimeAndDateRow: View {
                 }
             }
 
-            if isMine, openKind == .date {
-                DatePicker(kind.label, selection: $date, displayedComponents: .date)
+            if isCurrentlyDisplayed, openKind == .date {
+                DatePicker(pickerDateType.label, selection: $date, displayedComponents: .date)
                     .labelsHidden()
                     .datePickerStyle(.graphical)
                     .tint(.blue.opacity(0.3))
             }
 
-            if isMine, openKind == .time {
-                DatePicker(kind.label, selection: $date, displayedComponents: .hourAndMinute)
+            if isCurrentlyDisplayed, openKind == .time {
+                DatePicker(pickerDateType.label, selection: $date, displayedComponents: .hourAndMinute)
                     .labelsHidden()
                     .datePickerStyle(.wheel)
                     .tint(.blue.opacity(0.3))
@@ -97,7 +97,7 @@ struct TimeAndDateRow: View {
         }
         .clipped()
         .onChange(of: displayedPicker) { _, newValue in
-            if newValue != kind { openKind = nil }
+            if newValue != pickerDateType { openKind = nil }
         }
     }
 
@@ -115,12 +115,12 @@ struct TimeAndDateRow: View {
     }
 
     private func toggle(_ pickerKind: PickerKind) {
-        if isMine, openKind == pickerKind {
+        if isCurrentlyDisplayed, openKind == pickerKind {
             openKind = nil
             displayedPicker = nil
         } else {
             openKind = pickerKind
-            displayedPicker = kind
+            displayedPicker = pickerDateType
         }
     }
 }

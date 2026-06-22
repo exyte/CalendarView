@@ -12,10 +12,10 @@ struct CreateEntityView: View {
 
     var shouldSave: (any CalendarEntity) async -> ()
 
-    @State private var saveEnabled = false
-    @State private var isEvent = true
-    @State private var event = CalendarEvent()
-    @State private var reminder = CalendarReminder()
+    @State var saveEnabled = false
+    @State var isEvent = true
+    @State var event = CalendarEvent()
+    @State var reminder = CalendarReminder()
 
     var body: some View {
         VStack {

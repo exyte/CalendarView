@@ -17,7 +17,7 @@ struct InfiniteTabPageView<Content: View>: View {
     let didEndAnimation: (_ direction: Int) -> ()
     let content: (_ page: Int) -> Content
 
-    @State private var offset: CGFloat = .zero
+    @State var offset: CGFloat = .zero
     @GestureState private var translation: CGFloat = .zero
 
     private let animationDuration: CGFloat = 0.25

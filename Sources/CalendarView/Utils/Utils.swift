@@ -132,7 +132,7 @@ extension View {
 
 @propertyWrapper
 public struct BindableValue<Value: Sendable>: DynamicProperty, Sendable {
-    @State private var internalValue: Value
+    @State var internalValue: Value
     private var externalBinding: Binding<Value>?
 
     public var wrappedValue: Value {

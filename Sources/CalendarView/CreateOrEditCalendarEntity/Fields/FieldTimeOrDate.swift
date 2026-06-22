@@ -1,5 +1,5 @@
 //
-//  TimeOrDateView.swift
+//  FieldTimeOrDate.swift
 //  Jaye
 //
 //  Created by Exyte on 03.04.2025.
@@ -19,8 +19,8 @@ struct FieldTimeOrDate: View {
     
     @Binding var date: Date
     
-    @State private var showDatePicker: Bool = false
-    @State private var showTimePicker: Bool = false
+    @State var showDatePicker: Bool = false
+    @State var showTimePicker: Bool = false
     
     var body: some View {
         HStack(alignment: .top) {

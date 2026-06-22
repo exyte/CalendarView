@@ -10,19 +10,19 @@ import SwiftUI
 public struct DefaultDayInWeekView: View {
     @Environment(\.calendarTheme) private var theme
 
-    var params: WeekSwitcherDayBuilderParams
     @ObservedObject var viewModel: WeekCellsModel
+    var params: WeekSwitcherDayBuilderParams
 
     static let today = Date().startOfDay
 
     public init(params: WeekSwitcherDayBuilderParams) {
-        self.params = params
         self.viewModel = params.viewModel
+        self.params = params
     }
 
     public var body: some View {
         let isSelected = viewModel.date == params.day
-        let isToday = DefaultDayInWeekView.today == params.day
+        let isToday = Self.today == params.day
         let isWeekend = params.day.isWeekend
 
         let textColor =

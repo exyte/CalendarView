@@ -13,11 +13,11 @@ public struct DefaultSelectedDayHeaderView: View {
 
     var params: SelectedDayHeaderParams
 
+    static let today = Date().startOfDay
+
     public init(params: SelectedDayHeaderParams) {
         self.params = params
     }
-
-    let today = Date().startOfDay
 
     public var body: some View {
         VStack(spacing: 10) {
@@ -26,7 +26,7 @@ public struct DefaultSelectedDayHeaderView: View {
                     .systemFont(15, .regular, theme.main.text)
                     .lineLimit(1)
 
-                if params.date.startOfDay == today {
+                if params.date.startOfDay == Self.today {
                     Text("(Today)")
                         .systemFont(15, .semibold, theme.main.text)
                         .lineLimit(1)

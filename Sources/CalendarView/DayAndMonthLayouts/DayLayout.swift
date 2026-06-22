@@ -8,14 +8,15 @@
 import SwiftUI
 
 public struct DayLayout<Content: View>: View {
+    struct ScrollInfo: Equatable {
+        let yOffset: CGFloat
+        let maxOffset: CGFloat
+    }
+
     @Environment(\.calendarTheme) private var theme
     @Environment(\.calendarCustomizationParams) var customizationParams
     @Environment(\.hoursFittingCurrentZoom) var hoursFittingCurrentZoom
     @Environment(\.showEventDetailsClosure) var showEventDetailsClosure
-
-    private var hoursToFit: CGFloat {
-        hoursFittingCurrentZoom ?? customizationParams.hoursToFit
-    }
 
     @Binding var hoursLabelsInset: CGFloat
     @Binding var isCalendarScrolling: Bool
@@ -25,32 +26,50 @@ public struct DayLayout<Content: View>: View {
     var events: [CalendarEvent]
     var reminders: [CalendarReminder]
     var isScrollDisabled: Bool
+    var pinchAnchor: CGFloat = 0.5
     var updateID: UUID
 
-    @ViewBuilder var dayEventBuilder: (any CalendarEntity)->Content
+    @ViewBuilder var dayEventBuilder: (any CalendarEntity) -> Content
 
-    private struct ScrollInfo: Equatable {
-        let yOffset: CGFloat
-        let maxOffset: CGFloat
+    var allDayEvents: [CalendarEvent]
+    var allDayEventsByDay: [Date: [CalendarEvent]] = [:]
+    var nonAllDayEvents: [CalendarEvent]
+    var nonAllDayEventsByDay: [Date: [CalendarEvent]] = [:]
+    var remindersByDay: [Date: [CalendarReminder]] = [:]
+
+    // MARK: - inner state
+
+    @State var scrollPosition = ScrollPosition()
+    @State var targetOffset = CGFloat.zero
+    @State var scrollInfo = ScrollInfo(yOffset: 0, maxOffset: 100)
+    @State var lastHours: CGFloat = 12
+
+    @State var hourLabelsSize: CGSize = .zero
+    @State var hourTextHeight: CGFloat = 0
+    @State var allDaysViewHeight: [Int: CGFloat] = [0:0]
+
+    var hoursToFit: CGFloat {
+        hoursFittingCurrentZoom ?? customizationParams.hoursToFit
     }
 
-    @State private var scrollPosition = ScrollPosition()
-    @State private var targetOffset = CGFloat.zero
-    @State private var scrollInfo: ScrollInfo = ScrollInfo(yOffset: 0, maxOffset: 100)
-    @State private var lastHours: CGFloat = 12
-    var pinchAnchor: CGFloat = 0.5
+    var firstOccupiedHour: Int {
+        nonAllDayEvents.map { $0.startDate.getHour() } .min { $0 < $1 } ?? 0
+    }
 
-    init(hoursLabelsInset: Binding<CGFloat>, isCalendarScrolling: Binding<Bool>, anchorDate: Date, daysCount: Int, events: [CalendarEvent], reminders: [CalendarReminder], isScrollDisabled: Bool, updateID: UUID, pinchAnchor: CGFloat = 0.5, dayEventBuilder: @escaping (any CalendarEntity) -> Content) {
+    let allDaysViewMaxHeight: CGFloat = 90.0
+    let horizontalPadding = 8.0
+
+    init(hoursLabelsInset: Binding<CGFloat>, isCalendarScrolling: Binding<Bool>, anchorDate: Date, daysCount: Int, events: [CalendarEvent], reminders: [CalendarReminder], isScrollDisabled: Bool, pinchAnchor: CGFloat = 0.5, updateID: UUID, dayEventBuilder: @escaping (any CalendarEntity) -> Content) {
         self._hoursLabelsInset = hoursLabelsInset
         self._isCalendarScrolling = isCalendarScrolling
         self.anchorDate = anchorDate
         self.daysCount = daysCount
         self.events = events
         self.reminders = reminders
-        self.updateID = updateID
         self.isScrollDisabled = isScrollDisabled
-        self.dayEventBuilder = dayEventBuilder
         self.pinchAnchor = pinchAnchor
+        self.updateID = updateID
+        self.dayEventBuilder = dayEventBuilder
 
         let isAllDayGrouped = Dictionary(grouping: events, by: \.isAllDay)
         self.allDayEvents = isAllDayGrouped[true] ?? []
@@ -59,24 +78,6 @@ public struct DayLayout<Content: View>: View {
         self.allDayEventsByDay = daysCount == 1 ? [anchorDate: allDayEvents] : getAllDayEventsByDate()
         self.remindersByDay = daysCount == 1 ? [anchorDate: reminders] : reminders.groupedByDay()
     }
-    
-    private let allDaysViewMaxHeight: CGFloat = 90.0
-
-    @State private var hourLabelsSize: CGSize = .zero
-    @State private var hourTextHeight: CGFloat = 0
-    @State private var allDaysViewHeight: [Int: CGFloat] = [0:0]
-
-    var firstOccupiedHour: Int {
-        nonAllDayEvents.map { $0.startDate.getHour() } .min { $0 < $1 } ?? 0
-    }
-
-    var allDayEvents: [CalendarEvent]
-    var allDayEventsByDay: [Date: [CalendarEvent]] = [:]
-    var nonAllDayEvents: [CalendarEvent]
-    var nonAllDayEventsByDay: [Date: [CalendarEvent]] = [:]
-    var remindersByDay: [Date: [CalendarReminder]] = [:]
-
-    let horizontalPadding = 8.0
 
     public var body: some View {
         VStack(spacing: 4) {

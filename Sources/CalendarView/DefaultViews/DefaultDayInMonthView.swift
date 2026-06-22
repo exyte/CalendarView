@@ -10,22 +10,22 @@ import SwiftUI
 public struct DefaultDayInMonthView: View {
     @Environment(\.calendarTheme) private var theme
 
-    public var params: MonthDayBuilderParams
+    var params: MonthDayBuilderParams
+
+    @State var monthEventSize: CGSize?
+
+    static let today = Date().startOfDay
 
     public init(params: MonthDayBuilderParams) {
         self.params = params
     }
-
-    @State private var monthEventSize: CGSize?
-
-    let today = Date()
 
     public var body: some View {
         VStack(spacing: 6) {
             theme.month.separators.frame(height: 1)
                 .padding(.bottom, 10)
 
-            let isToday = params.date.startOfDay == today.startOfDay
+            let isToday = params.date.startOfDay == Self.today
             Text("\(params.date.getDay())")
                 .systemFont(17, .semibold, isToday ? theme.month.todayText : theme.month.dateText)
                 .applyIf(isToday) {

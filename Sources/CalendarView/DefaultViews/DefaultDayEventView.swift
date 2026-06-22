@@ -12,12 +12,12 @@ public struct DefaultDayEventView: View {
 
     public var entity: any CalendarEntity
 
-    public init(entity: any CalendarEntity) {
-        self.entity = entity
-    }
-
     var isEvent: Bool {
         entity as? CalendarEvent != nil
+    }
+
+    public init(entity: any CalendarEntity) {
+        self.entity = entity
     }
 
     public var body: some View {

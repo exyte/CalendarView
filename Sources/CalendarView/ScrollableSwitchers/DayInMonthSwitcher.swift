@@ -16,12 +16,12 @@ struct DayInMonthSwitcher<MonthDay: View>: View {
     @Binding var calendarDisplayMode: CalendarDisplayMode
     @ViewBuilder var monthDayBuilder: (MonthDayBuilderParams) -> MonthDay
 
-    @State private var items: [Int] = []
-    @State private var models: [Int: MonthCellModel] = [:]
-    @State private var dateInterval = DateInterval(start: Date(), end: Date())
-    @State private var tableUpdateID = UUID()
+    @State var items: [Int] = []
+    @State var models: [Int: MonthCellModel] = [:]
+    @State var dateInterval = DateInterval(start: Date(), end: Date())
+    @State var tableUpdateID = UUID()
 
-    @State private var monthCellSize: CGSize?
+    @State var monthCellSize: CGSize?
 
     let today = Date()
 
