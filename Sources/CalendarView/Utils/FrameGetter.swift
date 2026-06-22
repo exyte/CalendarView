@@ -13,17 +13,19 @@ struct FrameGetter: ViewModifier {
     func body(content: Content) -> some View {
         content
             .background(
-                GeometryReader { proxy -> AnyView in
-                    DispatchQueue.main.async {
-                        let rect = proxy.frame(in: .global)
-                        // This avoids an infinite layout loop
-                        if rect.integral != self.frame.integral {
-                            self.frame = rect
-                        }
-                    }
-                    return AnyView(EmptyView())
+                GeometryReader { proxy in
+                    Color.clear
+                        .onAppear { update(proxy.frame(in: .global)) }
+                        .onChange(of: proxy.frame(in: .global)) { _, newValue in update(newValue) }
                 }
             )
+    }
+
+    private func update(_ newValue: CGRect) {
+        // This avoids an infinite layout loop
+        if newValue.integral != frame.integral {
+            frame = newValue
+        }
     }
 }
 

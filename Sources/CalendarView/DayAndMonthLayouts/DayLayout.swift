@@ -10,7 +10,12 @@ import SwiftUI
 public struct DayLayout<Content: View>: View {
     @Environment(\.calendarTheme) private var theme
     @Environment(\.calendarCustomizationParams) var customizationParams
+    @Environment(\.hoursFittingCurrentZoom) var hoursFittingCurrentZoom
     @Environment(\.showEventDetailsClosure) var showEventDetailsClosure
+
+    private var hoursToFit: CGFloat {
+        hoursFittingCurrentZoom ?? customizationParams.hoursToFit
+    }
 
     @Binding var hoursLabelsInset: CGFloat
     @Binding var isCalendarScrolling: Bool
@@ -85,7 +90,7 @@ public struct DayLayout<Content: View>: View {
                 ScrollViewReader { proxy in
                     ScrollView {
                         HStack(spacing: 0) {
-                            let oneHourHeight = global.size.height / CGFloat(customizationParams.hoursToFit)
+                            let oneHourHeight = global.size.height / CGFloat(hoursToFit)
 
                             hourLabels(oneHourHeight)
                                 .padding(.horizontal, horizontalPadding)
@@ -112,7 +117,7 @@ public struct DayLayout<Content: View>: View {
                                 let centerY = scrollInfo.yOffset + focalY
                                 let gridTop = hourTextHeight
                                 let hoursOld = lastHours
-                                let hoursNew = customizationParams.hoursToFit
+                                let hoursNew = hoursToFit
                                 let oneHourOld = global.size.height / max(3.0, min(12.0, hoursOld))
                                 let oneHourNew = global.size.height / max(3.0, min(12.0, hoursNew))
                                 // Compute old/new hour index at focal point (accounting for top inset) and adjust offset to keep it under the fingers
@@ -125,7 +130,7 @@ public struct DayLayout<Content: View>: View {
                             }
                         } else {
                             proxy.scrollTo(firstOccupiedHour, anchor: .top)
-                            lastHours = customizationParams.hoursToFit
+                            lastHours = hoursToFit
                         }
                     }
                     .onChange(of: scrollInfo) {
@@ -169,7 +174,7 @@ public struct DayLayout<Content: View>: View {
             }
         }
         .onAppear {
-            lastHours = customizationParams.hoursToFit
+            lastHours = hoursToFit
         }
         .onChange(of: hourLabelsSize) {
             hoursLabelsInset = hourLabelsSize.width + 2 * horizontalPadding
@@ -289,16 +294,12 @@ public struct DayLayout<Content: View>: View {
     private func getAllDayEventsByDate() -> [Date: [CalendarEvent]] {
         var allDayEventsByDay: [Date: [CalendarEvent]] = [:]
         for i in 0..<daysCount {
-            let date = anchorDate.adding(.day, value: i)
-            let interval = CalendarDisplayMode.day.interval(date)
-            let startDate = interval.start
-            let endDate = interval.end
-            let allDayEvents = allDayEvents
-                .filter{ $0.startDate <= startDate && $0.endDate >= startDate }
-            
-            allDayEventsByDay[date.startOfDay] = Array(Set(allDayEvents)).sorted(by: \.id)
+            let dayStart = anchorDate.adding(.day, value: i).startOfDay
+            let matches = allDayEvents
+                .filter { $0.startDate <= dayStart && $0.endDate >= dayStart }
+                .sorted(by: \.id)
+            allDayEventsByDay[dayStart] = matches
         }
-        
         return allDayEventsByDay
     }
 }

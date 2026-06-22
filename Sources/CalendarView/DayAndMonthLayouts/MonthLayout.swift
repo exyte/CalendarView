@@ -23,7 +23,7 @@ public struct MonthLayout<MonthDay: View>: View {
         date.startOfMonth
     }
 
-    // count of empty spaces for days of week before 1st of the month
+    // number of empty spaces for days of week before 1st of the month
     var inset: Int {
         let startOfWeek = startOfMonth.startOfWeek(customizationParams.firstDayOfWeek)
         var count = startOfMonth.getWeekday() - startOfWeek.getWeekday()
@@ -35,10 +35,9 @@ public struct MonthLayout<MonthDay: View>: View {
 
     public var body: some View {
         GeometryReader { g in
-            let numberOfRows = numberOfCalendarRows()
-            let rowHeight = g.size.height / CGFloat(numberOfRows)
             let maxMonthDay = startOfMonth.daysInMonth
             let totalCount = inset + maxMonthDay
+            let rowHeight = g.size.height / CGFloat(numberOfCalendarRows())
 
             LazyVGrid(columns: columns, spacing: 0) {
                 ForEach(0..<totalCount, id: \.self) { index in
@@ -65,32 +64,21 @@ public struct MonthLayout<MonthDay: View>: View {
         }
     }
 
-    func eventsFor(_ date: Date) -> [any CalendarEntity] {
-        var allDayEvents = viewModel.events
-            .filter { $0.isAllDay }
-            .filter{ $0.startDate.startOfDay <= date && $0.endDate >= date }
-        let events = viewModel.events
-            .filter { !$0.isAllDay && $0.startDate.startOfDay == date }
-        allDayEvents.append(contentsOf: events)
-        return allDayEvents
+    func numberOfCalendarRows() -> Int {
+        Int(ceil(Double(inset + startOfMonth.daysInMonth) / 7.0))
     }
 
-    func numberOfCalendarRows() -> Int {
-        let calendar = Calendar.current
-        let firstDayOfWeek = customizationParams.firstDayOfWeek ?? calendar.firstWeekday
-        let startOfMonth = date.startOfMonth
-        let daysInMonth = startOfMonth.daysInMonth
-
-        // First day of week of this month (e.g. 2 for Monday)
-        let weekdayOfFirst = calendar.component(.weekday, from: startOfMonth)
-
-        // Calculate offset based on custom first day of week
-        var leadingEmptyDays = weekdayOfFirst - firstDayOfWeek
-        if leadingEmptyDays < 0 {
-            leadingEmptyDays += 7
+    func eventsFor(_ date: Date) -> [any CalendarEntity] {
+        var result: [any CalendarEntity] = []
+        for event in viewModel.events {
+            if event.isAllDay {
+                if event.startDate.startOfDay <= date && event.endDate >= date {
+                    result.append(event)
+                }
+            } else if event.startDate.startOfDay == date {
+                result.append(event)
+            }
         }
-
-        let totalItems = leadingEmptyDays + daysInMonth
-        return Int(ceil(Double(totalItems) / 7.0))
+        return result
     }
 }

@@ -14,16 +14,16 @@ func createSimpleInfiniteTableView<Content: View>(
     @ViewBuilder content: @escaping (Int) -> Content
 ) -> InfiniteTableView<Int, EmptyUpdatable, Content, EmptyView> {
     InfiniteTableView(data: items) { direction, pageSize in
-        DispatchQueue.main.async {
-            switch direction {
-            case .backward:
-                for _ in 0..<pageSize {
-                    items.wrappedValue.insert(items.wrappedValue.first! - 1, at: 0)
-                }
-            case .forward:
-                for _ in 0..<pageSize {
-                    items.wrappedValue.append(items.wrappedValue.last! + 1)
-                }
+        switch direction {
+        case .backward:
+            guard let first = items.wrappedValue.first else { return }
+            for offset in 1...pageSize {
+                items.wrappedValue.insert(first - offset, at: 0)
+            }
+        case .forward:
+            guard let last = items.wrappedValue.last else { return }
+            for offset in 1...pageSize {
+                items.wrappedValue.append(last + offset)
             }
         }
     } content: { item in

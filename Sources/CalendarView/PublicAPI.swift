@@ -18,44 +18,47 @@ extension CalendarView {
 
     /// how many hours will fit vertically in a day displayMode, default is 12
     public func hoursToFit(_ hoursToFit: CGFloat) -> CalendarView {
-        if hoursToFit > 24 {
-            print("Please specify hoursToFit's value less or equal to 24")
-            return self
-        }
-        self.customizationParams.hoursToFit = hoursToFit
-        return self
+        var copy = self
+        copy.customizationParams.hoursToFit = min(24, max(1, hoursToFit))
+        return copy
     }
 
     /// default is "h a"
     public func hourLabelFormat(_ hourLabelFormat: String) -> CalendarView {
-        self.customizationParams.hourLabelFormat = hourLabelFormat
-        return self
+        var copy = self
+        copy.customizationParams.hourLabelFormat = hourLabelFormat
+        return copy
     }
 
     /// what day to start the week from, 1 - Sunday, 2 - Monday
     public func firstDayOfWeek(_ firstDayOfWeek: Int) -> CalendarView {
-        self.customizationParams.firstDayOfWeek = firstDayOfWeek
-        return self
+        var copy = self
+        copy.customizationParams.firstDayOfWeek = firstDayOfWeek
+        return copy
     }
 
     /// Background for header and week picker
     public func headerBackground(_ background: HeaderBackground) -> CalendarView {
-        self.customizationParams.headerBackground = background
-        return self
+        var copy = self
+        copy.customizationParams.headerBackground = background
+        return copy
     }
 
     public func headerBackground<Content: View>(viewBuilder: @escaping () -> Content) -> CalendarView {
-        self.customizationParams.headerBackground = HeaderBackground(viewBuilder: viewBuilder)
-        return self
+        var copy = self
+        copy.customizationParams.headerBackground = HeaderBackground(viewBuilder: viewBuilder)
+        return copy
     }
-    
+
     public func eventDetailsClosure(_ closure: @escaping (any CalendarEntity)->()) -> CalendarView {
-        self.customizationParams.eventDetailsClosure = closure
-        return self
+        var copy = self
+        copy.customizationParams.eventDetailsClosure = closure
+        return copy
     }
-    
+
     public func isDayInWeekSwitcherPagingEnabled(_ value: Bool) -> CalendarView {
-        self.customizationParams.isDayInWeekSwitcherPagingEnabled = value
-        return self
+        var copy = self
+        copy.customizationParams.isDayInWeekSwitcherPagingEnabled = value
+        return copy
     }
 }

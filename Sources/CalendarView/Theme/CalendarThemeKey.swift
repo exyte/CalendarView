@@ -46,10 +46,16 @@ public extension EnvironmentValues {
 }
 
 #if swift(<6.0)
-@preconcurrency public struct CalendarCustomizationParamsKey: EnvironmentKey {
-    nonisolated(unsafe) public static let defaultValue = CalendarViewCustomizationParams()
+public struct CalendarCustomizationParamsKey: EnvironmentKey {
+    public static let defaultValue = CalendarViewCustomizationParams()
 }
 #endif
+
+// MARK: - Live pinch-zoom override (nil when not pinching)
+
+extension EnvironmentValues {
+    @Entry var hoursFittingCurrentZoom: CGFloat? = nil
+}
 
 public extension EnvironmentValues {
     var showEventDetailsClosure: (any CalendarEntity)->() {

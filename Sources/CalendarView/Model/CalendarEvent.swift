@@ -28,10 +28,26 @@ public struct CalendarEvent: CalendarEntity, Hashable {
     public var entityType: EntityType { .event }
 
     public var duration: CGFloat { // in seconds
-        endDate.timeIntervalSinceNow - startDate.timeIntervalSinceNow
+        endDate.timeIntervalSince(startDate)
     }
 
-    public init(id: String = "Local-\(UUID().uuidString)", calendarID: String = "", title: String = "", notes: String = "", calendarColor: Color = .gray, calendarName: String = "", startDate: Date = Date(), endDate: Date? = nil, isAllDay: Bool = false, isDetached: Bool = false, repeatType: RepeatType = .never, alertType: AlertType = .none, priorityType: PriorityType = .none, vibrationType: VibrationType = .none, payload: [String : Sendable] = [:]) {
+    public init(
+        id: String = CalendarEvent.newLocalID(),
+        calendarID: String = "",
+        title: String = "",
+        notes: String = "",
+        calendarColor: Color = .gray,
+        calendarName: String = "",
+        startDate: Date = Date(),
+        endDate: Date? = nil,
+        isAllDay: Bool = false,
+        isDetached: Bool = false,
+        repeatType: RepeatType = .never,
+        alertType: AlertType = .none,
+        priorityType: PriorityType = .none,
+        vibrationType: VibrationType = .none,
+        payload: [String: Sendable] = [:]
+    ) {
         self.id = id
         self.calendarID = calendarID
         self.title = title
@@ -50,21 +66,5 @@ public struct CalendarEvent: CalendarEntity, Hashable {
 
     func toString() -> String {
         title + startDate.formatted(" HH:mm") + endDate.formatted(" - HH:mm")
-    }
-}
-
-extension UIImpactFeedbackGenerator.FeedbackStyle: Codable {
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        let rawValue = try container.decode(Int.self)
-        guard let style = UIImpactFeedbackGenerator.FeedbackStyle(rawValue: rawValue) else {
-            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid raw value for FeedbackStyle: \(rawValue)")
-        }
-        self = style
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        try container.encode(rawValue)
     }
 }

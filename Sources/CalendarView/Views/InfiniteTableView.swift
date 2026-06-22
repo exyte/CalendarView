@@ -19,7 +19,7 @@ public enum InfiniteScrollMode {
     case free(CGFloat? = nil), paged(CGFloat)
 }
 
-public class InfiniteTableViewCustomizationParams {
+public struct InfiniteTableViewCustomizationParams {
     var scrollLayout: InfiniteScrollLayout = .vertical
     var scrollMode: InfiniteScrollMode = .free()
     var isPagingEnabled: Bool = false
@@ -30,30 +30,35 @@ public class InfiniteTableViewCustomizationParams {
 
 extension InfiniteTableView {
     func scrollLayout(_ layout: InfiniteScrollLayout) -> InfiniteTableView {
-        self.params.scrollLayout = layout
-        return self
+        var copy = self
+        copy.params.scrollLayout = layout
+        return copy
     }
 
     func scrollMode(scrollMode: InfiniteScrollMode) -> InfiniteTableView {
-        self.params.scrollMode = scrollMode
-        return self
+        var copy = self
+        copy.params.scrollMode = scrollMode
+        return copy
     }
-    
+
     func isPagingEnabled(_ isPagingEnabled: Bool) -> InfiniteTableView {
-        self.params.isPagingEnabled = isPagingEnabled
-        self.params.pageSize = isPagingEnabled ? 1 : 5
-        return self
+        var copy = self
+        copy.params.isPagingEnabled = isPagingEnabled
+        copy.params.pageSize = isPagingEnabled ? 1 : 5
+        return copy
     }
 
     func loadMoreParameters(threshold: Int, pageSize: Int) -> InfiniteTableView {
-        self.params.threshold = threshold
-        self.params.pageSize = pageSize
-        return self
+        var copy = self
+        copy.params.threshold = threshold
+        copy.params.pageSize = pageSize
+        return copy
     }
 
     func reloadTrigger(updateID: UUID) -> InfiniteTableView {
-        self.params.updateID = updateID
-        return self
+        var copy = self
+        copy.params.updateID = updateID
+        return copy
     }
 }
 
@@ -107,8 +112,6 @@ public struct InfiniteTableView<Data, UpdatableModel, Content, UpdatableContent>
 
     @State var prevUpdateID: UUID?
     var params = InfiniteTableViewCustomizationParams()
-    // @state: week works
-    // no state: month update works
 
     public func makeCoordinator() -> Coordinator {
         Coordinator(self)

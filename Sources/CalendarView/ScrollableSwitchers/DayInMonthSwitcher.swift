@@ -28,20 +28,20 @@ struct DayInMonthSwitcher<MonthDay: View>: View {
     var body: some View {
         GeometryReader { g in
             InfiniteTableView(data: $items, cellModels: $models) { direction, pageSize in
-                DispatchQueue.main.async {
-                    switch direction {
-                    case .backward:
-                        for _ in 0..<pageSize {
-                            let item = items.first! - 1
-                            items.insert(item, at: 0)
-                            models[item] = MonthCellModel(id: item)
-                        }
-                    case .forward:
-                        for _ in 0..<pageSize {
-                            let item = items.last! + 1
-                            items.append(item)
-                            models[item] = MonthCellModel(id: item)
-                        }
+                switch direction {
+                case .backward:
+                    guard let first = items.first else { return }
+                    for offset in 1...pageSize {
+                        let item = first - offset
+                        items.insert(item, at: 0)
+                        models[item] = MonthCellModel(id: item)
+                    }
+                case .forward:
+                    guard let last = items.last else { return }
+                    for offset in 1...pageSize {
+                        let item = last + offset
+                        items.append(item)
+                        models[item] = MonthCellModel(id: item)
                     }
                 }
             } content: { item, model in
@@ -62,17 +62,16 @@ struct DayInMonthSwitcher<MonthDay: View>: View {
             .reloadTrigger(updateID: tableUpdateID)
             .scrollMode(scrollMode: .free(monthCellSize?.height))
             .willDisplayItem { item in
-                Task.detached {
-                    let monthDate = await fullscreenDate.startOfMonth.adding(.month, value: item)
+                Task { @MainActor in
+                    let monthDate = fullscreenDate.startOfMonth.adding(.month, value: item)
                     let interval = DateInterval(start: monthDate.adding(.month, value: -1), end: monthDate.adding(.month, value: 2))
-                    if await dateInterval == interval { return }
+                    if dateInterval == interval { return }
                     await viewModel.fetch(interval)
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) { ///?????
-                        models[item-1]?.events = eventsFor(monthDate.adding(.month, value: -1))
-                        models[item]?.events = eventsFor(monthDate)
-                        models[item+1]?.events = eventsFor(monthDate.adding(.month, value: 1))
-                        dateInterval = interval
-                    }
+                    // viewModel.events is now up to date — distribute to the three visible models
+                    models[item-1]?.events = eventsFor(monthDate.adding(.month, value: -1))
+                    models[item]?.events = eventsFor(monthDate)
+                    models[item+1]?.events = eventsFor(monthDate.adding(.month, value: 1))
+                    dateInterval = interval
                 }
             }
         }

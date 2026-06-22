@@ -17,7 +17,6 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
     @Binding var anchorDate: Date // first day of currently on screen week. selectedData could be off screen, so need to track this through another variable
 
     var calendarDisplayMode: CalendarDisplayMode
-    var hoursLabelsInset: CGFloat
     @ViewBuilder var weekSwitcherDayBuilder: (WeekSwitcherDayBuilderParams) -> WeekSwitcherDay
 
     @StateObject private var weekCellsModel = WeekCellsModel()
@@ -75,21 +74,6 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
             .reloadTrigger(updateID: tableUpdateID)
         }
         .frame(height: daySize?.height)
-    }
-
-    var threeDayWeekView: some View {
-        GeometryReader { g in
-            createSimpleInfiniteTableView(items: $items) { item in
-                dayView(startDay: fullscreenDate, index: item, monthDisplayMode: false)
-            }
-            .scrollLayout(.horizontal)
-            .scrollMode(scrollMode: .paged(g.size.width / 3))
-            .willDisplayItem { item in
-                anchorDate = fullscreenDate.startOfDay.adding(.day, value: item)
-            }
-        }
-        .frame(height: daySize?.height)
-        .padding(.leading, hoursLabelsInset)
     }
 
     @ViewBuilder

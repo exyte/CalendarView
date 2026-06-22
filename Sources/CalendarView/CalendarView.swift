@@ -7,7 +7,6 @@
 
 import SwiftUI
 import AnchoredPopup
-import Combine
 
 public struct CalendarDefaults {
     public static let defaultProviders: [CalendarsProvider] = [AppleCalendarsProvider(), LocalCalendarsProvider()]
@@ -35,12 +34,12 @@ public struct HeaderBuilderParams {
     public var tapAddEventClosure: ()->()
 }
 
-public struct weekSwitcherDayFooterParams {
+public struct SelectedDayHeaderParams {
     public var date: Date
     public var daysCount: Int = 1
 }
 
-public class CalendarViewCustomizationParams {
+public struct CalendarViewCustomizationParams {
     public var hoursToFit: CGFloat = 12
     public var hourLabelFormat: String = "h a"
     public var firstDayOfWeek: Int?
@@ -48,9 +47,9 @@ public class CalendarViewCustomizationParams {
     public var horSpacing: CGFloat = 4
     public var verSpacing: CGFloat = 4
     public var headerBackground: HeaderBackground = .color(.named("headerBG"))
-    
+
     public var isDayInWeekSwitcherPagingEnabled: Bool = true
-    
+
     public var eventDetailsClosure: ((any CalendarEntity)->())?
 }
 
@@ -63,7 +62,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     @ViewBuilder var monthDayBuilder: (MonthDayBuilderParams) -> MonthDay
     @ViewBuilder var weekSwitcherDayBuilder: (WeekSwitcherDayBuilderParams) -> WeekSwitcherDay
     @ViewBuilder var headerBuilder: (HeaderBuilderParams) -> Header
-    @ViewBuilder var weekSwitcherDayFooterBuilder: (weekSwitcherDayFooterParams) -> Footer
+    @ViewBuilder var selectedDayHeaderBuilder: (SelectedDayHeaderParams) -> Footer
 
     public init(
         providers: [CalendarsProvider] = [],
@@ -79,8 +78,8 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         headerBuilder: @escaping (_ params: HeaderBuilderParams) -> Header = {
             DefaultHeaderView(params: $0)
         },
-        weekSwitcherDayFooterBuilder: @escaping (_ params: weekSwitcherDayFooterParams) -> Footer = {
-            DefaultWeekSwitcherDayFooterView(params: $0)
+        selectedDayHeaderBuilder: @escaping (_ params: SelectedDayHeaderParams) -> Footer = {
+            DefaultSelectedDayHeaderView(params: $0)
         }
     ) {
         self._viewModel = StateObject(wrappedValue: CalendarViewModel(providers: providers))
@@ -88,7 +87,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         self.monthDayBuilder = monthDayBuilder
         self.weekSwitcherDayBuilder = weekSwitcherDayBuilder
         self.headerBuilder = headerBuilder
-        self.weekSwitcherDayFooterBuilder = weekSwitcherDayFooterBuilder
+        self.selectedDayHeaderBuilder = selectedDayHeaderBuilder
     }
 
     @Environment(\.calendarTheme) var theme
@@ -110,10 +109,10 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     // layout helpers
     @State var hoursLabelsInset: CGFloat = 0
 
-    @State var customizationParams = CalendarViewCustomizationParams()
-    
+    var customizationParams = CalendarViewCustomizationParams()
+
+    @State private var hoursFittingCurrentZoom: CGFloat?
     @State private var currentZoom = 0.0
-    @State private var totalZoom = 4.0
     @State private var pinchAnchor: CGFloat = 0.5
 
     var idForUpdate: UUID = UUID()
@@ -136,7 +135,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                     })
                 )
 
-                DayInWeekSwitcher(fullscreenDate: $fullscreenDate, anchorDate: $anchorDate, calendarDisplayMode: displayMode, hoursLabelsInset: hoursLabelsInset, weekSwitcherDayBuilder: weekSwitcherDayBuilder)
+                DayInWeekSwitcher(fullscreenDate: $fullscreenDate, anchorDate: $anchorDate, calendarDisplayMode: displayMode, weekSwitcherDayBuilder: weekSwitcherDayBuilder)
                     .padding(8)
             }
             .background {
@@ -154,6 +153,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         .background(theme.main.background)
         .environmentObject(viewModel)
         .environment(\.calendarCustomizationParams, customizationParams)
+        .environment(\.hoursFittingCurrentZoom, hoursFittingCurrentZoom)
         .environment(\.showEventDetailsClosure) { (entity: any CalendarEntity) in
             if let eventDetailsClosure = customizationParams.eventDetailsClosure {
                 eventDetailsClosure(entity)
@@ -169,9 +169,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
             updateData()
         }
         .onChange(of: idForUpdate) {
-            DispatchQueue.main.async {
-                updateData()
-            }
+            updateData()
         }
 
         .sheet(isPresented: $showCalendarFilters) {
@@ -202,7 +200,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
             }
         }
         .onAppear {
-            totalZoom = customizationParams.hoursToFit
+            currentZoom = hoursFittingCurrentZoom ?? customizationParams.hoursToFit
         }
     }
 
@@ -220,7 +218,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                     let date = Calendar.current.date(byAdding: .day, value: page - currentPage, to: fullscreenDate) ?? fullscreenDate
 
                     VStack(spacing: 0) {
-                        weekSwitcherDayFooterBuilder(weekSwitcherDayFooterParams(date: date, daysCount: displayMode.rawValue))
+                        selectedDayHeaderBuilder(SelectedDayHeaderParams(date: date, daysCount: displayMode.rawValue))
 
                         DayLayout(hoursLabelsInset: $hoursLabelsInset, isCalendarScrolling: $isCalendarScrolling, anchorDate: date, daysCount: displayMode.rawValue, events: viewModel.getEvents(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate), reminders: viewModel.getReminders(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate), isScrollDisabled: isDaySwiping, updateID: updateID, pinchAnchor: pinchAnchor, dayEventBuilder: dayEventBuilder)
                             .padding(.top, 8)
@@ -245,16 +243,16 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
             .onChanged { value in
                 isDaySwiping = true
                 let delta = (value.magnification - 1) * 3
-                let desired = max(3.0, min(totalZoom - delta, 12.0))
-                if abs(desired - customizationParams.hoursToFit) > 0.05 {
-                    customizationParams.hoursToFit = desired
+                let desired = max(3.0, min(currentZoom - delta, 12.0))
+                let current = hoursFittingCurrentZoom ?? customizationParams.hoursToFit
+                if abs(desired - current) > 0.05 {
+                    hoursFittingCurrentZoom = desired
                     updateID = UUID()
                 }
             }
             .onEnded { value in
                 let delta = (value.magnification - 1) * 3
-                totalZoom = max(3.0, min(totalZoom - delta, 12.0))
-                currentZoom = 0
+                currentZoom = max(3.0, min(currentZoom - delta, 12.0))
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                     isDaySwiping = false
                 }

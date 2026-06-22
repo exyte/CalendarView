@@ -26,13 +26,11 @@ struct YearLayout: View {
                     Button {
                         didSelectMonth(i+1)
                     } label: {
-                        if isCurrentYear, i+1 == today.getMonth() {
-                            YearCurrentMonthLayout(date: date.adding(.month, value: i))
-                                .frame(maxHeight: .infinity, alignment: .top)
-                        } else {
-                            YearMonthLayout(date: date.adding(.month, value: i))
-                                .frame(maxHeight: .infinity, alignment: .top)
-                        }
+                        YearMonthLayout(
+                            date: date.adding(.month, value: i),
+                            isCurrentMonth: isCurrentYear && (i+1 == today.getMonth())
+                        )
+                        .frame(maxHeight: .infinity, alignment: .top)
                     }
                 }
             }
@@ -46,10 +44,12 @@ struct YearMonthLayout: View, Identifiable {
 
     let id = UUID()
     var date: Date // 1st of some month
+    var isCurrentMonth: Bool = false
 
+    private let today = Date()
     let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
 
-    // count of empty spaces for days of week before 1st of the month
+    // number of empty spaces for days of week before 1st of the month
     var inset: Int {
         let startOfWeek = date.startOfWeek(customizationParams.firstDayOfWeek)
         var count = date.getWeekday() - startOfWeek.getWeekday()
@@ -61,7 +61,8 @@ struct YearMonthLayout: View, Identifiable {
 
     var body: some View {
         VStack(alignment: .leading) {
-            Text(date.formatted("MMM")).systemFont(20, .semibold, theme.year.monthText)
+            Text(date.formatted("MMM"))
+                .systemFont(20, .semibold, isCurrentMonth ? theme.year.todayText : theme.year.monthText)
 
             LazyVGrid(columns: columns, spacing: 4) {
                 let maxMonthDay = date.maxMonthDay
@@ -72,50 +73,7 @@ struct YearMonthLayout: View, Identifiable {
                         Color.clear
                     } else {
                         let day = index - inset + 1
-
-                        Text("\(day)")
-                            .systemFont(8, theme.year.dateText)
-                    }
-                }
-            }
-        }
-    }
-}
-
-struct YearCurrentMonthLayout: View, Identifiable {
-    @Environment(\.calendarTheme) private var theme
-    @Environment(\.calendarCustomizationParams) var customizationParams
-
-    let id = UUID()
-    var date: Date // 1st of some month
-
-    let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
-    let today = Date()
-
-    // count of empty spaces for days of week before 1st of the month
-    var inset: Int {
-        let startOfWeek = date.startOfWeek(customizationParams.firstDayOfWeek)
-        var count = date.getWeekday() - startOfWeek.getWeekday()
-        if count < 0 {
-            count += 7
-        }
-        return count
-    }
-
-    var body: some View {
-        VStack(alignment: .leading) {
-            Text(date.formatted("MMM")).systemFont(20, .semibold, theme.year.todayText)
-
-            LazyVGrid(columns: columns, spacing: 4) {
-                let maxMonthDay = date.maxMonthDay
-                let totalCount = inset + maxMonthDay
-
-                ForEach(0..<totalCount, id: \.self) { index in
-                    if index < inset {
-                        Color.clear
-                    } else {
-                        let day = index - inset + 1
-                        let isToday = day == today.getDay()
+                        let isToday = isCurrentMonth && day == today.getDay()
 
                         Text("\(day)")
                             .systemFont(8, isToday ? .white : theme.year.dateText)

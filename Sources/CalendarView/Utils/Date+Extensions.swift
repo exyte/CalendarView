@@ -11,19 +11,8 @@ public extension Date {
 
     // MARK: - Init & Format
 
-    init?(sqlString: String) {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        if let date = formatter.date(from: sqlString) {
-            self = date
-        } else {
-            return nil
-        }
-    }
-
     func formatted(_ format: String) -> String {
-        DateFormatterCache.shared.string(from: self, withFormat: format)
+        DateFormatterCache.shared.string(from: self, withFormat: format, locale: .current)
     }
 
     func adding(_ component: Calendar.Component, value: Int) -> Date {
@@ -39,19 +28,19 @@ public extension Date {
         let weekday = calendar.component(.weekday, from: self)
         let firstDayOfWeek = firstDayOfWeek ?? calendar.firstWeekday
         let daysToSubtract = (7 + weekday - firstDayOfWeek) % 7
-        return calendar.date(byAdding: .day, value: -daysToSubtract, to: self.startOfDay)!
+        return calendar.date(byAdding: .day, value: -daysToSubtract, to: self.startOfDay) ?? self.startOfDay
     }
 
     var startOfMonth: Date {
         let calendar = Calendar.current
         let components = calendar.dateComponents([.year, .month], from: self)
-        return calendar.date(from: components)!.startOfDay
+        return (calendar.date(from: components) ?? self).startOfDay
     }
 
     var startOfYear: Date {
         let calendar = Calendar.current
         let components = calendar.dateComponents([.year], from: self)
-        return calendar.date(from: components)!.startOfDay
+        return (calendar.date(from: components) ?? self).startOfDay
     }
 
     var daysInMonth: Int {
@@ -138,31 +127,31 @@ public extension Date {
     // MARK: - Get Individual Components
 
     func getYear() -> Int {
-        Calendar.current.dateComponents([.year], from: self).year!
+        Calendar.current.component(.year, from: self)
     }
 
     func getMonth() -> Int {
-        Calendar.current.dateComponents([.month], from: self).month!
+        Calendar.current.component(.month, from: self)
     }
 
     func getDay() -> Int {
-        Calendar.current.dateComponents([.day], from: self).day!
+        Calendar.current.component(.day, from: self)
     }
 
     func getHour() -> Int {
-        Calendar.current.dateComponents([.hour], from: self).hour!
+        Calendar.current.component(.hour, from: self)
     }
 
     func getMinute() -> Int {
-        Calendar.current.dateComponents([.minute], from: self).minute!
+        Calendar.current.component(.minute, from: self)
     }
 
     func getSecond() -> Int {
-        Calendar.current.dateComponents([.second], from: self).second!
+        Calendar.current.component(.second, from: self)
     }
 
     func getWeekday() -> Int {
-        Calendar.current.dateComponents([.weekday], from: self).weekday!
+        Calendar.current.component(.weekday, from: self)
     }
 
     // MARK: - Set Individual Components
@@ -215,29 +204,29 @@ public extension Date {
 
 final class DateFormatterCache: @unchecked Sendable {
 
-	static let shared = DateFormatterCache()
+    static let shared = DateFormatterCache()
 
-	private let lock = NSLock()
+    private let lock = NSLock()
 
-	private var formatters: [String: DateFormatter] = [:]
+    private var formatters: [String: DateFormatter] = [:]
 
-    func formatter(for format: String) -> DateFormatter {
-        if let existing = formatters[format] {
+    private func formatter(for format: String, locale: Locale) -> DateFormatter {
+        let key = "\(locale.identifier)|\(format)"
+        if let existing = formatters[key] {
             return existing
-        } else {
-            let formatter = DateFormatter()
-            formatter.dateFormat = format
-            formatter.locale = Locale(identifier: "en_US_POSIX")
-            formatters[format] = formatter
-            return formatter
         }
+        let formatter = DateFormatter()
+        formatter.dateFormat = format
+        formatter.locale = locale
+        formatters[key] = formatter
+        return formatter
     }
 
-	func string(from date: Date, withFormat format: String) -> String {
-		lock.lock()
-		defer { lock.unlock() }
-		return formatter(for: format).string(from: date)
-	}
+    func string(from date: Date, withFormat format: String, locale: Locale) -> String {
+        lock.lock()
+        defer { lock.unlock() }
+        return formatter(for: format, locale: locale).string(from: date)
+    }
 }
 
 extension DateFormatter {

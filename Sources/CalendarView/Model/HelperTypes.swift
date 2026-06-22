@@ -57,30 +57,4 @@ public enum PriorityType: String, PickerEnum {
     case high = "High"
 
     public var title: String { "Priority" }
-
-//    var backgroundColor: Color {
-//        switch self {
-//        case .low:
-//            return Color.priorityLowBackground
-//        case .medium:
-//            return .priorityMediumBackground
-//        case .high:
-//            return .priorityHighBackground
-//        case .none:
-//            return .policeBlue.opacity(0.1)
-//        }
-//    }
-//
-//    var foregroundColor: Color {
-//        switch self {
-//        case .low:
-//            return Color.priorityLowForeground
-//        case .medium:
-//            return .priorityMediumForeground
-//        case .high:
-//            return .priorityHighForeground
-//        case .none:
-//            return .policeBlue
-//        }
-//    }
 }

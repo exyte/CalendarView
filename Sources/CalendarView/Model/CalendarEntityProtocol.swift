@@ -35,34 +35,36 @@ public protocol CalendarEntity: Equatable, Identifiable, Sendable, Codable {
 extension CalendarEntity {
     public func repeatableEventOccursOn(date: Date) -> Bool {
         guard repeatType != .never else { return false }
-        var isSameDay: Bool = false
+        guard date >= startDate.startOfDay else { return false }
 
         switch repeatType {
         case .never:
-            isSameDay = false
+            return false
         case .daily:
-            isSameDay = true
+            return true
         case .workingDay:
-            isSameDay = false
+            return !date.isWeekend
         case .weekend:
-            isSameDay = false
+            return date.isWeekend
         case .weekly:
-            isSameDay = date.getWeekday() == startDate.getWeekday()
+            return date.getWeekday() == startDate.getWeekday()
         case .twoWeekly:
-            isSameDay = false
+            let days = Calendar.current.dateComponents([.day], from: startDate.startOfDay, to: date.startOfDay).day ?? 0
+            return days >= 0 && days % 14 == 0
         case .monthly:
-            isSameDay = date.getDay() == startDate.getDay()
+            return date.getDay() == startDate.getDay()
         case .year:
-            isSameDay = date.getMonth() == startDate.getMonth() &&
-            date.getDay() == startDate.getDay()
+            return date.getMonth() == startDate.getMonth()
+                && date.getDay() == startDate.getDay()
         }
-
-        return isSameDay
     }
 
     public var isLocalEntity: Bool {
-        id.contains("Local")
+        id.hasPrefix(Self.localIDPrefix)
     }
+
+    public static var localIDPrefix: String { "Local-" }
+    public static func newLocalID() -> String { "\(localIDPrefix)\(UUID().uuidString)" }
 }
 
 

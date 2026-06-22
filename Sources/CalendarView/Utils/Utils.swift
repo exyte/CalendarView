@@ -8,14 +8,14 @@
 import SwiftUI
 
 extension Array {
-    mutating func sort<T: Comparable>(by keyPath: KeyPath<Element, T>) {
-        self.sort { $0[keyPath: keyPath] > $1[keyPath: keyPath] }
+    mutating func sort<T: Comparable>(by keyPath: KeyPath<Element, T>, ascending: Bool = true) {
+        self.sort { ascending ? $0[keyPath: keyPath] < $1[keyPath: keyPath] : $0[keyPath: keyPath] > $1[keyPath: keyPath] }
     }
 }
 
 extension Array {
-    func sorted<T: Comparable>(by keyPath: KeyPath<Element, T>) -> [Element] {
-        self.sorted { $0[keyPath: keyPath] > $1[keyPath: keyPath] }
+    func sorted<T: Comparable>(by keyPath: KeyPath<Element, T>, ascending: Bool = true) -> [Element] {
+        self.sorted { ascending ? $0[keyPath: keyPath] < $1[keyPath: keyPath] : $0[keyPath: keyPath] > $1[keyPath: keyPath] }
     }
 
     func sorted(
@@ -187,7 +187,7 @@ extension Color {
     }
 }
 
-extension Color: Codable, Sendable {
+extension Color: @retroactive Codable {
     private enum CodingKeys: String, CodingKey {
         case red, green, blue, opacity
     }
@@ -198,7 +198,7 @@ extension Color: Codable, Sendable {
         let green = try container.decode(Double.self, forKey: .green)
         let blue = try container.decode(Double.self, forKey: .blue)
         let opacity = try container.decode(Double.self, forKey: .opacity)
-        self = Color(red: red, green: green, blue: blue, opacity: opacity)
+        self = Color(.sRGB, red: red, green: green, blue: blue, opacity: opacity)
     }
 
     public func encode(to encoder: Encoder) throws {
