@@ -10,7 +10,7 @@ import SwiftUI
 public struct DefaultDayInWeekView: View {
     @Environment(\.calendarTheme) private var theme
 
-    @ObservedObject var viewModel: WeekCellsModel
+    var viewModel: WeekCellsModel
     var params: WeekSwitcherDayBuilderParams
 
     static let today = Date().startOfDay

@@ -20,7 +20,7 @@ public struct MonthDayBuilderParams {
 
 @MainActor
 public struct WeekSwitcherDayBuilderParams {
-    @ObservedObject var viewModel: WeekCellsModel /// use @ObservedObject to force swiftUI update flow on UIKit components
+    var viewModel: WeekCellsModel
     public var day: Date
     public var monthDisplayMode: Bool
 }
@@ -56,7 +56,7 @@ public struct CalendarViewCustomizationParams {
 @MainActor
 public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View, Header: View, Footer: View>: View {
 
-    @StateObject var viewModel: CalendarViewModel
+    @State var viewModel: CalendarViewModel
 
     @ViewBuilder var dayEventBuilder: (any CalendarEntity) -> DayEvent
     @ViewBuilder var monthDayBuilder: (MonthDayBuilderParams) -> MonthDay
@@ -82,7 +82,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
             DefaultSelectedDayHeaderView(params: $0)
         }
     ) {
-        self._viewModel = StateObject(wrappedValue: CalendarViewModel(providers: providers))
+        self._viewModel = State(wrappedValue: CalendarViewModel(providers: providers))
         self.dayEventBuilder = dayEventBuilder
         self.monthDayBuilder = monthDayBuilder
         self.weekSwitcherDayBuilder = weekSwitcherDayBuilder
@@ -150,7 +150,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
             }
         }
         .background(theme.main.background)
-        .environmentObject(viewModel)
+        .environment(viewModel)
         .environment(\.calendarCustomizationParams, customizationParams)
         .environment(\.hoursFittingCurrentZoom, hoursFittingCurrentZoom)
         .environment(\.showEventDetailsClosure) { (entity: any CalendarEntity) in
@@ -175,7 +175,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
             updateData() // onDismiss
         } content: {
             SelectCalendarsView()
-                .environmentObject(viewModel)
+                .environment(viewModel)
         }
 
         .sheet(isPresented: $showCreateEvent) {
@@ -191,11 +191,11 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         } content: { wrappedEntity in
             if let event = wrappedEntity.entity as? CalendarEvent {
                 EventDetailsView(entity: event)
-                    .environmentObject(viewModel)
+                    .environment(viewModel)
             }
             if let reminder = wrappedEntity.entity as? CalendarReminder {
                 EventDetailsView(entity: reminder)
-                    .environmentObject(viewModel)
+                    .environment(viewModel)
             }
         }
         .onAppear {

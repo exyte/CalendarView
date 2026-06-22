@@ -11,7 +11,7 @@ import SwiftUI
 struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
     @Environment(\.calendarTheme) private var theme
     @Environment(\.calendarCustomizationParams) var customizationParams
-    @EnvironmentObject var viewModel: CalendarViewModel
+    @Environment(CalendarViewModel.self) var viewModel
 
     @Binding var fullscreenDate: Date
     @Binding var anchorDate: Date // first day of currently on screen week. selectedData could be off screen, so need to track this through another variable
@@ -19,7 +19,7 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
     var calendarDisplayMode: CalendarDisplayMode
     @ViewBuilder var weekSwitcherDayBuilder: (WeekSwitcherDayBuilderParams) -> WeekSwitcherDay
 
-    @StateObject private var weekCellsModel = WeekCellsModel()
+    @State private var weekCellsModel = WeekCellsModel()
 
     @State var daySize: CGSize?
     @State var items = Array(-5...5)
@@ -105,6 +105,7 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
     }
 }
 
-class WeekCellsModel: ObservableObject {
-    @Published var date: Date?
+@Observable
+class WeekCellsModel {
+    var date: Date?
 }

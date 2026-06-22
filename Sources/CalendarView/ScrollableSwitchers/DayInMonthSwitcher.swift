@@ -10,7 +10,7 @@ import SwiftUI
 /// Select a day from a month, scroll between months
 struct DayInMonthSwitcher<MonthDay: View>: View {
     @Environment(\.calendarTheme) private var theme
-    @EnvironmentObject var viewModel: CalendarViewModel
+    @Environment(CalendarViewModel.self) var viewModel
 
     @Binding var fullscreenDate: Date
     @Binding var calendarDisplayMode: CalendarDisplayMode
@@ -108,10 +108,11 @@ struct DayInMonthSwitcher<MonthDay: View>: View {
     }
 }
 
-class MonthCellModel: ObservableObject, Identifiable {
+@Observable
+class MonthCellModel: Identifiable {
     let id: Int
 
-    @Published var events: [CalendarEvent] = []
+    var events: [CalendarEvent] = []
 
     init(id: Int) {
         self.id = id

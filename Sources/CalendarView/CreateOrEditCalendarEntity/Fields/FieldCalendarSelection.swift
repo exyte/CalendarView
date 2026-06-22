@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct FieldCalendarSelection: View {
-    @EnvironmentObject var viewModel: CalendarViewModel
+    @Environment(CalendarViewModel.self) var viewModel
     @Binding var selectedCalendar: ProviderCalendar?
 
     @State var showSelectionPopup: Bool = false
@@ -63,7 +63,7 @@ struct FieldCalendarSelection: View {
 
 struct CalendarSelectionPopupView: View {
     @Environment(\.popupDismiss) var dismiss
-    @EnvironmentObject var viewModel: CalendarViewModel
+    @Environment(CalendarViewModel.self) var viewModel
 
     @Binding var selectedCalendar: ProviderCalendar?
 

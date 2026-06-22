@@ -9,7 +9,7 @@ import SwiftUI
 
 public struct DefaultSelectedDayHeaderView: View {
     @Environment(\.calendarTheme) private var theme
-    @EnvironmentObject var viewModel: CalendarViewModel
+    @Environment(CalendarViewModel.self) var viewModel
 
     var params: SelectedDayHeaderParams
 

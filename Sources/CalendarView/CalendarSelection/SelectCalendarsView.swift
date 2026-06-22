@@ -10,7 +10,7 @@ import SwiftUI
 public struct SelectCalendarsView: View {
     @Environment(\.calendarTheme) private var theme
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject var viewModel: CalendarViewModel
+    @Environment(CalendarViewModel.self) var viewModel
 
     var calendarsGroupedBySection: [(key: String, value: [ProviderCalendar])] {
         Dictionary(grouping: viewModel.calendars, by: \.source)

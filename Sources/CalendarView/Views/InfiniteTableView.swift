@@ -62,7 +62,7 @@ extension InfiniteTableView {
     }
 }
 
-public class EmptyUpdatable: ObservableObject {}
+public class EmptyUpdatable {}
 
 public extension InfiniteTableView where UpdatableModel == EmptyUpdatable, UpdatableContent == EmptyView {
 
@@ -99,7 +99,7 @@ public extension InfiniteTableView where Content == EmptyView {
     }
 }
 
-public struct InfiniteTableView<Data, UpdatableModel, Content, UpdatableContent>: UIViewRepresentable where Data: Identifiable, Data: Hashable, UpdatableModel: ObservableObject, Content: View, UpdatableContent: View {
+public struct InfiniteTableView<Data, UpdatableModel, Content, UpdatableContent>: UIViewRepresentable where Data: Identifiable, Data: Hashable, UpdatableModel: AnyObject, Content: View, UpdatableContent: View {
     /// use @Bindings to force swiftUI update flow on UIKit components
     @Binding var data: [Data]
     @Binding var cellModels: [Data: UpdatableModel]

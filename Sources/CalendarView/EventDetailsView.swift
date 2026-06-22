@@ -10,7 +10,7 @@ import SwiftUI
 struct EventDetailsView<Entity: CalendarEntity>: View {
     @Environment(\.calendarTheme) private var theme
     @Environment(\.dismiss) var dismiss
-    @EnvironmentObject var viewModel: CalendarViewModel
+    @Environment(CalendarViewModel.self) var viewModel
 
     var entity: Entity
 

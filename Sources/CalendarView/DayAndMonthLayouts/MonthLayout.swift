@@ -12,7 +12,7 @@ public struct MonthLayout<MonthDay: View>: View {
     @Environment(\.calendarCustomizationParams) var customizationParams
 
     var date: Date
-    @ObservedObject var viewModel: MonthCellModel /// use @ObservedObject to force swiftUI update flow on UIKit components
+    var viewModel: MonthCellModel
     @ViewBuilder var monthDayBuilder: (MonthDayBuilderParams) -> MonthDay
     var didSelectDay: (Date)->()
 

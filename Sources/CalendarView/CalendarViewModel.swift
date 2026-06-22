@@ -7,12 +7,13 @@
 
 import Foundation
 
+@Observable
 @MainActor
-class CalendarViewModel: ObservableObject {
-    @Published private(set) var events: [CalendarEvent] = []
-    @Published private(set) var reminders: [CalendarReminder] = []
-    @Published private(set) var calendars: [ProviderCalendar] = []
-    @Published private(set) var deselectedCalendarIDs: [String] = []
+class CalendarViewModel {
+    private(set) var events: [CalendarEvent] = []
+    private(set) var reminders: [CalendarReminder] = []
+    private(set) var calendars: [ProviderCalendar] = []
+    private(set) var deselectedCalendarIDs: [String] = []
 
     private var eventProviders: [CalendarsProvider] = []
     private var calendarSelectionStore = CalendarSelectionStore()
