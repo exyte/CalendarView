@@ -121,7 +121,7 @@ public struct DayLayout<Content: View>: View {
                                 if anchorDate.getDateWithoutTime() == Date().getDateWithoutTime() {
                                     nowLine(oneHourHeight)
                                 }
-                                dayEventsAndRemindersView(availableWidth: max(0, global.size.width - hourLabelsSize.width), availableHeight: global.size.height)
+                                dayEventsAndRemindersView(availableWidth: max(0, global.size.width - hourLabelsSize.width), oneHourHeight: oneHourHeight)
                             }
                             .padding(.top, hourTextHeight)
                         }
@@ -289,14 +289,13 @@ public struct DayLayout<Content: View>: View {
             }
     }
 
-    func dayEventsAndRemindersView(availableWidth: CGFloat, availableHeight: CGFloat) -> some View {
+    func dayEventsAndRemindersView(availableWidth: CGFloat, oneHourHeight: CGFloat) -> some View {
         // each day cell: 1pt separator + cell. trailing padding is one horSpacing.
         // cells share the remaining width equally.
         let separators = CGFloat(daysCount)
         let trailingPadding = customizationParams.horSpacing
         let interCellSpacing = customizationParams.horSpacing * CGFloat(max(0, daysCount - 1))
         let cellWidth = max(0, (availableWidth - separators - interCellSpacing - trailingPadding) / CGFloat(daysCount))
-        let cellSize = CGSize(width: cellWidth, height: availableHeight)
         return HStack(spacing: customizationParams.horSpacing) {
             ForEach(0..<daysCount, id: \.self) { i in
                 theme.day.separators.frame(width: 1)
@@ -304,12 +303,13 @@ public struct DayLayout<Content: View>: View {
                 DayEventsLayout(
                     events: grouped.nonAllDayEventsByDay[date] ?? [],
                     reminders: grouped.remindersByDay[date] ?? [],
-                    size: cellSize,
+                    oneHourHeight: oneHourHeight,
                     horSpacing: customizationParams.horSpacing,
                     verSpacing: customizationParams.verSpacing,
+                    trailingPadding: customizationParams.horSpacing,
                     dayEventBuilder: dayEventBuilder
                 )
-                .frame(width: cellWidth, height: availableHeight)
+                .frame(width: cellWidth)
             }
         }
         .padding(.trailing, customizationParams.horSpacing)

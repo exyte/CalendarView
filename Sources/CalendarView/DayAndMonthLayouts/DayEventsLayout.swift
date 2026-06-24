@@ -10,165 +10,171 @@ import SwiftUI
 struct DayEventsLayout<Content: View>: View {
     @Environment(\.showEventDetailsClosure) var showEventDetailsClosure
 
-    var events: [CalendarEvent] = []
-    var reminders: [CalendarReminder] = []
-    var size: CGSize
+    var events: [CalendarEvent]
+    var reminders: [CalendarReminder]
+    var oneHourHeight: CGFloat
     var horSpacing: CGFloat
     var verSpacing: CGFloat
-    @ViewBuilder var dayEventBuilder: (any CalendarEntity)->Content
+    var trailingPadding: CGFloat
+    @ViewBuilder var dayEventBuilder: (any CalendarEntity) -> Content
 
-    private var eventFrames: [CGRect] = []
-    private var reminderFrames: [CGRect] = []
-
-    init(events: [CalendarEvent], reminders: [CalendarReminder], size: CGSize, horSpacing: CGFloat, verSpacing: CGFloat, dayEventBuilder: @escaping (any CalendarEntity) -> Content) {
-        self.events = events.sorted(by: [
-            ArrayUtils.cmp(\.duration),
-            ArrayUtils.cmp(\.title),
-            ArrayUtils.cmp(\.id)
+    private var sortedEvents: [CalendarEvent] {
+        events.sorted(by: [
+            ArrayUtils.cmp(\.startDate),
+            ArrayUtils.cmp(\.duration, ascending: false),
+            ArrayUtils.cmp(\.id),
         ])
-        self.reminders = reminders
-        self.size = size
-        self.horSpacing = horSpacing
-        self.verSpacing = verSpacing
-        self.dayEventBuilder = dayEventBuilder
-
-        (self.eventFrames, self.reminderFrames) = recalculateFrames()
     }
 
-    public func recalculateFrames() -> ([CGRect], [CGRect]) {
-        var eventFrames = [CGRect]()
-        var reminderFrames = [CGRect]()
-        var eventColumns = [Int]()
-        var eventCountInRow = [Int]()
-        var reminderColumns = [Int]()
-        var reminderCountInRow = [Int]()
-
-        var space = PartiallyOccupiedSpace()
-
-        for event in events {
-            let column = space.occupyFirstFreeSpace(with: NSRange(event))
-            eventColumns.append(column)
-        }
-
-        for reminder in reminders {
-            let column = space.occupyFirstFreeSpace(with: NSRange(reminder))
-            reminderColumns.append(column)
-        }
-        
-        for event in events {
-            let count = space.countEventsInRow(with: NSRange(event))
-            eventCountInRow.append(count)
-        }
-        
-        for reminder in reminders {
-            let count = space.countEventsInRow(with: NSRange(reminder))
-            reminderCountInRow.append(count)
-        }
-
-        for i in 0..<events.count {
-            let columnsCount = CGFloat(eventCountInRow[i])
-            let columnWidth = (size.width - horSpacing * (columnsCount - 1)) / columnsCount
-            let rowHeight = (size.height - verSpacing * 24) / 25
-            let deltaX = columnWidth + horSpacing
-            let deltaY = rowHeight + verSpacing
-            
-            let event = events[i]
-            let column = CGFloat(eventColumns[i])
-            eventFrames.append(CGRect(x: deltaX * column, y: deltaY * startCoeff(event), width: columnWidth, height: deltaY * durationCoeff(event) - verSpacing))
-        }
-
-        for i in 0..<reminders.count {
-            let columnsCount = CGFloat(reminderCountInRow[i])
-            let columnWidth = (size.width - horSpacing * (columnsCount - 1)) / columnsCount
-            let rowHeight = (size.height - verSpacing * 24) / 25
-            let deltaX = columnWidth + horSpacing
-            let deltaY = rowHeight + verSpacing
-            
-            let reminder = reminders[i]
-            let column = CGFloat(reminderColumns[i])
-            reminderFrames.append(CGRect(x: deltaX * column, y: deltaY * startCoeff(reminder), width: columnWidth, height: deltaY - verSpacing))
-        }
-        return (eventFrames, reminderFrames)
-    }
-
-    public var body: some View {
-        ZStack(alignment: .topLeading) {
-            ForEach(eventFrames.indices, id: \.self) { i in
-                let event = events[i]
-                let frame = eventFrames[i]
+    var body: some View {
+        let sorted = sortedEvents
+        EventsPlacement(
+            events: sorted,
+            reminders: reminders,
+            oneHourHeight: oneHourHeight,
+            horSpacing: horSpacing,
+            verSpacing: verSpacing,
+            trailingPadding: trailingPadding
+        ) {
+            ForEach(sorted, id: \.id) { event in
                 dayEventBuilder(event)
-                    .position(x: frame.midX, y: frame.midY)
-                    .frame(width: frame.width, height: frame.height)
                     .onTapGesture {
                         showEventDetailsClosure(event)
                     }
             }
-
-            ForEach(reminderFrames.indices, id: \.self) { i in
-                let reminder = reminders[i]
-                let frame = reminderFrames[i]
+            ForEach(reminders, id: \.id) { reminder in
                 dayEventBuilder(reminder)
-                    .position(x: frame.midX, y: frame.midY)
-                    .frame(width: frame.width, height: frame.height)
                     .onTapGesture {
                         showEventDetailsClosure(reminder)
                     }
             }
         }
         .transaction { $0.disablesAnimations = true }
-        .animation(nil)
-    }
-
-    func durationCoeff(_ event: CalendarEvent) -> CGFloat {
-        event.duration / CGFloat(60 * 60)
-    }
-
-    func startCoeff(_ event: CalendarEvent) -> CGFloat {
-        CGFloat((event.startDate.getHour() * 60 + event.startDate.getMinute())) / CGFloat(60)
-    }
-
-    func startCoeff(_ reminder: CalendarReminder) -> CGFloat {
-        CGFloat((reminder.startDate.getHour() * 60 + reminder.startDate.getMinute())) / CGFloat(60)
     }
 }
 
-fileprivate struct PartiallyOccupiedSpace {
-    var occupiedColumns: [PartiallyOccupiedColumn] = []
+// MARK: - Layout
 
-    mutating func occupyFirstFreeSpace(with range: NSRange) -> Int {
-        for index in occupiedColumns.indices {
-            if occupiedColumns[index].occupyFirstFreeSpace(with: range) {
-                return index
+fileprivate struct EventsPlacement: Layout {
+    var events: [CalendarEvent]
+    var reminders: [CalendarReminder]
+    var oneHourHeight: CGFloat
+    var horSpacing: CGFloat
+    var verSpacing: CGFloat
+    var trailingPadding: CGFloat
+
+    struct Cache {
+        var width: CGFloat = -1
+        var frames: [CGRect] = []
+    }
+
+    private struct Pending {
+        var type: EntityType
+        var originalIndex: Int
+        var range: NSRange
+    }
+
+    func makeCache(subviews: Subviews) -> Cache { Cache() }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout Cache) -> CGSize {
+        let width = proposal.replacingUnspecifiedDimensions().width
+        return CGSize(width: max(0, width), height: oneHourHeight * 25)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout Cache) {
+        if cache.width != bounds.width || cache.frames.count != events.count + reminders.count {
+            cache.frames = computeFrames(width: bounds.width)
+            cache.width = bounds.width
+        }
+        for (i, subview) in subviews.enumerated() {
+            guard i < cache.frames.count else { continue }
+            let f = cache.frames[i]
+            subview.place(
+                at: CGPoint(x: bounds.minX + f.minX, y: bounds.minY + f.minY),
+                anchor: .topLeading,
+                proposal: ProposedViewSize(width: f.width, height: f.height)
+            )
+        }
+    }
+
+    private func computeFrames(width: CGFloat) -> [CGRect] {
+        let usableWidth = max(0, width - trailingPadding)
+
+        var pending: [Pending] = []
+        pending.reserveCapacity(events.count + reminders.count)
+        for (i, e) in events.enumerated() {
+            pending.append(Pending(type: .event, originalIndex: i, range: NSRange(e)))
+        }
+        for (i, r) in reminders.enumerated() {
+            pending.append(Pending(type: .reminder, originalIndex: i, range: NSRange(r)))
+        }
+        pending.sort {
+            if $0.range.location != $1.range.location {
+                return $0.range.location < $1.range.location
             }
+            return $0.range.length > $1.range.length
         }
 
-        let newColumn = PartiallyOccupiedColumn(occupiedRanges: [range])
-        occupiedColumns.append(newColumn)
-        return occupiedColumns.count - 1
-    }
-    
-    func countEventsInRow(with range: NSRange) -> Int {
-        occupiedColumns.filter { $0.isRangeInThisColumn(with: range) }.count
-    }
-}
+        var eventFrames = Array(repeating: CGRect.zero, count: events.count)
+        var reminderFrames = Array(repeating: CGRect.zero, count: reminders.count)
 
-fileprivate struct PartiallyOccupiedColumn {
-    var occupiedRanges: [NSRange]
+        var i = 0
+        while i < pending.count {
+            var columnEndTime: [Int] = []
+            var assignedColumns: [Int] = []
+            var groupEnd = pending[i].range.end
 
-    mutating func occupyFirstFreeSpace(with range: NSRange) -> Bool {
-        for occupied in occupiedRanges {
-            if occupied.intersects(range) {
-                return false
+            var j = i
+            while j < pending.count && (j == i || pending[j].range.location < groupEnd) {
+                let p = pending[j]
+                var col = -1
+                for c in 0..<columnEndTime.count where columnEndTime[c] <= p.range.location {
+                    col = c
+                    columnEndTime[c] = p.range.end
+                    break
+                }
+                if col == -1 {
+                    col = columnEndTime.count
+                    columnEndTime.append(p.range.end)
+                }
+                assignedColumns.append(col)
+                groupEnd = max(groupEnd, p.range.end)
+                j += 1
             }
+
+            let columnCount = max(1, columnEndTime.count)
+            let columnWidth = max(0, (usableWidth - horSpacing * CGFloat(columnCount - 1)) / CGFloat(columnCount))
+            let dx = columnWidth + horSpacing
+
+            for k in i..<j {
+                let p = pending[k]
+                let col = assignedColumns[k - i]
+                let startCoeff = CGFloat(p.range.location) / 60.0
+                let y = oneHourHeight * startCoeff
+                let x = dx * CGFloat(col)
+                let height: CGFloat
+                switch p.type {
+                case .event:
+                    let durationCoeff = CGFloat(p.range.length) / 60.0
+                    height = max(0, oneHourHeight * durationCoeff - verSpacing)
+                case .reminder:
+                    height = max(0, oneHourHeight - verSpacing)
+                }
+                let rect = CGRect(x: x, y: y, width: columnWidth, height: height)
+                switch p.type {
+                case .event: eventFrames[p.originalIndex] = rect
+                case .reminder: reminderFrames[p.originalIndex] = rect
+                }
+            }
+
+            i = j
         }
-        occupiedRanges.append(range)
-        return true
-    }
-    
-    func isRangeInThisColumn(with range: NSRange) -> Bool {
-        occupiedRanges.contains { $0.intersects(range) }
+
+        return eventFrames + reminderFrames
     }
 }
+
+// MARK: - Range helpers
 
 extension NSRange {
     init(_ event: CalendarEvent) {
@@ -181,14 +187,9 @@ extension NSRange {
 
     init(_ startDate: Date, _ endDate: Date) {
         let calendar = Calendar.current
-
-        // Start of the day for the event
         let baseDay = calendar.startOfDay(for: startDate)
-
-        // Minutes since the start of that base day
         let startMinutes = calendar.dateComponents([.minute], from: baseDay, to: startDate).minute!
         let endMinutes = calendar.dateComponents([.minute], from: baseDay, to: endDate).minute!
-
         self = NSRange(location: startMinutes, length: endMinutes - startMinutes)
     }
 
