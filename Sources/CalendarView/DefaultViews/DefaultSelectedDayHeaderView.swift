@@ -8,7 +8,7 @@
 import SwiftUI
 
 public struct DefaultSelectedDayHeaderView: View {
-    @Environment(\.calendarTheme) private var theme
+    @Environment(\.calendarTheme) var theme
     @Environment(CalendarViewModel.self) var viewModel
 
     var params: SelectedDayHeaderParams
@@ -23,7 +23,7 @@ public struct DefaultSelectedDayHeaderView: View {
         VStack(spacing: 10) {
             HStack {
                 Text(params.date.formatted("d MMMM yyyy"))
-                    .systemFont(15, .regular, theme.main.text)
+                    .systemFont(15, theme.main.text)
                     .lineLimit(1)
 
                 if params.date.startOfDay == Self.today {
@@ -39,7 +39,7 @@ public struct DefaultSelectedDayHeaderView: View {
                     .foregroundStyle(theme.main.accent)
 
                 Text("\(viewModel.getEventsAndRemindersCount(from: params.date, displayMode: CalendarDisplayMode.init(rawValue: params.daysCount) ?? .day, fullscreenDate: params.date)) Events")
-                    .systemFont(15, .regular, theme.main.accent)
+                    .systemFont(15, theme.main.accent)
                     .lineLimit(1)
             }
             .padding(16)

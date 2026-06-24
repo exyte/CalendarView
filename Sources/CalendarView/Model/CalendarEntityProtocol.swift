@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-public enum EntityType: Sendable {
+public enum EntityType: String, Sendable, CaseIterable {
     case event, reminder
 }
 
@@ -26,7 +26,8 @@ public protocol CalendarEntity: Equatable, Identifiable, Sendable, Codable {
     var priorityType: PriorityType { get set }
     var vibrationType: VibrationType { get set }
 
-    var entityType: EntityType { get }
+    var type: EntityType { get }
+    var typeString: String { get }
     var isLocalEntity: Bool { get }
 
     func repeatableEventOccursOn(date: Date) -> Bool
@@ -57,6 +58,10 @@ extension CalendarEntity {
             return date.getMonth() == startDate.getMonth()
                 && date.getDay() == startDate.getDay()
         }
+    }
+
+    public var typeString: String {
+        type.rawValue.capitalized
     }
 
     public var isLocalEntity: Bool {

@@ -9,11 +9,11 @@ import SwiftUI
 import AnchoredPopup
 
 public struct DefaultHeaderView: View {
-    @Environment(\.calendarTheme) private var theme
+    @Environment(\.calendarTheme) var theme
 
     var params: HeaderBuilderParams
 
-    @State var showMonthPicker = false
+    @State private var showMonthPicker = false
 
     public init(params: HeaderBuilderParams) {
         self.params = params

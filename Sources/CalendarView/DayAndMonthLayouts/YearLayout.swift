@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct YearLayout: View {
-    @Environment(\.calendarTheme) private var theme
+    @Environment(\.calendarTheme) var theme
 
     var date: Date // Jan 1st of some year
     var didSelectMonth: (Int)->()
@@ -39,7 +39,7 @@ struct YearLayout: View {
 }
 
 struct YearMonthLayout: View, Identifiable {
-    @Environment(\.calendarTheme) private var theme
+    @Environment(\.calendarTheme) var theme
     @Environment(\.calendarCustomizationParams) var customizationParams
 
     let id = UUID()

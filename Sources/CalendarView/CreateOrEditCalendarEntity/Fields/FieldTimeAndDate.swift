@@ -7,41 +7,41 @@
 
 import SwiftUI
 
-enum PickerDateType: CaseIterable {
-    case starts
-    case ends
-
-    var label: String {
-        switch self {
-        case .starts: "Starts"
-        case .ends:   "Ends"
-        }
-    }
-}
+/// Date row stacked on a time row
 
 struct FieldTimeAndDate: View {
     @Binding var isAllDay: Bool
     @Binding var startDate: Date
     @Binding var endDate: Date
 
-    @State var displayedPicker: PickerDateType?
+    @State private var displayedPicker: String?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 14) {
             HStack {
                 Text("Time and Date")
+                    .systemFont(17, .appBlack2)
 
                 Spacer()
 
                 Text("All day")
+                    .systemFont(17, .appBlack2, 0.6)
 
-                Toggle("", isOn: $isAllDay)
-                    .labelsHidden()
-                    .padding(.trailing, 3)
+                CustomToggle(isOn: $isAllDay, onColor: Color(.accent), offColor: Color(.appGrey5))
             }
 
-            TimeAndDateRow(displayedPicker: $displayedPicker, date: $startDate, pickerDateType: .starts, showTime: !isAllDay)
-            TimeAndDateRow(displayedPicker: $displayedPicker, date: $endDate, pickerDateType: .ends, showTime: !isAllDay)
+            TimeAndDateRow(
+                displayedPicker: $displayedPicker,
+                date: $startDate,
+                label: "Starts",
+                mode: isAllDay ? .dateOnly : .dateAndTime
+            )
+            TimeAndDateRow(
+                displayedPicker: $displayedPicker,
+                date: $endDate,
+                label: "Ends",
+                mode: isAllDay ? .dateOnly : .dateAndTime
+            )
         }
         .onChange(of: isAllDay) { _, _ in
             displayedPicker = nil
@@ -49,32 +49,60 @@ struct FieldTimeAndDate: View {
     }
 }
 
+/// Date row stacked on a time row
+
+struct FieldTimeOrDate: View {
+    @Binding var date: Date
+
+    @State private var displayedPicker: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            TimeAndDateRow(displayedPicker: $displayedPicker, date: $date, label: "Date", mode: .dateOnly)
+            TimeAndDateRow(displayedPicker: $displayedPicker, date: $date, label: "Time", mode: .timeOnly)
+        }
+    }
+}
+
 struct TimeAndDateRow: View {
+    enum Mode {
+        case dateAndTime
+        case dateOnly
+        case timeOnly
+
+        var showsDate: Bool { self != .timeOnly }
+        var showsTime: Bool { self != .dateOnly }
+    }
+
     enum PickerKind { case date, time }
 
-    @Environment(\.calendarTheme) private var theme
+    @Environment(\.calendarTheme) var theme
 
-    @Binding var displayedPicker: PickerDateType?
+    @Binding var displayedPicker: String?
     @Binding var date: Date
-    var pickerDateType: PickerDateType
-    var showTime: Bool
 
-    @State var openKind: PickerKind?
+    var label: String
+    var mode: Mode = .dateAndTime
 
-    var isCurrentlyDisplayed: Bool { displayedPicker == pickerDateType }
+    @State private var openKind: PickerKind?
+
+    var isCurrentlyDisplayed: Bool { displayedPicker == label }
 
     var body: some View {
         VStack {
             HStack {
-                Text(pickerDateType.label)
+                Text(label)
+                    .systemFont(17, .appBlack2)
 
                 Spacer()
 
-                dateCell(title: date.dateFormat) {
-                    toggle(.date)
+                if mode.showsDate {
+                    dateCell(title: dateTitle) {
+                        toggle(.date)
+                    }
                 }
 
-                if showTime {
+                if mode.showsTime {
                     dateCell(title: date.timeFormat) {
                         toggle(.time)
                     }
@@ -82,14 +110,14 @@ struct TimeAndDateRow: View {
             }
 
             if isCurrentlyDisplayed, openKind == .date {
-                DatePicker(pickerDateType.label, selection: $date, displayedComponents: .date)
+                DatePicker(label, selection: $date, displayedComponents: .date)
                     .labelsHidden()
                     .datePickerStyle(.graphical)
                     .tint(.blue.opacity(0.3))
             }
 
             if isCurrentlyDisplayed, openKind == .time {
-                DatePicker(pickerDateType.label, selection: $date, displayedComponents: .hourAndMinute)
+                DatePicker(label, selection: $date, displayedComponents: .hourAndMinute)
                     .labelsHidden()
                     .datePickerStyle(.wheel)
                     .tint(.blue.opacity(0.3))
@@ -97,16 +125,24 @@ struct TimeAndDateRow: View {
         }
         .clipped()
         .onChange(of: displayedPicker) { _, newValue in
-            if newValue != pickerDateType { openKind = nil }
+            if newValue != label { openKind = nil }
         }
+    }
+
+    private var dateTitle: String {
+        if mode.showsTime { return date.dateFormat }
+        if Calendar.current.isDateInYesterday(date) { return "Yesterday" }
+        if Calendar.current.isDateInToday(date) { return "Today" }
+        if Calendar.current.isDateInTomorrow(date) { return "Tomorrow" }
+        return date.dateFormat
     }
 
     private func dateCell(title: String, onTap: @escaping () -> Void) -> some View {
         Text(title)
             .padding(12, 6)
-            .background(Color.named("appLightGrey"))
+            .background(Color(.appGrey5))
             .clipShape(Capsule())
-            .systemFont(17, .regular, theme.main.accent)
+            .systemFont(17, theme.main.accent)
             .onTapGesture {
                 withAnimation(.easeInOut) {
                     onTap()
@@ -120,7 +156,7 @@ struct TimeAndDateRow: View {
             displayedPicker = nil
         } else {
             openKind = pickerKind
-            displayedPicker = pickerDateType
+            displayedPicker = label
         }
     }
 }

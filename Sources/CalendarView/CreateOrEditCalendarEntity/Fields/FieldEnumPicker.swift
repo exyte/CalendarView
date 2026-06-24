@@ -6,65 +6,63 @@
 //
 
 import SwiftUI
-import PopupView
 
-enum EventFieldType: String, CaseIterable {
-    
-    case repeatField = "Repeat"
-    case alertField = "Alert"
-    case jayeBlockField = "Jaye Block"
-    case vibrationTypeField = "Vibration type"
-    case priority = "Priority"
-    
-    var iconName: String {
-        switch self {
-        case .repeatField:
-            return "repeat"
-        case .alertField:
-            return "alert"
-        case .jayeBlockField:
-            return "jaye_block"
-        case .vibrationTypeField:
-            return "vibration"
-        case .priority:
-            return "priority"
-        }
-    }
-}
+struct FieldEnumPicker<E: PickerEnum>: View {
+    @Binding var selection: E
 
-struct FieldEnumPicker<S: PickerEnum>: View {
-    var eventFieldType: EventFieldType
-    @Binding var currentValue: S
-    
-    @State var showSelectionPopup: Bool = false
+    @State private var showSelectionPopup: Bool = false
     
     var body: some View {
         HStack {
-            Text(eventFieldType.rawValue)
+            Text(E.title)
+                .systemFont(17, .appBlack2)
 
             Spacer()
 
-            Text(currentValue.stringValue)
-                .systemFont(17, .regular, Color.named("appGrey"))
+            Text(selection.stringValue)
+                .systemFont(17, .appBlack2, 0.6)
 
-            Image(.rightArrow)
-                .frame(width: 24, height: 24)
-                .foregroundStyle(Color.named("appLightGrey"))
+            Image(systemName: "chevron.right")
+                .systemFont(15, .semibold, .appBlack3, 0.3)
         }
         .contentShape(Rectangle())
         .onTapGesture {
             showSelectionPopup = true
         }
-        .scrollPopup(isPresented: $showSelectionPopup) {
-            SelectionPopupView(selection: $currentValue)
-        } header: {
-            PopupHeaderView()
-        } customize: {
-            $0
-                .closeOnTap(false)
-                .closeOnTapOutside(true)
-                .dragToDismiss(true)
-                .backgroundColor(.black.opacity(0.5))
+        .sheet(isPresented: $showSelectionPopup) {
+            SelectionPopupView(selection: $selection)
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
         }
+    }
+}
+
+struct SelectionPopupView<E: PickerEnum>: View {
+    @Environment(\.calendarTheme) var theme
+    @Environment(\.dismiss) var dismiss
+
+    @Binding var selection: E
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Text(E.title)
+                .systemFont(17, .semibold, theme.main.text)
+
+            ForEach(E.allCases, id: \.self) { value in
+                HStack {
+                    Text(value.stringValue)
+
+                    Spacer()
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    selection = value
+                    dismiss()
+                }
+            }
+
+            Spacer()
+        }
+        .padding(20, 30)
     }
 }

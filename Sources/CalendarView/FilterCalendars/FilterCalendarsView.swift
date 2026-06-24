@@ -7,8 +7,8 @@
 
 import SwiftUI
 
-public struct SelectCalendarsView: View {
-    @Environment(\.calendarTheme) private var theme
+public struct FilterCalendarsView: View {
+    @Environment(\.calendarTheme) var theme
     @Environment(\.dismiss) private var dismiss
     @Environment(CalendarViewModel.self) var viewModel
 
@@ -19,7 +19,7 @@ public struct SelectCalendarsView: View {
 
     public var body: some View {
         VStack {
-            headerView
+            CloseSaveHeaderView(title: "Filter")
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
@@ -35,45 +35,6 @@ public struct SelectCalendarsView: View {
         .background(theme.main.background)
         .task {
             await viewModel.fetchCalendars()
-        }
-    }
-
-    var headerView: some View {
-        ZStack {
-            HStack {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(.cross)
-                }
-                .frame(width: 44, height: 44)
-                .background(Circle().styled(theme.button.background))
-
-                Spacer()
-
-                Button {
-                    dismiss()
-                } label: {
-                    Image(.checkmark)
-                        .resizable()
-                        .frame(width: 14, height: 12)
-                }
-                .frame(width: 44, height: 44)
-                .background(Circle().styled(theme.button.accent))
-            }
-
-            Text("Filter").systemFont(17, .semibold, theme.main.text)
-        }
-        .padding(16)
-        .overlay {
-            VStack {
-                Capsule()
-                    .frame(width: 36, height: 5)
-                    .foregroundStyle(theme.main.secondaryText)
-                    .padding(.top, 5)
-
-                Spacer()
-            }
         }
     }
 
@@ -97,7 +58,8 @@ public struct SelectCalendarsView: View {
                                     .size(10)
                             }
                         }
-                        Text(calendar.title).systemFont(14, theme.main.text)
+                        Text(calendar.title)
+                            .systemFont(14, theme.main.text)
                         Spacer()
                     }
                 }

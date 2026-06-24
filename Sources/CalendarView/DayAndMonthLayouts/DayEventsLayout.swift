@@ -44,10 +44,12 @@ struct DayEventsLayout<Content: View>: View {
         var reminderCountInRow = [Int]()
 
         var space = PartiallyOccupiedSpace()
+
         for event in events {
             let column = space.occupyFirstFreeSpace(with: NSRange(event))
             eventColumns.append(column)
         }
+
         for reminder in reminders {
             let column = space.occupyFirstFreeSpace(with: NSRange(reminder))
             reminderColumns.append(column)

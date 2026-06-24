@@ -23,7 +23,7 @@ public struct CalendarReminder: CalendarEntity {
     public var priorityType: PriorityType
     public var vibrationType: VibrationType
 
-    public var entityType: EntityType { .reminder }
+    public var type: EntityType { .reminder }
 
     init(
         id: String = CalendarReminder.newLocalID(),

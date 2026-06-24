@@ -8,7 +8,7 @@
 import SwiftUI
 
 public struct DefaultDayInWeekView: View {
-    @Environment(\.calendarTheme) private var theme
+    @Environment(\.calendarTheme) var theme
 
     var viewModel: WeekCellsModel
     var params: WeekSwitcherDayBuilderParams
@@ -53,9 +53,8 @@ public struct DefaultDayInWeekView: View {
                 Text(params.day.formatted("d")).font(.system(size: 17, weight: .semibold))
                     .systemFont(17, .semibold, textColor)
                     .lineLimit(1)
-                    .size(30)
-                    .background(bgColor)
-                    .clipShape(Circle())
+                    .padding(6)
+                    .background(Circle().foregroundStyle(bgColor))
             }
         }
     }

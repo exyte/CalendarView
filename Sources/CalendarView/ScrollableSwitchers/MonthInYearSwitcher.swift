@@ -9,23 +9,23 @@ import SwiftUI
 
 /// Select a month from a year, scroll between years
 struct MonthInYearSwitcher: View {
-    @Environment(\.calendarTheme) private var theme
+    @Environment(\.calendarTheme) var theme
     @Environment(\.dismiss) private var dismiss
 
     var date: Date
     var didSelectMonth: (Date)->()
 
-    @State var items: [Int] = Array(-5...5)
-    @State var tableUpdateID = UUID() // triggers table update
+    @State private var items: [Int] = Array(-5...5)
+    @State private var tableUpdateID = UUID() // triggers table update
 
-    @State var yearCellSize: CGSize?
+    @State private var yearCellSize: CGSize?
 
-    @State var searchText = ""
+    @State private var searchText = ""
     @FocusState private var isSearchFocused: Bool
 
     var body: some View {
         VStack {
-            headerView
+            CloseSaveHeaderView(title: "Year")
 
             Group {
                 TextField("\(Image(systemName: "magnifyingglass")) Search a year", text: $searchText)
@@ -60,35 +60,6 @@ struct MonthInYearSwitcher: View {
         .background {
             MeasuringTrickView(size: $yearCellSize) {
                 YearLayout(date: Date(), didSelectMonth: {_ in})
-            }
-        }
-    }
-
-    var headerView: some View {
-        ZStack {
-            HStack {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(.cross)
-                }
-                .frame(width: 44, height: 44)
-                .background(Circle().styled(theme.button.background))
-
-                Spacer()
-            }
-
-            Text("Year").systemFont(17, .semibold, theme.main.text)
-        }
-        .padding(16)
-        .overlay {
-            VStack {
-                Capsule()
-                    .frame(width: 36, height: 5)
-                    .foregroundStyle(theme.main.secondaryText)
-                    .padding(.top, 5)
-
-                Spacer()
             }
         }
     }

@@ -9,7 +9,7 @@ import SwiftUI
 
 /// Select a day from a week, scroll between weeks
 struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
-    @Environment(\.calendarTheme) private var theme
+    @Environment(\.calendarTheme) var theme
     @Environment(\.calendarCustomizationParams) var customizationParams
     @Environment(CalendarViewModel.self) var viewModel
 
@@ -21,10 +21,10 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
 
     @State private var weekCellsModel = WeekCellsModel()
 
-    @State var daySize: CGSize?
-    @State var items = Array(-5...5)
-    @State var pageItems = Array(-1...1)
-    @State var tableUpdateID = UUID()
+    @State private var daySize: CGSize?
+    @State private var items = Array(-5...5)
+    @State private var pageItems = Array(-1...1)
+    @State private var tableUpdateID = UUID()
 
     private var calendar: Calendar { Calendar.current }
 

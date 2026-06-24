@@ -54,10 +54,10 @@ public struct CalendarTheme: Sendable {
 
         public init() {
             self.init(
-                text: Color(.appBlack),
-                secondaryText: Color(.appGrey),
+                text: Color(.appBlack1),
+                secondaryText: Color(.appBlack2),
                 accent: Color(.accent),
-                background: Color(.appLightBG)
+                background: Color(.appGrey6)
             )
         }
     }
@@ -137,10 +137,10 @@ public struct CalendarTheme: Sendable {
 
         func resolved(using main: Main) -> Day {
             .init(
-                hourText: hourText.resolve(Color(.appDarkGrey)),
+                hourText: hourText.resolve(Color(.appGrey1)),
                 eventText: eventText.resolve(main.text),
                 background: background.resolve(main.background),
-                separators: separators.resolve(Color(.appLightGrey)),
+                separators: separators.resolve(Color(.appGrey4)),
                 todayLine: todayLine.resolve(.red)
             )
         }
@@ -177,7 +177,7 @@ public struct CalendarTheme: Sendable {
                 plusMoreEventsText: plusMoreEventsText.resolve(main.secondaryText),
                 background: background.resolve(main.background),
                 todayBackground: todayBackground.resolve(main.accent),
-                separators: separators.resolve(Color(.appLightGrey))
+                separators: separators.resolve(Color(.appGrey4))
             )
         }
 
@@ -246,8 +246,8 @@ public struct CalendarTheme: Sendable {
         public init() {
             self.init(
                 accent: Color(.accent),
-                disabled: Color(.appLightGrey),
-                background: Color(.appLightBG)
+                disabled: Color(.appGrey5),
+                background: Color(.appGrey4)
             )
         }
     }

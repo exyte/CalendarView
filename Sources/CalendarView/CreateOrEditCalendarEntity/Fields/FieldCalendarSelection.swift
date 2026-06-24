@@ -11,16 +11,16 @@ struct FieldCalendarSelection: View {
     @Environment(CalendarViewModel.self) var viewModel
     @Binding var selectedCalendar: ProviderCalendar?
 
-    @State var showSelectionPopup: Bool = false
+    @State private var showSelectionPopup: Bool = false
 
     var body: some View {
-        HStack(alignment: .top) {
-            HStack(spacing: 0) {
+        HStack {
+            HStack(alignment: .top, spacing: 0) {
                 Text("Calendar")
-                    .systemFont(17, .regular)
+                    .systemFont(17, .appBlack2)
 
                 Text("*")
-                    .systemFont(17, .regular, .red)
+                    .systemFont(17, .red)
                     .padding(.leading, 4)
 
                 Spacer()
@@ -30,54 +30,43 @@ struct FieldCalendarSelection: View {
 
             if let title = selectedCalendar?.title {
                 Text(title)
-                    .frame(height: 34)
-                    .padding(.horizontal, 12)
+                    .padding(12, 4)
                     .background(Color(selectedCalendar?.color ?? .clear).opacity(0.3))
                     .cornerRadius(17)
             } else {
                 Text("Not selected")
-                    .systemFont(17, .regular, Color.named("appGrey"))
+                    .systemFont(17, .appBlack2, 0.6)
             }
 
-            Image(.rightArrow)
-                .frame(width: 24, height: 24)
-                .foregroundStyle(Color.named("appLightGrey"))
+            Image(systemName: "chevron.right")
+                .systemFont(15, .semibold, .appBlack3, 0.3)
         }
         .contentShape(Rectangle())
         .onTapGesture {
             showSelectionPopup = true
         }
-        .scrollPopup(isPresented: $showSelectionPopup) {
-            CalendarSelectionPopupView(selectedCalendar: $selectedCalendar)
-        } header: {
-            PopupHeaderView()
-        } customize: {
-            $0
-                .closeOnTap(false)
-                .closeOnTapOutside(true)
-                .dragToDismiss(true)
-                .backgroundColor(.black.opacity(0.5))
+        .sheet(isPresented: $showSelectionPopup) {
+            CalendarSelectionSheetView(selectedCalendar: $selectedCalendar)
+                .environment(viewModel)
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
         }
     }
 }
 
-struct CalendarSelectionPopupView: View {
-    @Environment(\.popupDismiss) var dismiss
+struct CalendarSelectionSheetView: View {
+    @Environment(\.calendarTheme) var theme
+    @Environment(\.dismiss) var dismiss
     @Environment(CalendarViewModel.self) var viewModel
 
     @Binding var selectedCalendar: ProviderCalendar?
 
-    @State var calendars: [ProviderCalendar] = []
-    @State var showCreateCalendar = false
-    @State var id = UUID()
-    @State var size: CGSize = .zero
-
     var body: some View {
         VStack(spacing: 20) {
             Text("Select calendar")
-                .systemFont(20, .semibold)
+                .systemFont(17, .semibold, theme.main.text)
 
-            ForEach(calendars) { calendar in
+            ForEach(viewModel.calendars) { calendar in
                 HStack {
                     Circle()
                         .foregroundStyle(calendar.color)
@@ -90,19 +79,12 @@ struct CalendarSelectionPopupView: View {
                 .contentShape(Rectangle())
                 .onTapGesture {
                     selectedCalendar = calendar
-                    dismiss?()
+                    dismiss()
                 }
             }
+
+            Spacer()
         }
-        .sizeGetter($size)
-        .onChange(of: viewModel.calendars, initial: true) { _, newValue in
-            //withAnimation { // animation breaks height
-                calendars = newValue
-            //}
-        }
-        .greedyWidth()
-        .padding(16, 10)
-        .padding(.bottom, 30)
-        .background(.white)
+        .padding(20, 30)
     }
 }

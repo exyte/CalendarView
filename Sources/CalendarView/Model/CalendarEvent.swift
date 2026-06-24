@@ -25,7 +25,7 @@ public struct CalendarEvent: CalendarEntity, Hashable {
     public var priorityType: PriorityType
     public var vibrationType: VibrationType
 
-    public var entityType: EntityType { .event }
+    public var type: EntityType { .event }
 
     public var duration: CGFloat { // in seconds
         endDate.timeIntervalSince(startDate)

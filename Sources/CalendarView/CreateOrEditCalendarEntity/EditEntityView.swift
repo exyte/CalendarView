@@ -13,13 +13,18 @@ struct EditEntityView<Entity: CalendarEntity>: View {
 
     var shouldSave: (Entity) async -> ()
 
+    var saveEnabled: Bool {
+        !entity.title.isEmpty && !entity.calendarID.isEmpty
+    }
+
     var body: some View {
         VStack {
-            CreateOrEditEntityHeaderView(title: "Edit") {
+            CloseSaveHeaderView(title: "Edit", showDraggingCapsule: false, saveButtonEnabled: saveEnabled) {
                 await shouldSave(entity)
             }
 
             EditEntityFieldsView(entity: $entity)
         }
+        .toolbar(.hidden, for: .navigationBar)
     }
 }

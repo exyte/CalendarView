@@ -1,5 +1,5 @@
 //
-//  EventDetailsView.swift
+//  EntityDetailsView.swift
 //  CalendarView
 //
 //  Created by Alisa Mylnikova on 11.07.2025.
@@ -7,14 +7,14 @@
 
 import SwiftUI
 
-struct EventDetailsView<Entity: CalendarEntity>: View {
-    @Environment(\.calendarTheme) private var theme
+struct EntityDetailsView<Entity: CalendarEntity>: View {
+    @Environment(\.calendarTheme) var theme
     @Environment(\.dismiss) var dismiss
     @Environment(CalendarViewModel.self) var viewModel
 
-    var entity: Entity
+    @State var entity: Entity
 
-    @State var showDeleteAlert = false
+    @State private var showDeleteAlert = false
 
     var body: some View {
         NavigationStack {
@@ -56,8 +56,7 @@ struct EventDetailsView<Entity: CalendarEntity>: View {
                     if entity.isLocalEntity {
                         deleteButton
 
-                        Spacer()
-                            .frame(height: 15)
+                        Spacer().frame(height: 15)
                     }
                 }
                 .padding(.horizontal, 16)
@@ -65,7 +64,7 @@ struct EventDetailsView<Entity: CalendarEntity>: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    Text("Event Details")
+                    Text("\(entity.typeString) Details")
                         .systemFont(17, .semibold)
                 }
 
@@ -73,15 +72,11 @@ struct EventDetailsView<Entity: CalendarEntity>: View {
                     Button {
                         dismiss()
                     } label: {
-                        HStack(spacing: 4) {
-                            Image(.rightArrow)
-                                .renderingMode(.template)
-                                .foregroundColor(.black)
-                                .rotationEffect(Angle(degrees: 180))
+                        HStack(spacing: 14) {
+                            Image(systemName: "chevron.left")
 
                             Text(entity.startDate.shortDateFormat)
-                                .systemFont(17, .regular)
-                                .padding(.trailing, 8)
+                                .systemFont(17)
                         }
                         .opacity(0.6)
                     }
@@ -92,6 +87,7 @@ struct EventDetailsView<Entity: CalendarEntity>: View {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         NavigationLink("Edit") {
                             EditEntityView(entity: entity) { editedEntity in
+                                self.entity = editedEntity
                                 await viewModel.update(editedEntity, oldStartDate: entity.startDate)
                             }
                         }
@@ -113,19 +109,16 @@ struct EventDetailsView<Entity: CalendarEntity>: View {
     }
 
     private var headerView: some View {
-        VStack(alignment: .leading) {
-
+        VStack(alignment: .leading, spacing: 12) {
             Text(entity.title)
                 .systemFont(20, .semibold)
-                .padding(.bottom, 8)
 
             headerDateTextView
-                .systemFont(13, .regular)
+                .systemFont(13)
                 .opacity(0.6)
 
             Text("Repeats \(entity.repeatType.rawValue)")
-                .systemFont(13, .regular)
-                .padding(.top, 8)
+                .systemFont(13)
         }
     }
 
@@ -155,7 +148,7 @@ struct EventDetailsView<Entity: CalendarEntity>: View {
     private var calendarFieldView: some View {
         HStack {
             Text("Calendar")
-                .systemFont(17, .regular)
+                .systemFont(17)
 
             Spacer()
 
@@ -164,7 +157,7 @@ struct EventDetailsView<Entity: CalendarEntity>: View {
                 .cornerRadius(8)
 
             Text(entity.calendarName)
-                .systemFont(17, .regular)
+                .systemFont(17)
                 .opacity(0.6)
         }
     }
@@ -172,11 +165,11 @@ struct EventDetailsView<Entity: CalendarEntity>: View {
     private var descriptionFieldView: some View {
         VStack(alignment: .leading) {
             Text("Description")
-                .systemFont(17, .regular)
+                .systemFont(17)
                 .padding(.top, 6)
 
             Text(entity.notes)
-                .systemFont(15, .regular)
+                .systemFont(15)
                 .padding(.vertical, 6)
         }
     }
@@ -185,8 +178,8 @@ struct EventDetailsView<Entity: CalendarEntity>: View {
         Button {
             showDeleteAlert = true
         } label: {
-            Text("Delete \(entity.entityType == .reminder ? "Reminder" : "Event")")
-                .systemFont(15, .regular, .red)
+            Text("Delete \(entity.typeString)")
+                .systemFont(15, .appRed)
                 .frame(maxWidth: .infinity)
         }
         .padding(.top, 12)
@@ -194,7 +187,7 @@ struct EventDetailsView<Entity: CalendarEntity>: View {
     }
 
     private var separatorView: some View {
-        Color(.appLightGrey).frame(height: 1)
+        Color(.appGrey4).frame(height: 1)
     }
 
     private func numberOfDaysBetween(_ from: Date, _ to: Date) -> Int {

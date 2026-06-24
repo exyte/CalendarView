@@ -10,8 +10,8 @@ import CalendarView
 
 struct ContentView: View {
 
-    @State var date = Date().startOfDay
-    @State var mode = CalendarDisplayMode.day
+    @State private var date = Date().startOfDay
+    @State private var mode = CalendarDisplayMode.day
 
     var body: some View {
         CalendarView(providers: CalendarDefaults.defaultProviders)

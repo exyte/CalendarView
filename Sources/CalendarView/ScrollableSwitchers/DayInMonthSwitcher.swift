@@ -9,19 +9,19 @@ import SwiftUI
 
 /// Select a day from a month, scroll between months
 struct DayInMonthSwitcher<MonthDay: View>: View {
-    @Environment(\.calendarTheme) private var theme
+    @Environment(\.calendarTheme) var theme
     @Environment(CalendarViewModel.self) var viewModel
 
     @Binding var fullscreenDate: Date
     @Binding var calendarDisplayMode: CalendarDisplayMode
     @ViewBuilder var monthDayBuilder: (MonthDayBuilderParams) -> MonthDay
 
-    @State var items: [Int] = []
-    @State var models: [Int: MonthCellModel] = [:]
-    @State var dateInterval = DateInterval(start: Date(), end: Date())
-    @State var tableUpdateID = UUID()
+    @State private var items: [Int] = []
+    @State private var models: [Int: MonthCellModel] = [:]
+    @State private var dateInterval = DateInterval(start: Date(), end: Date())
+    @State private var tableUpdateID = UUID()
 
-    @State var monthCellSize: CGSize?
+    @State private var monthCellSize: CGSize?
 
     let today = Date()
 

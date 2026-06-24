@@ -8,7 +8,7 @@
 import SwiftUI
 
 public struct MonthLayout<MonthDay: View>: View {
-    @Environment(\.calendarTheme) private var theme
+    @Environment(\.calendarTheme) var theme
     @Environment(\.calendarCustomizationParams) var customizationParams
 
     var date: Date

@@ -16,7 +16,7 @@ class CalendarViewModel {
     private(set) var deselectedCalendarIDs: [String] = []
 
     private var eventProviders: [CalendarsProvider] = []
-    private var calendarSelectionStore = CalendarSelectionStore()
+    private var calendarSelectionStore = FilterCalendarsStore()
     private let preloadSize: Int = 4
     private var currentFetchTask: Task<Void, Never>?
 

@@ -8,11 +8,11 @@
 import SwiftUI
 
 public struct DefaultDayInMonthView: View {
-    @Environment(\.calendarTheme) private var theme
+    @Environment(\.calendarTheme) var theme
 
     var params: MonthDayBuilderParams
 
-    @State var monthEventSize: CGSize?
+    @State private var monthEventSize: CGSize?
 
     static let today = Date().startOfDay
 
@@ -72,7 +72,7 @@ public struct DefaultDayInMonthView: View {
 }
 
 public struct DefaultMonthEventView: View {
-    @Environment(\.calendarTheme) private var theme
+    @Environment(\.calendarTheme) var theme
 
     public var entity: any CalendarEntity
 
@@ -105,7 +105,7 @@ public struct DefaultMonthEventView: View {
                     .resizable()
                     .size(6)
             } else {
-                RoundedRectangle(cornerRadius: 4).styled(.clear, border: Color.named("appGrey"), 1)
+                RoundedRectangle(cornerRadius: 4).styled(.clear, border: Color(.appGrey2), 1)
                     .size(10)
             }
         }

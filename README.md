@@ -52,7 +52,7 @@ override func getCalendars() async throws -> [ProviderCalendar] {
 ### Hints & Tips
 If, when you first load the application, events are displayed only after the current day changes, set the value for `fullscreenDate`:
 ```
-@State var fullscreenDate = Date().startOfDay
+@State private var fullscreenDate = Date().startOfDay
 ```
 
 ```swift

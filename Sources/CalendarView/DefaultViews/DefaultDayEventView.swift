@@ -8,7 +8,7 @@
 import SwiftUI
 
 public struct DefaultDayEventView: View {
-    @Environment(\.calendarTheme) private var theme
+    @Environment(\.calendarTheme) var theme
 
     public var entity: any CalendarEntity
 
@@ -31,7 +31,8 @@ public struct DefaultDayEventView: View {
             }
         } else {
             ZStack(alignment: .top) {
-                let color = isEvent ? entity.calendarColor.blended(opacity: 0.3) : Color.named("appLightGrey")
+                let color = isEvent ? entity.calendarColor.blended(opacity: 0.3) : theme.main.background
+                
                 RoundedRectangle.styled(8, color)
                     .layoutPriority(1)
 
@@ -67,7 +68,7 @@ public struct DefaultDayEventView: View {
                 Image(.checkmark)
                     .size(10)
             } else {
-                RoundedRectangle(cornerRadius: 4).styled(.clear, border: Color.named("appGrey"), 1)
+                RoundedRectangle(cornerRadius: 4).styled(.clear, border: Color(.appGrey2), 1)
                     .size(20)
             }
         }

@@ -46,7 +46,7 @@ public struct CalendarViewCustomizationParams {
 
     public var horSpacing: CGFloat = 4
     public var verSpacing: CGFloat = 4
-    public var headerBackground: HeaderBackground = .color(.named("headerBG"))
+    public var headerBackground: HeaderBackground = .color(Color(.headerBG))
 
     public var isDayInWeekSwitcherPagingEnabled: Bool = true
 
@@ -56,7 +56,7 @@ public struct CalendarViewCustomizationParams {
 @MainActor
 public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View, Header: View, Footer: View>: View {
 
-    @State var viewModel: CalendarViewModel
+    @State private var viewModel: CalendarViewModel
 
     @ViewBuilder var dayEventBuilder: (any CalendarEntity) -> DayEvent
     @ViewBuilder var monthDayBuilder: (MonthDayBuilderParams) -> MonthDay
@@ -95,23 +95,24 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     @BindableValue var fullscreenDate: Date = Date().startOfDay
     @BindableValue var displayMode: CalendarDisplayMode = .day
 
-    @State var anchorDate: Date = Date()
-    @State var showCalendarFilters = false
-    @State var showCreateEvent = false
-    @State var showEventDetails = false
-    @State var displayedEventDetails: CalendarEntityWrapper?
-    @State var updateID = UUID() // triggers downstream updates
+    @State private var anchorDate: Date = Date()
+    @State private var showCalendarFilters = false
+    @State private var showCreateEvent = false
+    @State private var showEditEvent = false
+    @State private var showEventDetails = false
+    @State private var displayedEventDetails: CalendarEntityWrapper?
+    @State private var updateID = UUID() // triggers downstream updates
     
-    @State var isDaySwiping = false
-    @State var isCalendarScrolling = false
-    @State var currentPage: Int = 0
+    @State private var isDaySwiping = false
+    @State private var isCalendarScrolling = false
+    @State private var currentPage: Int = 0
 
     // layout helpers
-    @State var hoursLabelsInset: CGFloat = 0
+    @State private var hoursLabelsInset: CGFloat = 0
 
-    @State var hoursFittingCurrentZoom: CGFloat?
-    @State var currentZoom = 0.0
-    @State var pinchAnchor: CGFloat = 0.5
+    @State private var hoursFittingCurrentZoom: CGFloat?
+    @State private var currentZoom = 0.0
+    @State private var pinchAnchor: CGFloat = 0.5
 
     var customizationParams = CalendarViewCustomizationParams()
     var idForUpdate: UUID = UUID()
@@ -134,8 +135,13 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                     })
                 )
 
-                DayInWeekSwitcher(fullscreenDate: $fullscreenDate, anchorDate: $anchorDate, calendarDisplayMode: displayMode, weekSwitcherDayBuilder: weekSwitcherDayBuilder)
-                    .padding(8)
+                DayInWeekSwitcher(
+                    fullscreenDate: $fullscreenDate,
+                    anchorDate: $anchorDate,
+                    calendarDisplayMode: displayMode,
+                    weekSwitcherDayBuilder: weekSwitcherDayBuilder
+                )
+                .padding(8)
             }
             .background {
                 HeaderBackgroundView(background: customizationParams.headerBackground)
@@ -170,58 +176,70 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         .onChange(of: idForUpdate) {
             updateData()
         }
+        .onAppear {
+            currentZoom = hoursFittingCurrentZoom ?? customizationParams.hoursToFit
+        }
 
         .sheet(isPresented: $showCalendarFilters) {
             updateData() // onDismiss
         } content: {
-            SelectCalendarsView()
+            FilterCalendarsView()
                 .environment(viewModel)
         }
 
         .sheet(isPresented: $showCreateEvent) {
             updateData() // onDismiss
         } content: {
-            CreateEntityView() { entity in
+            CreateEntityView { entity in
                 await viewModel.add(entity)
             }
+            .environment(viewModel)
         }
 
         .fullScreenCover(item: $displayedEventDetails) {
             updateData() // onDismiss
         } content: { wrappedEntity in
             if let event = wrappedEntity.entity as? CalendarEvent {
-                EventDetailsView(entity: event)
+                EntityDetailsView(entity: event)
                     .environment(viewModel)
             }
             if let reminder = wrappedEntity.entity as? CalendarReminder {
-                EventDetailsView(entity: reminder)
+                EntityDetailsView(entity: reminder)
                     .environment(viewModel)
             }
-        }
-        .onAppear {
-            currentZoom = hoursFittingCurrentZoom ?? customizationParams.hoursToFit
         }
     }
 
     private var dayLayoutView: some View {
         GeometryReader { g in
-            InfiniteTabPageView(currentPage: $currentPage,
-                                isDaySwiping: $isDaySwiping,
-                                isCalendarScrolling: isCalendarScrolling,
-                                width: g.size.width,
-                                didEndAnimation: { direction in
-                let date = fullscreenDate.adding(.day, value: direction)
-                fullscreenDate = date
-            }) { page in
+            InfiniteTabPageView(
+                currentPage: $currentPage,
+                isDaySwiping: $isDaySwiping,
+                isCalendarScrolling: isCalendarScrolling,
+                width: g.size.width,
+                didEndAnimation: { direction in
+                    let date = fullscreenDate.adding(.day, value: direction)
+                    fullscreenDate = date
+                }
+            ) { page in
                 Group {
                     let date = Calendar.current.date(byAdding: .day, value: page - currentPage, to: fullscreenDate) ?? fullscreenDate
-
                     VStack(spacing: 0) {
                         selectedDayHeaderBuilder(SelectedDayHeaderParams(date: date, daysCount: displayMode.rawValue))
-
-                        DayLayout(hoursLabelsInset: $hoursLabelsInset, isCalendarScrolling: $isCalendarScrolling, anchorDate: date, daysCount: displayMode.rawValue, events: viewModel.getEvents(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate), reminders: viewModel.getReminders(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate), isScrollDisabled: isDaySwiping, pinchAnchor: pinchAnchor, updateID: updateID, dayEventBuilder: dayEventBuilder)
-                            .padding(.top, 8)
-                            .background(theme.day.background)
+                        DayLayout(
+                            hoursLabelsInset: $hoursLabelsInset,
+                            isCalendarScrolling: $isCalendarScrolling,
+                            anchorDate: date,
+                            daysCount: displayMode.rawValue,
+                            events: viewModel.getEvents(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate),
+                            reminders: viewModel.getReminders(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate),
+                            isScrollDisabled: isDaySwiping,
+                            pinchAnchor: pinchAnchor,
+                            updateID: updateID,
+                            dayEventBuilder: dayEventBuilder
+                        )
+                        .padding(.top, 8)
+                        .background(theme.day.background)
                     }
                 }
             }
@@ -279,7 +297,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     }
 }
 
-public enum CalendarDisplayMode: Int,  Sendable {
+public enum CalendarDisplayMode: Int, Sendable {
     case day = 1
     case twoDays = 2
     case threeDays = 3

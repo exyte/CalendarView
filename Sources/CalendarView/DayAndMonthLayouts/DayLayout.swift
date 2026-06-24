@@ -13,7 +13,52 @@ public struct DayLayout<Content: View>: View {
         let maxOffset: CGFloat
     }
 
-    @Environment(\.calendarTheme) private var theme
+    struct Grouped {
+        var allDayEvents: [CalendarEvent] = []
+        var nonAllDayEvents: [CalendarEvent] = []
+        var allDayEventsByDay: [Date: [CalendarEvent]] = [:]
+        var nonAllDayEventsByDay: [Date: [CalendarEvent]] = [:]
+        var remindersByDay: [Date: [CalendarReminder]] = [:]
+
+        static func compute(
+            events: [CalendarEvent],
+            reminders: [CalendarReminder],
+            anchorDate: Date,
+            daysCount: Int
+        ) -> Grouped {
+            let split = Dictionary(grouping: events, by: \.isAllDay)
+            let allDay = split[true] ?? []
+            let nonAllDay = split[false] ?? []
+
+            var allDayByDay: [Date: [CalendarEvent]] = [:]
+            if daysCount == 1 {
+                allDayByDay[anchorDate] = allDay
+            } else {
+                for i in 0..<daysCount {
+                    let dayStart = anchorDate.adding(.day, value: i).startOfDay
+                    allDayByDay[dayStart] = allDay
+                        .filter { $0.startDate <= dayStart && $0.endDate >= dayStart }
+                        .sorted(by: \.id)
+                }
+            }
+            return Grouped(
+                allDayEvents: allDay,
+                nonAllDayEvents: nonAllDay,
+                allDayEventsByDay: allDayByDay,
+                nonAllDayEventsByDay: daysCount == 1 ? [anchorDate: nonAllDay] : nonAllDay.groupedByDay(),
+                remindersByDay: daysCount == 1 ? [anchorDate: reminders] : reminders.groupedByDay()
+            )
+        }
+    }
+
+    struct GroupingKey: Equatable {
+        var events: [CalendarEvent]
+        var reminders: [CalendarReminder]
+        var anchorDate: Date
+        var daysCount: Int
+    }
+
+    @Environment(\.calendarTheme) var theme
     @Environment(\.calendarCustomizationParams) var customizationParams
     @Environment(\.hoursFittingCurrentZoom) var hoursFittingCurrentZoom
     @Environment(\.showEventDetailsClosure) var showEventDetailsClosure
@@ -31,59 +76,33 @@ public struct DayLayout<Content: View>: View {
 
     @ViewBuilder var dayEventBuilder: (any CalendarEntity) -> Content
 
-    var allDayEvents: [CalendarEvent]
-    var allDayEventsByDay: [Date: [CalendarEvent]] = [:]
-    var nonAllDayEvents: [CalendarEvent]
-    var nonAllDayEventsByDay: [Date: [CalendarEvent]] = [:]
-    var remindersByDay: [Date: [CalendarReminder]] = [:]
-
     // MARK: - inner state
-
-    @State var scrollPosition = ScrollPosition()
-    @State var targetOffset = CGFloat.zero
-    @State var scrollInfo = ScrollInfo(yOffset: 0, maxOffset: 100)
-    @State var lastHours: CGFloat = 12
-
-    @State var hourLabelsSize: CGSize = .zero
-    @State var hourTextHeight: CGFloat = 0
-    @State var allDaysViewHeight: [Int: CGFloat] = [0:0]
+    
+    @State private var grouped = Grouped()
+    @State private var scrollPosition = ScrollPosition()
+    @State private var targetOffset = CGFloat.zero
+    @State private var scrollInfo = ScrollInfo(yOffset: 0, maxOffset: 100)
+    @State private var lastHours: CGFloat = 12
+    @State private var hourLabelsSize: CGSize = .zero
+    @State private var hourTextHeight: CGFloat = 0
 
     var hoursToFit: CGFloat {
         hoursFittingCurrentZoom ?? customizationParams.hoursToFit
     }
 
     var firstOccupiedHour: Int {
-        nonAllDayEvents.map { $0.startDate.getHour() } .min { $0 < $1 } ?? 0
+        grouped.nonAllDayEvents.map { $0.startDate.getHour() } .min { $0 < $1 } ?? 0
     }
 
-    let allDaysViewMaxHeight: CGFloat = 90.0
+    let allDaysViewMaxHeight = 90.0
     let horizontalPadding = 8.0
-
-    init(hoursLabelsInset: Binding<CGFloat>, isCalendarScrolling: Binding<Bool>, anchorDate: Date, daysCount: Int, events: [CalendarEvent], reminders: [CalendarReminder], isScrollDisabled: Bool, pinchAnchor: CGFloat = 0.5, updateID: UUID, dayEventBuilder: @escaping (any CalendarEntity) -> Content) {
-        self._hoursLabelsInset = hoursLabelsInset
-        self._isCalendarScrolling = isCalendarScrolling
-        self.anchorDate = anchorDate
-        self.daysCount = daysCount
-        self.events = events
-        self.reminders = reminders
-        self.isScrollDisabled = isScrollDisabled
-        self.pinchAnchor = pinchAnchor
-        self.updateID = updateID
-        self.dayEventBuilder = dayEventBuilder
-
-        let isAllDayGrouped = Dictionary(grouping: events, by: \.isAllDay)
-        self.allDayEvents = isAllDayGrouped[true] ?? []
-        self.nonAllDayEvents = isAllDayGrouped[false] ?? []
-        self.nonAllDayEventsByDay = daysCount == 1 ? [anchorDate: nonAllDayEvents] : nonAllDayEvents.groupedByDay()
-        self.allDayEventsByDay = daysCount == 1 ? [anchorDate: allDayEvents] : getAllDayEventsByDate()
-        self.remindersByDay = daysCount == 1 ? [anchorDate: reminders] : reminders.groupedByDay()
-    }
 
     public var body: some View {
         VStack(spacing: 4) {
             // all day events
-            if !allDayEvents.isEmpty {
+            if !grouped.allDayEvents.isEmpty {
                 allDayEventsView
+                    .border(Color.red, width: 2)
             }
 
             // events by hour
@@ -102,7 +121,7 @@ public struct DayLayout<Content: View>: View {
                                 if anchorDate.getDateWithoutTime() == Date().getDateWithoutTime() {
                                     nowLine(oneHourHeight)
                                 }
-                                dayEventsAndRemindersView
+                                dayEventsAndRemindersView(availableWidth: max(0, global.size.width - hourLabelsSize.width), availableHeight: global.size.height)
                             }
                             .padding(.top, hourTextHeight)
                         }
@@ -180,6 +199,9 @@ public struct DayLayout<Content: View>: View {
         .onChange(of: hourLabelsSize) {
             hoursLabelsInset = hourLabelsSize.width + 2 * horizontalPadding
         }
+        .task(id: GroupingKey(events: events, reminders: reminders, anchorDate: anchorDate, daysCount: daysCount)) {
+            grouped = Grouped.compute(events: events, reminders: reminders, anchorDate: anchorDate, daysCount: daysCount)
+        }
     }
 
     func hourLabels(_ oneHourHeight: CGFloat) -> some View {
@@ -225,7 +247,7 @@ public struct DayLayout<Content: View>: View {
                 let date = anchorDate.adding(.day, value: i).startOfDay
                 ScrollView {
                     VStack {
-                        let events = allDayEventsByDay[date] ?? []
+                        let events = grouped.allDayEventsByDay[date] ?? []
                         let eventsCount = events.count
                         if events.isEmpty {
                             Color.clear.frame(height: 1)
@@ -240,16 +262,8 @@ public struct DayLayout<Content: View>: View {
                             }
                         }
                     }
-                    .background {
-                        GeometryReader { geo -> Color in
-                            DispatchQueue.main.async {
-                                self.allDaysViewHeight[i] = geo.size.height
-                            }
-                            return Color.clear
-                        }
-                    }
                 }
-                .frame(height: min(allDaysViewHeight.values.max() ?? 0, allDaysViewMaxHeight))
+                .frame(maxHeight: allDaysViewMaxHeight)
                 .scrollBounceBehavior(.basedOnSize)
                 .scrollDisabled(isScrollDisabled)
                 .onScrollPhaseChange { _, newVal in
@@ -275,14 +289,27 @@ public struct DayLayout<Content: View>: View {
             }
     }
 
-    var dayEventsAndRemindersView: some View {
-        HStack(spacing: customizationParams.horSpacing) {
+    func dayEventsAndRemindersView(availableWidth: CGFloat, availableHeight: CGFloat) -> some View {
+        // each day cell: 1pt separator + cell. trailing padding is one horSpacing.
+        // cells share the remaining width equally.
+        let separators = CGFloat(daysCount)
+        let trailingPadding = customizationParams.horSpacing
+        let interCellSpacing = customizationParams.horSpacing * CGFloat(max(0, daysCount - 1))
+        let cellWidth = max(0, (availableWidth - separators - interCellSpacing - trailingPadding) / CGFloat(daysCount))
+        let cellSize = CGSize(width: cellWidth, height: availableHeight)
+        return HStack(spacing: customizationParams.horSpacing) {
             ForEach(0..<daysCount, id: \.self) { i in
                 theme.day.separators.frame(width: 1)
-                GeometryReader { g in
-                    let date = anchorDate.adding(.day, value: i).startOfDay
-                    DayEventsLayout(events: nonAllDayEventsByDay[date] ?? [], reminders: remindersByDay[date] ?? [], size: g.size, horSpacing: customizationParams.horSpacing, verSpacing: customizationParams.verSpacing, dayEventBuilder: dayEventBuilder)
-                }
+                let date = anchorDate.adding(.day, value: i).startOfDay
+                DayEventsLayout(
+                    events: grouped.nonAllDayEventsByDay[date] ?? [],
+                    reminders: grouped.remindersByDay[date] ?? [],
+                    size: cellSize,
+                    horSpacing: customizationParams.horSpacing,
+                    verSpacing: customizationParams.verSpacing,
+                    dayEventBuilder: dayEventBuilder
+                )
+                .frame(width: cellWidth, height: availableHeight)
             }
         }
         .padding(.trailing, customizationParams.horSpacing)
@@ -290,18 +317,6 @@ public struct DayLayout<Content: View>: View {
 
     private func startCoeff(_ date: Date) -> CGFloat {
         CGFloat((date.getHour() * 60 + date.getMinute())) / CGFloat(60)
-    }
-    
-    private func getAllDayEventsByDate() -> [Date: [CalendarEvent]] {
-        var allDayEventsByDay: [Date: [CalendarEvent]] = [:]
-        for i in 0..<daysCount {
-            let dayStart = anchorDate.adding(.day, value: i).startOfDay
-            let matches = allDayEvents
-                .filter { $0.startDate <= dayStart && $0.endDate >= dayStart }
-                .sorted(by: \.id)
-            allDayEventsByDay[dayStart] = matches
-        }
-        return allDayEventsByDay
     }
 }
 

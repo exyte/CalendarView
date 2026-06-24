@@ -12,65 +12,58 @@ struct CreateEntityView: View {
 
     var shouldSave: (any CalendarEntity) async -> ()
 
-    @State var saveEnabled = false
-    @State var isEvent = true
-    @State var event = CalendarEvent()
-    @State var reminder = CalendarReminder()
+    @State private var eventType: EntityType = .event
+    @State private var event = CalendarEvent()
+    @State private var reminder = CalendarReminder()
+
+    var saveEnabled: Bool {
+        !event.title.isEmpty && !event.calendarID.isEmpty
+    }
 
     var body: some View {
         VStack {
-            CreateOrEditEntityHeaderView(title: "New", saveButtonEnabled: saveEnabled) {
-                await shouldSave(isEvent ? event : reminder)
+            CloseSaveHeaderView(title: "New", saveButtonEnabled: saveEnabled) {
+                await shouldSave(eventType == .event ? event : reminder)
             }
 
-            eventTypeSwitcher
+            ButtonsSwitcher(selection: $eventType)
+                .padding(.horizontal, 16)
 
-            if isEvent {
+            if eventType == .event {
                 EditEntityFieldsView(entity: $event)
             } else {
                 EditEntityFieldsView(entity: $reminder)
             }
         }
-        .onChange(of: event) {
-            reminder.syncFields(from: event)
-            saveEnabled = !event.title.isEmpty && !event.calendarID.isEmpty
-        }
-        .onChange(of: reminder) {
-            event.syncFields(from: reminder)
-            saveEnabled = !event.title.isEmpty && !event.calendarID.isEmpty
-        }
-        .onAppear {
-            saveEnabled = false
-        }
     }
+}
 
-    var eventTypeSwitcher: some View {
-        HStack {
-            Button {
-                self.isEvent = true
-            } label: {
-                Text("Event")
-                    .greedyWidth()
-                    .background(isEvent ? Color.white : Color.clear)
-                    .cornerRadius(16)
-                    .padding(3, 10)
-            }
+struct ButtonsSwitcher<Enum: Hashable & CaseIterable>: View {
+    @Binding var selection: Enum
+    var additionalActionClosure: () -> () = {}
 
-            Button {
-                self.isEvent = false
-            } label: {
-                Text("Reminder")
-                    .greedyWidth()
-                    .background(!isEvent ? Color.white : Color.clear)
-                    .cornerRadius(16)
-                    .padding(3, 10)
+    var body: some View {
+        HStack(spacing: 8) {
+            ForEach(Array(Enum.allCases), id: \.self) { tab in
+                Button("\(tab)".capitalized) {
+                    additionalActionClosure()
+                    withAnimation {
+                        selection = tab
+                    }
+                }
+                .greedyWidth()
+                .padding(10, 8)
+                .background {
+                    Capsule().foregroundStyle(selection == tab ? Color.white : Color.clear)
+                }
             }
         }
-        .systemFont(15, .semibold)
+        .systemFont(14, .semibold)
         .greedyWidth()
-        .background(Color.named("appLightGrey"))
-        .cornerRadius(18)
-        .padding(.horizontal, 16)
+        .padding(2)
+        .background {
+            Capsule().foregroundStyle(Color(.appGrey5))
+        }
     }
 }
 

@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class CalendarSelectionStore {
+final class FilterCalendarsStore {
     private let key = "deselectedCalendarIDs"
     private let defaults = UserDefaults.standard
 

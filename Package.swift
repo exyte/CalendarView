@@ -16,18 +16,13 @@ let package = Package(
         .package(
             url: "https://github.com/exyte/AnchoredPopup.git",
             from: "1.0.7"
-        ),
-        .package(
-            url: "https://github.com/exyte/PopupView.git",
-            from: "5.0.0"
         )
     ],
     targets: [
         .target(
             name: "CalendarView",
             dependencies: [
-                .product(name: "AnchoredPopup", package: "AnchoredPopup"),
-                .product(name: "PopupView", package: "PopupView")
+                .product(name: "AnchoredPopup", package: "AnchoredPopup")
             ],
             swiftSettings: [
                 .enableExperimentalFeature("StrictConcurrency")

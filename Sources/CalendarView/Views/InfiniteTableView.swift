@@ -110,7 +110,7 @@ public struct InfiniteTableView<Data, UpdatableModel, Content, UpdatableContent>
     @ViewBuilder var content: (Data) -> Content
     @ViewBuilder var updatableContent: (Data, UpdatableModel) -> UpdatableContent
 
-    @State var prevUpdateID: UUID?
+    @State private var prevUpdateID: UUID?
     var params = InfiniteTableViewCustomizationParams()
 
     public func makeCoordinator() -> Coordinator {

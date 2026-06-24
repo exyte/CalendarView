@@ -8,10 +8,9 @@
 import SwiftUI
 
 struct EditEntityFieldsView<Entity: CalendarEntity>: View {
+    @Environment(CalendarViewModel.self) var viewModel
 
     @Binding var entity: Entity
-
-    @State var selectedCalendar: ProviderCalendar?
 
     var eventBinding: Binding<CalendarEvent>? {
         guard let event = entity as? CalendarEvent else { return nil }
@@ -26,58 +25,57 @@ struct EditEntityFieldsView<Entity: CalendarEntity>: View {
         )
     }
 
+    var calendarBinding: Binding<ProviderCalendar?> {
+        Binding<ProviderCalendar?>(
+            get: { viewModel.calendars.first { $0.id == entity.calendarID } },
+            set: { newValue in
+                if let selectedCalendar = newValue {
+                    entity.calendarID = selectedCalendar.id
+                    entity.calendarColor = selectedCalendar.color
+                    entity.calendarName = selectedCalendar.title
+                }
+            }
+        )
+    }
+
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                HStack(spacing: 0) {
+                HStack(spacing: 4) {
                     Text("Title")
-                        .systemFont(15, .regular)
-
+                        .systemFont(15, .appBlack2, 0.6)
                     Text("*")
-                        .systemFont(15, .regular, .red)
-                        .padding(.leading, 4)
-
+                        .systemFont(15, .red)
                     Spacer()
                 }
 
-                TextField("Event title...", text: $entity.title)
-                    .systemFont(20, .semibold)
+                TextField("\(entity.typeString) title...", text: $entity.title)
+                    .systemFont(20, .semibold, .appBlack2)
 
                 separatorView
 
                 if let eventBinding {
                     FieldTimeAndDate(isAllDay: eventBinding.isAllDay, startDate: $entity.startDate, endDate: eventBinding.endDate)
                 } else {
-                    FieldTimeOrDate(type: .date, date: $entity.startDate)
-                    FieldTimeOrDate(type: .time, date: $entity.startDate)
+                    FieldTimeOrDate(date: $entity.startDate)
                 }
 
                 separatorView
 
-                FieldCalendarSelection(selectedCalendar: $selectedCalendar)
+                FieldCalendarSelection(selectedCalendar: calendarBinding)
 
-                FieldEnumPicker(eventFieldType: .repeatField, currentValue: $entity.repeatType)
+                separatorView
 
-                if entity as? CalendarEvent == nil {
-                    FieldEnumPicker(eventFieldType: .priority, currentValue: $entity.priorityType)
-                }
+                FieldEnumPicker(selection: $entity.repeatType)
             }
         }
         .scrollIndicators(.hidden)
         .scrollBounceBehavior(.basedOnSize)
         .greedyWidth()
         .padding(16)
-        .onChange(of: selectedCalendar) {
-            if let selectedCalendar {
-                entity.calendarID = selectedCalendar.id
-                entity.calendarColor = selectedCalendar.color
-                entity.calendarName = selectedCalendar.title
-            }
-        }
     }
 
     var separatorView: some View {
-        Color.named("appLightGrey")
-            .frame(height: 1)
+        Color(.appGrey4).frame(height: 1)
     }
 }

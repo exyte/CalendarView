@@ -7,7 +7,7 @@
 
 public protocol PickerEnum: Hashable, Sendable, Codable, CaseIterable, RawRepresentable where AllCases: RandomAccessCollection, RawValue == String {
     var stringValue: String { get }
-    var title: String { get }
+    static var title: String { get }
 }
 
 public extension PickerEnum {
@@ -24,7 +24,7 @@ public enum RepeatType: String, PickerEnum {
     case monthly  = "Every month"
     case year = "Every year"
 
-    public var title: String { "Repeat" }
+    static public var title: String { "Repeat" }
 }
 
 public enum AlertType: String, PickerEnum {
@@ -40,14 +40,14 @@ public enum AlertType: String, PickerEnum {
     case before2day = "2 days before"
     case before1week = "1 week before"
 
-    public var title: String { "Alert" }
+    static public var title: String { "Alert" }
 }
 
 public enum VibrationType: String, PickerEnum {
     case none = "None"
     case alert = "Alert"
 
-    public var title: String { "Vibration type" }
+    static public var title: String { "Vibration type" }
 }
 
 public enum PriorityType: String, PickerEnum {
@@ -56,5 +56,5 @@ public enum PriorityType: String, PickerEnum {
     case medium = "Medium"
     case high = "High"
 
-    public var title: String { "Priority" }
+    static public var title: String { "Priority" }
 }

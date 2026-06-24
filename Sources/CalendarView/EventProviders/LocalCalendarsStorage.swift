@@ -137,16 +137,27 @@ public final actor CalendarEntityStore<T: CalendarEntity> {
     }
 
     /// Updates an existing entity by ID using its original startDate to locate the chunk.
+    /// If the new startDate falls in a different month, removes from the old chunk
+    /// and inserts into the new one.
     public func update(_ updated: T, oldStartDate: Date) async throws {
-        let oldKey = "\(updated.calendarID)-\(monthKey(for: oldStartDate))"
-        var chunk = try await getChunk(calendarID: updated.calendarID, month: oldStartDate)
-        guard let index = chunk.firstIndex(where: { $0.id == updated.id }) else { return }
-        chunk[index] = updated
-        try await saveChunk(chunk, calendarID: updated.calendarID, month: oldStartDate)
+        let oldMonth = monthKey(for: oldStartDate)
+        let newMonth = monthKey(for: updated.startDate)
+        if oldMonth == newMonth {
+            var chunk = try await getChunk(calendarID: updated.calendarID, month: oldStartDate)
+            guard let index = chunk.firstIndex(where: { $0.id == updated.id }) else { return }
+            chunk[index] = updated
+            try await saveChunk(chunk, calendarID: updated.calendarID, month: oldStartDate)
+            return
+        }
+        var oldChunk = try await getChunk(calendarID: updated.calendarID, month: oldStartDate)
+        oldChunk.removeAll { $0.id == updated.id }
+        try await saveChunk(oldChunk, calendarID: updated.calendarID, month: oldStartDate)
+        var newChunk = try await getChunk(calendarID: updated.calendarID, month: updated.startDate)
+        newChunk.append(updated)
+        try await saveChunk(newChunk, calendarID: updated.calendarID, month: updated.startDate)
     }
 
     public func delete(id: String, calendarID: String, from date: Date) async throws {
-        let key = "\(calendarID)-\(monthKey(for: date))"
         var chunk = try await getChunk(calendarID: calendarID, month: date)
         chunk.removeAll { $0.id == id }
         try await saveChunk(chunk, calendarID: calendarID, month: date)
