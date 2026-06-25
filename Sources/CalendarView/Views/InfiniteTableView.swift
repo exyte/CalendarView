@@ -139,6 +139,7 @@ public struct InfiniteTableView<Data, UpdatableModel, Content, UpdatableContent>
     }
 
     public func updateUIView(_ uiView: UITableView, context: Context) {
+        context.coordinator.parent = self
         let oldData = context.coordinator.data
         let newData = data
 
@@ -201,7 +202,7 @@ public struct InfiniteTableView<Data, UpdatableModel, Content, UpdatableContent>
         var cellModels: [Data: UpdatableModel] = [:]
         var isBusy = false
 
-        private var parent: InfiniteTableView
+        var parent: InfiniteTableView
 
         private var pagedCellSize: CGFloat? {
             if case let .paged(size) = parent.params.scrollMode {

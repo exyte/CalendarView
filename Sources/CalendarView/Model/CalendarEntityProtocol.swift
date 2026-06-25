@@ -31,9 +31,11 @@ public protocol CalendarEntity: Equatable, Identifiable, Sendable, Codable {
     var isLocalEntity: Bool { get }
 
     func repeatableEventOccursOn(date: Date) -> Bool
+    mutating func stripTime()
 }
 
 extension CalendarEntity {
+    public mutating func stripTime() {}
     public func repeatableEventOccursOn(date: Date) -> Bool {
         guard repeatType != .never else { return false }
         guard date >= startDate.startOfDay else { return false }

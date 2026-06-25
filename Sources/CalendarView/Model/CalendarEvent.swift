@@ -67,4 +67,10 @@ public struct CalendarEvent: CalendarEntity, Hashable {
     func toString() -> String {
         title + startDate.formatted(" HH:mm") + endDate.formatted(" - HH:mm")
     }
+
+    public mutating func stripTime() {
+        guard isAllDay else { return }
+        self.startDate = startDate.startOfDay
+        self.endDate = endDate.endOfDay
+    }
 }

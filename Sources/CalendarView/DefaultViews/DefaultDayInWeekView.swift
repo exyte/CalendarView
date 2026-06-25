@@ -10,18 +10,16 @@ import SwiftUI
 public struct DefaultDayInWeekView: View {
     @Environment(\.calendarTheme) var theme
 
-    var viewModel: WeekCellsModel
     var params: WeekSwitcherDayBuilderParams
 
     static let today = Date().startOfDay
 
     public init(params: WeekSwitcherDayBuilderParams) {
-        self.viewModel = params.viewModel
         self.params = params
     }
 
     public var body: some View {
-        let isSelected = viewModel.date == params.day
+        let isSelected = params.fullscreenDate == params.day
         let isToday = Self.today == params.day
         let isWeekend = params.day.isWeekend
 
@@ -38,7 +36,7 @@ public struct DefaultDayInWeekView: View {
         isToday ? theme.week.todayBackground :
         theme.week.background
 
-        let weekdayLabel = Text(params.day.formatted("EEE")).font(.system(size: 15))
+        let weekdayLabel = Text(params.day.formatted("EEE"))
             .systemFont(15, isWeekend ? theme.week.weekendText : theme.week.text)
             .lineLimit(1)
 
@@ -53,7 +51,7 @@ public struct DefaultDayInWeekView: View {
                 Text(params.day.formatted("d")).font(.system(size: 17, weight: .semibold))
                     .systemFont(17, .semibold, textColor)
                     .lineLimit(1)
-                    .padding(6)
+                    .padding(8)
                     .background(Circle().foregroundStyle(bgColor))
             }
         }

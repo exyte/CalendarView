@@ -23,6 +23,10 @@ public extension Date {
         Calendar.current.startOfDay(for: self)
     }
 
+    var endOfDay: Date {
+        Calendar.current.startOfDay(for: self).adding(.day, value: 1).adding(.second, value: -1)
+    }
+
     func startOfWeek(_ firstDayOfWeek: Int?) -> Date {
         let calendar = Calendar.current
         let weekday = calendar.component(.weekday, from: self)

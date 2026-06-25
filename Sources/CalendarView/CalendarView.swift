@@ -18,43 +18,45 @@ public struct MonthDayBuilderParams {
     public var viewHeight: CGFloat
 }
 
-@MainActor
 public struct WeekSwitcherDayBuilderParams {
-    var viewModel: WeekCellsModel
     public var day: Date
     public var monthDisplayMode: Bool
+    public var fullscreenDate: Date
 }
 
 public struct HeaderBuilderParams {
     public var fullscreenDate: Binding<Date>
     public var displayMode: Binding<CalendarDisplayMode>
-    public var anchorDate: Date
+    public var anchorDate: Binding<Date>
     public var tapSelectDisplayModeClosure: ()->()
     public var tapFilterCalendarsClosure: ()->()
     public var tapAddEventClosure: ()->()
-}
 
-public struct SelectedDayHeaderParams {
-    public var date: Date
-    public var daysCount: Int = 1
+    @MainActor public func defaultWeekSwitcher() -> some View {
+        DayInWeekSwitcher(
+            fullscreenDate: fullscreenDate,
+            anchorDate: anchorDate,
+            calendarDisplayMode: displayMode.wrappedValue,
+            weekSwitcherDayBuilder: { DefaultDayInWeekView(params: $0) }
+        )
+    }
 }
 
 public struct CalendarViewCustomizationParams {
     public var hoursToFit: CGFloat = 12
     public var hourLabelFormat: String = "h a"
     public var firstDayOfWeek: Int?
+    public var isDayInWeekSwitcherPagingEnabled: Bool = true
 
     public var horSpacing: CGFloat = 4
     public var verSpacing: CGFloat = 4
-    public var headerBackground: HeaderBackground = .color(Color(.headerBG))
 
-    public var isDayInWeekSwitcherPagingEnabled: Bool = true
-
+    public var headerBackground: HeaderBackground = .color(Color(.headerBG), 10)
     public var eventDetailsClosure: ((any CalendarEntity)->())?
 }
 
 @MainActor
-public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View, Header: View, Footer: View>: View {
+public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View, Header: View>: View {
 
     @State private var viewModel: CalendarViewModel
 
@@ -62,7 +64,6 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     @ViewBuilder var monthDayBuilder: (MonthDayBuilderParams) -> MonthDay
     @ViewBuilder var weekSwitcherDayBuilder: (WeekSwitcherDayBuilderParams) -> WeekSwitcherDay
     @ViewBuilder var headerBuilder: (HeaderBuilderParams) -> Header
-    @ViewBuilder var selectedDayHeaderBuilder: (SelectedDayHeaderParams) -> Footer
 
     public init(
         providers: [CalendarsProvider] = [],
@@ -77,9 +78,6 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         },
         headerBuilder: @escaping (_ params: HeaderBuilderParams) -> Header = {
             DefaultHeaderView(params: $0)
-        },
-        selectedDayHeaderBuilder: @escaping (_ params: SelectedDayHeaderParams) -> Footer = {
-            DefaultSelectedDayHeaderView(params: $0)
         }
     ) {
         self._viewModel = State(wrappedValue: CalendarViewModel(providers: providers))
@@ -87,7 +85,6 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         self.monthDayBuilder = monthDayBuilder
         self.weekSwitcherDayBuilder = weekSwitcherDayBuilder
         self.headerBuilder = headerBuilder
-        self.selectedDayHeaderBuilder = selectedDayHeaderBuilder
     }
 
     @Environment(\.calendarTheme) var theme
@@ -101,8 +98,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     @State private var showEditEvent = false
     @State private var showEventDetails = false
     @State private var displayedEventDetails: CalendarEntityWrapper?
-    @State private var updateID = UUID() // triggers downstream updates
-    
+
     @State private var isDaySwiping = false
     @State private var isCalendarScrolling = false
     @State private var currentPage: Int = 0
@@ -119,33 +115,21 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
 
     public var body: some View {
         VStack(spacing: 0) {
-            VStack(spacing: 8) {
-                headerBuilder(HeaderBuilderParams(
-                    fullscreenDate: $fullscreenDate,
-                    displayMode: $displayMode,
-                    anchorDate: anchorDate,
-                    tapSelectDisplayModeClosure: {
-                        AnchoredPopup.launchGrowingAnimation(id: "displayMode")
-                    },
-                    tapFilterCalendarsClosure: {
-                        showCalendarFilters = true
-                    },
-                    tapAddEventClosure: {
-                        showCreateEvent = true
-                    })
-                )
-
-                DayInWeekSwitcher(
-                    fullscreenDate: $fullscreenDate,
-                    anchorDate: $anchorDate,
-                    calendarDisplayMode: displayMode,
-                    weekSwitcherDayBuilder: weekSwitcherDayBuilder
-                )
-                .padding(8)
-            }
-            .background {
-                HeaderBackgroundView(background: customizationParams.headerBackground)
-            }
+            headerBuilder(HeaderBuilderParams(
+                fullscreenDate: $fullscreenDate,
+                displayMode: $displayMode,
+                anchorDate: $anchorDate,
+                tapSelectDisplayModeClosure: {
+                    AnchoredPopup.launchGrowingAnimation(id: "displayMode")
+                },
+                tapFilterCalendarsClosure: {
+                    showCalendarFilters = true
+                },
+                tapAddEventClosure: {
+                    showCreateEvent = true
+                }
+            ))
+            .zIndex(1)
 
             if displayMode != .month {
                 dayLayoutView
@@ -190,7 +174,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         .sheet(isPresented: $showCreateEvent) {
             updateData() // onDismiss
         } content: {
-            CreateEntityView { entity in
+            CreateEntityView(fullscreenDate: fullscreenDate) { entity in
                 await viewModel.add(entity)
             }
             .environment(viewModel)
@@ -218,29 +202,23 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                 isCalendarScrolling: isCalendarScrolling,
                 width: g.size.width,
                 didEndAnimation: { direction in
-                    let date = fullscreenDate.adding(.day, value: direction)
-                    fullscreenDate = date
+                    fullscreenDate = fullscreenDate.adding(.day, value: direction)
                 }
             ) { page in
                 Group {
                     let date = Calendar.current.date(byAdding: .day, value: page - currentPage, to: fullscreenDate) ?? fullscreenDate
-                    VStack(spacing: 0) {
-                        selectedDayHeaderBuilder(SelectedDayHeaderParams(date: date, daysCount: displayMode.rawValue))
-                        DayLayout(
-                            hoursLabelsInset: $hoursLabelsInset,
-                            isCalendarScrolling: $isCalendarScrolling,
-                            anchorDate: date,
-                            daysCount: displayMode.rawValue,
-                            events: viewModel.getEvents(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate),
-                            reminders: viewModel.getReminders(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate),
-                            isScrollDisabled: isDaySwiping,
-                            pinchAnchor: pinchAnchor,
-                            updateID: updateID,
-                            dayEventBuilder: dayEventBuilder
-                        )
-                        .padding(.top, 8)
-                        .background(theme.day.background)
-                    }
+                    DayLayout(
+                        hoursLabelsInset: $hoursLabelsInset,
+                        isCalendarScrolling: $isCalendarScrolling,
+                        anchorDate: date,
+                        daysCount: displayMode.rawValue,
+                        events: viewModel.getEvents(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate),
+                        reminders: viewModel.getReminders(from: date, displayMode: displayMode, fullscreenDate: fullscreenDate),
+                        isScrollDisabled: isDaySwiping,
+                        pinchAnchor: pinchAnchor,
+                        dayEventBuilder: dayEventBuilder
+                    )
+                    .background(theme.day.background)
                 }
             }
             .simultaneousGesture(magnifyGesture)
@@ -252,7 +230,6 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                     }
             )
         }
-        .padding(.top, -8)
     }
 
     private var magnifyGesture: some Gesture {
@@ -264,7 +241,6 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                 let current = hoursFittingCurrentZoom ?? customizationParams.hoursToFit
                 if abs(desired - current) > 0.05 {
                     hoursFittingCurrentZoom = desired
-                    updateID = UUID()
                 }
             }
             .onEnded { value in
@@ -279,7 +255,6 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     func updateData() {
         Task {
             await viewModel.fetch(displayMode.interval(fullscreenDate))
-            updateID = UUID()
         }
     }
 
@@ -294,27 +269,6 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         var copy = self
         copy._displayMode.bind(binding)
         return copy
-    }
-}
-
-public enum CalendarDisplayMode: Int, Sendable {
-    case day = 1
-    case twoDays = 2
-    case threeDays = 3
-    case month = 30
-
-    func interval(_ start: Date) -> DateInterval {
-        let start = start.startOfDay
-        return switch self {
-        case .day:
-            DateInterval(start: start, end: start.adding(.day, value: 1))
-        case .twoDays:
-            DateInterval(start: start, end: start.adding(.day, value: 2))
-        case .threeDays:
-            DateInterval(start: start, end: start.adding(.day, value: 3))
-        case .month:
-            DateInterval(start: start.startOfMonth, end: start.startOfMonth.adding(.month, value: 1))
-        }
     }
 }
 

@@ -72,26 +72,21 @@ public struct DayLayout<Content: View>: View {
     var reminders: [CalendarReminder]
     var isScrollDisabled: Bool
     var pinchAnchor: CGFloat = 0.5
-    var updateID: UUID
 
     @ViewBuilder var dayEventBuilder: (any CalendarEntity) -> Content
 
     // MARK: - inner state
-    
+
     @State private var grouped = Grouped()
     @State private var scrollPosition = ScrollPosition()
     @State private var targetOffset = CGFloat.zero
     @State private var scrollInfo = ScrollInfo(yOffset: 0, maxOffset: 100)
-    @State private var lastHours: CGFloat = 12
     @State private var hourLabelsSize: CGSize = .zero
     @State private var hourTextHeight: CGFloat = 0
+    @State private var lastScrolledAnchorDate: Date? = nil
 
     var hoursToFit: CGFloat {
         hoursFittingCurrentZoom ?? customizationParams.hoursToFit
-    }
-
-    var firstOccupiedHour: Int {
-        grouped.nonAllDayEvents.map { $0.startDate.getHour() } .min { $0 < $1 } ?? 0
     }
 
     let allDaysViewMaxHeight = 90.0
@@ -102,7 +97,7 @@ public struct DayLayout<Content: View>: View {
             // all day events
             if !grouped.allDayEvents.isEmpty {
                 allDayEventsView
-                    .border(Color.red, width: 2)
+                    .padding(.top, 10)
             }
 
             // events by hour
@@ -123,34 +118,28 @@ public struct DayLayout<Content: View>: View {
                                 }
                                 dayEventsAndRemindersView(availableWidth: max(0, global.size.width - hourLabelsSize.width), oneHourHeight: oneHourHeight)
                             }
-                            .padding(.top, hourTextHeight)
+                            .padding(.top, hourTextHeight + 8)
                         }
                     }
+                    .contentMargins(.trailing, horizontalPadding, for: .scrollIndicators)
                     .scrollDisabled(isScrollDisabled)
-                    .onChange(of: updateID) {
-                        // When zooming, keep the content under the viewport center in place
-                        if isScrollDisabled {
-                            var t = Transaction()
-                            t.disablesAnimations = true
-                            withTransaction(t) {
-                                let focalY = max(0, min(global.size.height, pinchAnchor * global.size.height))
-                                let centerY = scrollInfo.yOffset + focalY
-                                let gridTop = hourTextHeight
-                                let hoursOld = lastHours
-                                let hoursNew = hoursToFit
-                                let oneHourOld = global.size.height / max(3.0, min(12.0, hoursOld))
-                                let oneHourNew = global.size.height / max(3.0, min(12.0, hoursNew))
-                                // Compute old/new hour index at focal point (accounting for top inset) and adjust offset to keep it under the fingers
-                                let hourIndexAtFocal = max(0, min(24, (centerY - gridTop) / oneHourOld))
-                                let newCenterY = hourIndexAtFocal * oneHourNew + gridTop
-                                let desiredOffset = max(0, min(newCenterY - focalY, scrollInfo.maxOffset))
-                                targetOffset = desiredOffset.rounded()
-                                scrollPosition.scrollTo(y: targetOffset)
-                                lastHours = hoursNew
-                            }
-                        } else {
-                            proxy.scrollTo(firstOccupiedHour, anchor: .top)
-                            lastHours = hoursToFit
+                    .onChange(of: hoursFittingCurrentZoom) { oldZoom, newZoom in
+                        guard isScrollDisabled else { return }
+                        var t = Transaction()
+                        t.disablesAnimations = true
+                        withTransaction(t) {
+                            let focalY = max(0, min(global.size.height, pinchAnchor * global.size.height))
+                            let centerY = scrollInfo.yOffset + focalY
+                            let gridTop = hourTextHeight
+                            let hoursOld = oldZoom ?? customizationParams.hoursToFit
+                            let hoursNew = newZoom ?? customizationParams.hoursToFit
+                            let oneHourOld = global.size.height / max(3.0, min(12.0, hoursOld))
+                            let oneHourNew = global.size.height / max(3.0, min(12.0, hoursNew))
+                            let hourIndexAtFocal = max(0, min(24, (centerY - gridTop) / oneHourOld))
+                            let newCenterY = hourIndexAtFocal * oneHourNew + gridTop
+                            let desiredOffset = max(0, min(newCenterY - focalY, scrollInfo.maxOffset))
+                            targetOffset = desiredOffset.rounded()
+                            scrollPosition.scrollTo(y: targetOffset)
                         }
                     }
                     .onChange(of: scrollInfo) {
@@ -190,17 +179,20 @@ public struct DayLayout<Content: View>: View {
                             }
                         }
                     }
+                    .task(id: GroupingKey(events: events, reminders: reminders, anchorDate: anchorDate, daysCount: daysCount)) {
+                        let newGrouped = Grouped.compute(events: events, reminders: reminders, anchorDate: anchorDate, daysCount: daysCount)
+                        grouped = newGrouped
+                        if lastScrolledAnchorDate != anchorDate {
+                            let firstHour = newGrouped.nonAllDayEvents.map { $0.startDate.getHour() }.min() ?? 0
+                            proxy.scrollTo(firstHour, anchor: .top)
+                            lastScrolledAnchorDate = anchorDate
+                        }
+                    }
                 }
             }
         }
-        .onAppear {
-            lastHours = hoursToFit
-        }
         .onChange(of: hourLabelsSize) {
             hoursLabelsInset = hourLabelsSize.width + 2 * horizontalPadding
-        }
-        .task(id: GroupingKey(events: events, reminders: reminders, anchorDate: anchorDate, daysCount: daysCount)) {
-            grouped = Grouped.compute(events: events, reminders: reminders, anchorDate: anchorDate, daysCount: daysCount)
         }
     }
 
@@ -254,9 +246,9 @@ public struct DayLayout<Content: View>: View {
                         } else {
                             ForEach(Array(stride(from: 0, to: eventsCount, by: 2)), id: \.self) { index in
                                 HStack(spacing: spaceBetweenDays) {
-                                    allDayEventsBuilderView(index: index, events: events)
+                                    allDayEventsBuilderView(event: events[index])
                                     if index + 1 < eventsCount {
-                                        allDayEventsBuilderView(index: index + 1, events: events)
+                                        allDayEventsBuilderView(event: events[index + 1])
                                     }
                                 }
                             }
@@ -271,6 +263,7 @@ public struct DayLayout<Content: View>: View {
                 }
             }
         }
+        .fixedSize(horizontal: false, vertical: true)
         .padding(.trailing, customizationParams.horSpacing)
         // can't be a part of layout to be able to align 3-day view correctly
         .overlay(alignment: .topLeading) {
@@ -280,12 +273,12 @@ public struct DayLayout<Content: View>: View {
         }
     }
 
-    private func allDayEventsBuilderView(index: Int, events: [CalendarEvent]) -> some View {
-        dayEventBuilder(events[index])
+    private func allDayEventsBuilderView(event: CalendarEvent) -> some View {
+        dayEventBuilder(event)
             .frame(height: 30)
             .fixedSize(horizontal: false, vertical: true)
             .onTapGesture {
-                showEventDetailsClosure(events[index])
+                showEventDetailsClosure(event)
             }
     }
 

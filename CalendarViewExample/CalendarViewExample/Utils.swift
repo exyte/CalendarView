@@ -1,6 +1,5 @@
 //
 //  Utils.swift
-//  AnchoredPopupExample
 //
 //  Created by Alisa Mylnikova on 22.01.2025.
 //

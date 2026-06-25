@@ -13,8 +13,16 @@ struct CreateEntityView: View {
     var shouldSave: (any CalendarEntity) async -> ()
 
     @State private var eventType: EntityType = .event
-    @State private var event = CalendarEvent()
-    @State private var reminder = CalendarReminder()
+    @State private var event: CalendarEvent
+    @State private var reminder: CalendarReminder
+
+    init(fullscreenDate: Date, shouldSave: @escaping (any CalendarEntity) async -> ()) {
+        self.shouldSave = shouldSave
+        let now = Date()
+        let startDate = fullscreenDate.startOfDay.setHour(to: now.getHour()).setMinute(to: now.getMinute())
+        self._event = State(wrappedValue: CalendarEvent(startDate: startDate))
+        self._reminder = State(wrappedValue: CalendarReminder(startDate: startDate))
+    }
 
     var saveEnabled: Bool {
         !event.title.isEmpty && !event.calendarID.isEmpty
@@ -23,6 +31,9 @@ struct CreateEntityView: View {
     var body: some View {
         VStack {
             CloseSaveHeaderView(title: "New", saveButtonEnabled: saveEnabled) {
+                if event.isAllDay {
+                    event.stripTime()
+                }
                 await shouldSave(eventType == .event ? event : reminder)
             }
 

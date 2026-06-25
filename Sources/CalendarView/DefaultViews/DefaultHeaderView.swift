@@ -10,22 +10,45 @@ import AnchoredPopup
 
 public struct DefaultHeaderView: View {
     @Environment(\.calendarTheme) var theme
+    @Environment(\.calendarCustomizationParams) var customizationParams
+    @Environment(CalendarViewModel.self) var viewModel
 
     var params: HeaderBuilderParams
 
     @State private var showMonthPicker = false
+
+    private static let today = Date().startOfDay
 
     public init(params: HeaderBuilderParams) {
         self.params = params
     }
 
     public var body: some View {
+        VStack(spacing: 0) {
+            VStack(spacing: 20) {
+                monthAndButtonsView
+                    .padding(.horizontal, 16)
+                params.defaultWeekSwitcher()
+                    .padding(.horizontal, 4)
+            }
+            .padding(.bottom, 10)
+            .background {
+                HeaderBackgroundView(background: customizationParams.headerBackground)
+            }
+
+            if params.displayMode.wrappedValue != .month {
+                dateAndEventsCountView
+            }
+        }
+    }
+
+    var monthAndButtonsView: some View {
         HStack {
             Button {
                 showMonthPicker = true
             } label: {
                 HStack {
-                    Text(params.anchorDate.formatted("MMMM, yyyy"))
+                    Text(params.anchorDate.wrappedValue.formatted("MMMM, yyyy"))
                         .systemFont(15, .semibold, theme.header.text)
                     Image(systemName: "chevron.down")
                         .foregroundStyle(theme.header.text)
@@ -51,7 +74,6 @@ public struct DefaultHeaderView: View {
             .padding(8)
             .background(Circle().styled(theme.button.accent))
         }
-        .padding(.horizontal, 10)
         .sheet(isPresented: $showMonthPicker) {
             MonthInYearSwitcher(date: params.fullscreenDate.wrappedValue.startOfYear) { month in
                 params.fullscreenDate.wrappedValue = month
@@ -61,43 +83,60 @@ public struct DefaultHeaderView: View {
         }
     }
 
-    var displayModeSwitcher: some View {
-        ZStack {
-            switch params.displayMode.wrappedValue {
-            case .day:
-                Image(.day)
-            case .twoDays, .threeDays:
-                Image(.three)
-            case .month:
-                Image(.month)
+    var dateAndEventsCountView: some View {
+        HStack {
+            Text(params.fullscreenDate.wrappedValue.formatted("d MMMM yyyy"))
+                .systemFont(13, theme.main.text)
+
+            if params.fullscreenDate.wrappedValue.startOfDay == Self.today {
+                Text("(Today)")
+                    .systemFont(13, .semibold, theme.main.text)
             }
+
+            Spacer()
+
+            Circle()
+                .frame(width: 8, height: 8)
+                .foregroundStyle(theme.main.accent)
+
+            Text("\(viewModel.getEventsAndRemindersCount(from: params.fullscreenDate.wrappedValue, displayMode: params.displayMode.wrappedValue, fullscreenDate: params.fullscreenDate.wrappedValue)) Events")
+                .systemFont(13, .semibold, theme.main.accent)
         }
-        .styleLikeButton()
-        .useAsPopupAnchor(id: "displayMode") {
-            VStack(alignment: .leading) {
-                makeModeSwitcherButton("Month", .month, .month)
-                makeModeSwitcherButton("Day", .day, .day)
-                makeModeSwitcherButton("2 Day", .three, .twoDays)
-                makeModeSwitcherButton("3 Day", .three, .threeDays)
-            }
-            .padding(18, 10)
-            .background(RoundedRectangle.styled(20, .white))
-        } customize: {
-            $0.position(.anchorRelative(.topLeading))
-                .closeOnTapOutside(true)
+        .padding(16)
+        .background {
+            theme.main.background
+                .shadow(color: .black.opacity(0.15), radius: 3, x: 0, y: 3)
         }
     }
 
-    func makeModeSwitcherButton(_ title: String, _ image: ImageResource, _ mode: CalendarDisplayMode) -> some View {
+    var displayModeSwitcher: some View {
+        Image(params.displayMode.wrappedValue.icon)
+            .recolor(.white)
+            .styleLikeButton()
+            .useAsPopupAnchor(id: "displayMode") {
+                VStack(alignment: .leading) {
+                    ForEach(CalendarDisplayMode.allCases, id: \.self) {
+                        makeModeSwitcherButton($0)
+                    }
+                }
+                .padding(18, 10)
+                .background(RoundedRectangle.styled(20, .white))
+            } customize: {
+                $0.position(.anchorRelative(.topLeading))
+                    .closeOnTapOutside(true)
+            }
+    }
+
+    func makeModeSwitcherButton(_ mode: CalendarDisplayMode) -> some View {
         Button {
             params.displayMode.wrappedValue = mode
         } label: {
             HStack {
-                Image(image).renderingMode(.template)
-                Text(title)
+                Image(mode.icon).renderingMode(.template)
+                Text(mode.title)
             }
         }
-        .foregroundStyle(params.displayMode.wrappedValue == mode ? theme.main.text : theme.main.secondaryText)
+        .foregroundStyle(params.displayMode.wrappedValue == mode ? theme.main.text : Color(.appGrey2))
     }
 }
 

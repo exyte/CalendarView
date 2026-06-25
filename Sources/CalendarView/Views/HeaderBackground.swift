@@ -9,7 +9,7 @@ import SwiftUI
 
 public enum HeaderBackground {
     case none
-    case color(Color)
+    case color(Color, CGFloat)
     case view(AnyView)
 
     // Convenience initializer for `view` that automatically wraps the content in `AnyView`
@@ -26,8 +26,8 @@ struct HeaderBackgroundView: View {
             switch background {
             case .none:
                 EmptyView()
-            case .color(let color):
-                color
+            case .color(let color, let radius):
+                color.cornerRadius(radius)
             case .view(let anyView):
                 anyView
             }

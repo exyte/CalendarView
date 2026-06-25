@@ -20,7 +20,9 @@ struct EditEntityView<Entity: CalendarEntity>: View {
     var body: some View {
         VStack {
             CloseSaveHeaderView(title: "Edit", showDraggingCapsule: false, saveButtonEnabled: saveEnabled) {
-                await shouldSave(entity)
+                var modified = entity
+                modified.stripTime()
+                await shouldSave(modified)
             }
 
             EditEntityFieldsView(entity: $entity)
