@@ -37,47 +37,59 @@ public struct CalendarTheme: Sendable {
     public struct Main: Sendable {
         public let text: Color
         public let secondaryText: Color
+        public let tertiaryText: Color
         public let accent: Color
+        public let accentLight: Color
         public let background: Color
         public let separator: Color
         public let cardBackground: Color
         public let fieldBackground: Color
         public let draggingCapsule: Color
         public let reminderBorder: Color
+        public let deleteText: Color
 
         public init(
             text: Color,
             secondaryText: Color,
+            tertiaryText: Color,
             accent: Color,
+            accentLight: Color,
             background: Color,
             separator: Color,
             cardBackground: Color,
             fieldBackground: Color,
             draggingCapsule: Color,
-            reminderBorder: Color
+            reminderBorder: Color,
+            deleteText: Color
         ) {
             self.text = text
             self.secondaryText = secondaryText
+            self.tertiaryText = tertiaryText
             self.accent = accent
+            self.accentLight = accentLight
             self.background = background
             self.separator = separator
             self.cardBackground = cardBackground
             self.fieldBackground = fieldBackground
             self.draggingCapsule = draggingCapsule
             self.reminderBorder = reminderBorder
+            self.deleteText = deleteText
         }
 
         public init() {
             self.init(
                 text: Color(.appBlack1),
                 secondaryText: Color(.appBlack2),
-                accent: Color(.accent),
+                tertiaryText: Color(.appBlack3),
+                accent: Color(.appAccent),
+                accentLight: Color(.appAccentLight),
                 background: Color(.appGrey6),
                 separator: Color(.appGrey4),
                 cardBackground: .white,
                 fieldBackground: Color(.appGrey5),
                 draggingCapsule: Color(.appGrey3),
-                reminderBorder: Color(.appGrey2)
+                reminderBorder: Color(.appGrey2),
+                deleteText: Color(.appRed)
             )
         }
     }
@@ -276,7 +288,7 @@ public struct CalendarTheme: Sendable {
 
         public init() {
             self.init(
-                accent: Color(.accent),
+                accent: Color(.appAccent),
                 disabled: Color(.appGrey5),
                 background: Color(.appGrey4)
             )

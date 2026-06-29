@@ -51,7 +51,7 @@ public struct CalendarViewCustomizationParams {
     public var horSpacing: CGFloat = 4
     public var verSpacing: CGFloat = 4
 
-    public var headerBackground: HeaderBackground = .color(Color(.headerBG), 10)
+    public var headerBackground: HeaderBackground = .color(Color(.appAccentLight), 10)
     public var eventDetailsClosure: ((any CalendarEntity)->())?
 }
 

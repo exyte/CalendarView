@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct FieldCalendarSelection: View {
+    @Environment(\.calendarTheme) var theme
     @Environment(CalendarViewModel.self) var viewModel
     @Binding var selectedCalendar: ProviderCalendar?
 
@@ -17,7 +18,7 @@ struct FieldCalendarSelection: View {
         HStack {
             HStack(alignment: .top, spacing: 0) {
                 Text("Calendar")
-                    .systemFont(17, .appBlack2)
+                    .systemFont(17, theme.main.secondaryText)
 
                 Text("*")
                     .systemFont(17, .red)
@@ -35,11 +36,11 @@ struct FieldCalendarSelection: View {
                     .cornerRadius(17)
             } else {
                 Text("Not selected")
-                    .systemFont(17, .appBlack2, 0.6)
+                    .systemFont(17, theme.main.secondaryText.opacity(0.6))
             }
 
             Image(systemName: "chevron.right")
-                .systemFont(15, .semibold, .appBlack3, 0.3)
+                .systemFont(15, .semibold, theme.main.tertiaryText.opacity(0.3))
         }
         .contentShape(Rectangle())
         .onTapGesture {

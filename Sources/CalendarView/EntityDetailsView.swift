@@ -179,7 +179,7 @@ struct EntityDetailsView<Entity: CalendarEntity>: View {
             showDeleteAlert = true
         } label: {
             Text("Delete \(entity.typeString)")
-                .systemFont(15, .appRed)
+                .systemFont(15, theme.main.deleteText)
                 .frame(maxWidth: .infinity)
         }
         .padding(.top, 12)

@@ -8,22 +8,23 @@
 import SwiftUI
 
 struct FieldEnumPicker<E: PickerEnum>: View {
+    @Environment(\.calendarTheme) var theme
     @Binding var selection: E
 
     @State private var showSelectionPopup: Bool = false
-    
+
     var body: some View {
         HStack {
             Text(E.title)
-                .systemFont(17, .appBlack2)
+                .systemFont(17, theme.main.secondaryText)
 
             Spacer()
 
             Text(selection.stringValue)
-                .systemFont(17, .appBlack2, 0.6)
+                .systemFont(17, theme.main.secondaryText.opacity(0.6))
 
             Image(systemName: "chevron.right")
-                .systemFont(15, .semibold, .appBlack3, 0.3)
+                .systemFont(15, .semibold, theme.main.tertiaryText.opacity(0.3))
         }
         .contentShape(Rectangle())
         .onTapGesture {

@@ -21,12 +21,12 @@ struct FieldTimeAndDate: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
                 Text("Time and Date")
-                    .systemFont(17, .appBlack2)
+                    .systemFont(17, theme.main.secondaryText)
 
                 Spacer()
 
                 Text("All day")
-                    .systemFont(17, .appBlack2, 0.6)
+                    .systemFont(17, theme.main.secondaryText.opacity(0.6))
 
                 CustomToggle(isOn: $isAllDay, onColor: theme.main.accent, offColor: theme.main.fieldBackground)
             }
@@ -93,7 +93,7 @@ struct TimeAndDateRow: View {
         VStack {
             HStack {
                 Text(label)
-                    .systemFont(17, .appBlack2)
+                    .systemFont(17, theme.main.secondaryText)
 
                 Spacer()
 
@@ -114,16 +114,15 @@ struct TimeAndDateRow: View {
                 DatePicker(label, selection: $date, displayedComponents: .date)
                     .labelsHidden()
                     .datePickerStyle(.graphical)
-                    .tint(.blue.opacity(0.3))
             }
 
             if isCurrentlyDisplayed, openKind == .time {
                 DatePicker(label, selection: $date, displayedComponents: .hourAndMinute)
                     .labelsHidden()
                     .datePickerStyle(.wheel)
-                    .tint(.blue.opacity(0.3))
             }
         }
+        .tint(theme.main.accentLight)
         .clipped()
         .onChange(of: displayedPicker) { _, newValue in
             if newValue != label { openKind = nil }
