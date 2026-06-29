@@ -32,8 +32,8 @@ struct MonthInYearSwitcher: View {
                     .padding(16, 12)
                     .background(
                         RoundedRectangle(cornerRadius: 22)
-                            .fill(Color.white)
-                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                            .fill(theme.main.cardBackground)
+                            .stroke(theme.main.separator, lineWidth: 1)
                     )
                     .submitLabel(.search)
                     .focused($isSearchFocused)

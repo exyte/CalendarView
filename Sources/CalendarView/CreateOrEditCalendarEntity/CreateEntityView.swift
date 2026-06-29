@@ -50,6 +50,7 @@ struct CreateEntityView: View {
 }
 
 struct ButtonsSwitcher<Enum: Hashable & CaseIterable>: View {
+    @Environment(\.calendarTheme) var theme
     @Binding var selection: Enum
     var additionalActionClosure: () -> () = {}
 
@@ -65,7 +66,7 @@ struct ButtonsSwitcher<Enum: Hashable & CaseIterable>: View {
                 .greedyWidth()
                 .padding(10, 8)
                 .background {
-                    Capsule().foregroundStyle(selection == tab ? Color.white : Color.clear)
+                    Capsule().foregroundStyle(selection == tab ? theme.main.cardBackground : Color.clear)
                 }
             }
         }
@@ -73,7 +74,7 @@ struct ButtonsSwitcher<Enum: Hashable & CaseIterable>: View {
         .greedyWidth()
         .padding(2)
         .background {
-            Capsule().foregroundStyle(Color(.appGrey5))
+            Capsule().foregroundStyle(theme.main.fieldBackground)
         }
     }
 }

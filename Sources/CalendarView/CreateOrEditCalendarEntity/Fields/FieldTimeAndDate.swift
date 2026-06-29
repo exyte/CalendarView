@@ -10,6 +10,7 @@ import SwiftUI
 /// Date row stacked on a time row
 
 struct FieldTimeAndDate: View {
+    @Environment(\.calendarTheme) var theme
     @Binding var isAllDay: Bool
     @Binding var startDate: Date
     @Binding var endDate: Date
@@ -27,7 +28,7 @@ struct FieldTimeAndDate: View {
                 Text("All day")
                     .systemFont(17, .appBlack2, 0.6)
 
-                CustomToggle(isOn: $isAllDay, onColor: Color(.accent), offColor: Color(.appGrey5))
+                CustomToggle(isOn: $isAllDay, onColor: theme.main.accent, offColor: theme.main.fieldBackground)
             }
 
             TimeAndDateRow(
@@ -140,7 +141,7 @@ struct TimeAndDateRow: View {
     private func dateCell(title: String, onTap: @escaping () -> Void) -> some View {
         Text(title)
             .padding(12, 6)
-            .background(Color(.appGrey5))
+            .background(theme.main.fieldBackground)
             .clipShape(Capsule())
             .systemFont(17, theme.main.accent)
             .onTapGesture {

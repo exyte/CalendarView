@@ -55,7 +55,7 @@ struct CloseSaveHeaderView: View {
                 VStack {
                     Capsule()
                         .frame(width: 36, height: 5)
-                        .foregroundStyle(Color(.appGrey3))
+                        .foregroundStyle(theme.main.draggingCapsule)
                         .padding(.top, 5)
 
                     Spacer()

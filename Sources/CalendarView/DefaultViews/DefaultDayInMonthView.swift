@@ -105,7 +105,7 @@ public struct DefaultMonthEventView: View {
                     .resizable()
                     .size(6)
             } else {
-                RoundedRectangle(cornerRadius: 4).styled(.clear, border: Color(.appGrey2), 1)
+                RoundedRectangle(cornerRadius: 4).styled(.clear, border: theme.main.reminderBorder, 1)
                     .size(10)
             }
         }

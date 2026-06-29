@@ -111,7 +111,7 @@ public struct DefaultHeaderView: View {
 
     var displayModeSwitcher: some View {
         Image(params.displayMode.wrappedValue.icon)
-            .recolor(.white)
+            .recolor(theme.header.text)
             .styleLikeButton()
             .useAsPopupAnchor(id: "displayMode") {
                 VStack(alignment: .leading) {
@@ -120,7 +120,7 @@ public struct DefaultHeaderView: View {
                     }
                 }
                 .padding(18, 10)
-                .background(RoundedRectangle.styled(20, .white))
+                .background(RoundedRectangle.styled(20, theme.main.cardBackground))
             } customize: {
                 $0.position(.anchorRelative(.topLeading))
                     .closeOnTapOutside(true)
@@ -136,13 +136,22 @@ public struct DefaultHeaderView: View {
                 Text(mode.title)
             }
         }
-        .foregroundStyle(params.displayMode.wrappedValue == mode ? theme.main.text : Color(.appGrey2))
+        .foregroundStyle(params.displayMode.wrappedValue == mode ? theme.main.text : theme.main.secondaryText)
+    }
+}
+
+fileprivate struct LikeButtonStyle: ViewModifier {
+    @Environment(\.calendarTheme) var theme
+
+    func body(content: Content) -> some View {
+        content
+            .padding(8)
+            .background(Circle().styled(theme.header.buttonBackground, border: theme.header.buttonBorder, 0.5))
     }
 }
 
 fileprivate extension View {
     func styleLikeButton() -> some View {
-        self.padding(8)
-            .background(Circle().styled(.white.opacity(0.12), border: .white.opacity(0.4), 0.5))
+        modifier(LikeButtonStyle())
     }
 }

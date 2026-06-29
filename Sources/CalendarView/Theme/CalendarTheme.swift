@@ -39,17 +39,32 @@ public struct CalendarTheme: Sendable {
         public let secondaryText: Color
         public let accent: Color
         public let background: Color
+        public let separator: Color
+        public let cardBackground: Color
+        public let fieldBackground: Color
+        public let draggingCapsule: Color
+        public let reminderBorder: Color
 
         public init(
             text: Color,
             secondaryText: Color,
             accent: Color,
-            background: Color
+            background: Color,
+            separator: Color,
+            cardBackground: Color,
+            fieldBackground: Color,
+            draggingCapsule: Color,
+            reminderBorder: Color
         ) {
             self.text = text
             self.secondaryText = secondaryText
             self.accent = accent
             self.background = background
+            self.separator = separator
+            self.cardBackground = cardBackground
+            self.fieldBackground = fieldBackground
+            self.draggingCapsule = draggingCapsule
+            self.reminderBorder = reminderBorder
         }
 
         public init() {
@@ -57,22 +72,38 @@ public struct CalendarTheme: Sendable {
                 text: Color(.appBlack1),
                 secondaryText: Color(.appBlack2),
                 accent: Color(.accent),
-                background: Color(.appGrey6)
+                background: Color(.appGrey6),
+                separator: Color(.appGrey4),
+                cardBackground: .white,
+                fieldBackground: Color(.appGrey5),
+                draggingCapsule: Color(.appGrey3),
+                reminderBorder: Color(.appGrey2)
             )
         }
     }
 
     public struct Header: Sendable {
         public var text: Color
+        public var buttonBackground: Color
+        public var buttonBorder: Color
 
         func resolved(using main: Main) -> Header {
-            .init(
-                text: text.resolve(main.background)
+            let resolvedText = text.resolve(main.background)
+            return .init(
+                text: resolvedText,
+                buttonBackground: buttonBackground.resolve(resolvedText.opacity(0.12)),
+                buttonBorder: buttonBorder.resolve(resolvedText.opacity(0.4))
             )
         }
 
-        public init(text: Color = .unset) {
+        public init(
+            text: Color = .unset,
+            buttonBackground: Color = .unset,
+            buttonBorder: Color = .unset
+        ) {
             self.text = text
+            self.buttonBackground = buttonBackground
+            self.buttonBorder = buttonBorder
         }
     }
 

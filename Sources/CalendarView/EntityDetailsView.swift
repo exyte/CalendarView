@@ -19,11 +19,11 @@ struct EntityDetailsView<Entity: CalendarEntity>: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color(theme.main.background)
+                theme.main.background
                     .ignoresSafeArea()
                     .overlay {
                         VStack {
-                            LinearGradient(gradient: Gradient(colors: [Color(entity.calendarColor).opacity(0.5), Color.clear]), startPoint: .top, endPoint: .bottom)
+                            LinearGradient(gradient: Gradient(colors: [entity.calendarColor.opacity(0.5), Color.clear]), startPoint: .top, endPoint: .bottom)
                                 .frame(height: 250)
                                 .ignoresSafeArea()
 
@@ -91,7 +91,7 @@ struct EntityDetailsView<Entity: CalendarEntity>: View {
                                 await viewModel.update(editedEntity, oldStartDate: entity.startDate)
                             }
                         }
-                        .foregroundStyle(Color(theme.button.accent))
+                        .foregroundStyle(theme.button.accent)
                     }
                     .removeSharedBackground()
                 }
@@ -187,7 +187,7 @@ struct EntityDetailsView<Entity: CalendarEntity>: View {
     }
 
     private var separatorView: some View {
-        Color(.appGrey4).frame(height: 1)
+        theme.main.separator.frame(height: 1)
     }
 
     private func numberOfDaysBetween(_ from: Date, _ to: Date) -> Int {

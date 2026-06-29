@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct EditEntityFieldsView<Entity: CalendarEntity>: View {
+    @Environment(\.calendarTheme) var theme
     @Environment(CalendarViewModel.self) var viewModel
 
     @Binding var entity: Entity
@@ -76,6 +77,6 @@ struct EditEntityFieldsView<Entity: CalendarEntity>: View {
     }
 
     var separatorView: some View {
-        Color(.appGrey4).frame(height: 1)
+        theme.main.separator.frame(height: 1)
     }
 }
