@@ -235,8 +235,10 @@ public struct InfiniteTableView<Data, UpdatableModel, Content, UpdatableContent>
                             parent.content(item)
                         }
                     }
-                    .applyIfLet(pagedCellSize) { view, size in
-                        view.frame(width: size)
+                    .applyIf(parent.params.scrollLayout == .horizontal) {
+                        $0.applyIfLet(pagedCellSize) { view, size in
+                            view.frame(width: size)
+                        }
                     }
                     .frame(maxHeight: .infinity)
                     .rotationEffect(Angle(radians: (parent.params.scrollLayout == .horizontal ? .pi/2.0 : 0)))

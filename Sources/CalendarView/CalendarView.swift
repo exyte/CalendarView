@@ -24,10 +24,15 @@ public struct WeekSwitcherDayBuilderParams {
     public var fullscreenDate: Date
 }
 
+/// `fullscreenDate` - date displayed in DayLayout (leftmost one in 2-3 days mode)
+///  note: makes little sense for month mode, since selecting any date there leads to .day mode, with selected date as fullscreenDate
+/// `anchorDate` - date around which current time interval is calculated
+/// - e.g. mode = .month, anchorDate = March 3rd, displayed time interval = March 1st - March 31st
+/// - e.g. mode = .3days, anchorDate = March 3rd, displayed time interval = March 3st - March 5th
 public struct HeaderBuilderParams {
     public var fullscreenDate: Binding<Date>
-    public var displayMode: Binding<CalendarDisplayMode>
     public var anchorDate: Binding<Date>
+    public var displayMode: Binding<CalendarDisplayMode>
     public var tapSelectDisplayModeClosure: ()->()
     public var tapFilterCalendarsClosure: ()->()
     public var tapAddEventClosure: ()->()
@@ -117,8 +122,8 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         VStack(spacing: 0) {
             headerBuilder(HeaderBuilderParams(
                 fullscreenDate: $fullscreenDate,
-                displayMode: $displayMode,
                 anchorDate: $anchorDate,
+                displayMode: $displayMode,
                 tapSelectDisplayModeClosure: {
                     AnchoredPopup.launchGrowingAnimation(id: "displayMode")
                 },

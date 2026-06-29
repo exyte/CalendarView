@@ -8,11 +8,6 @@
 import SwiftUI
 
 public struct DayLayout<Content: View>: View {
-    struct ScrollInfo: Equatable {
-        let yOffset: CGFloat
-        let maxOffset: CGFloat
-    }
-
     struct Grouped {
         var allDayEvents: [CalendarEvent] = []
         var nonAllDayEvents: [CalendarEvent] = []
@@ -78,12 +73,8 @@ public struct DayLayout<Content: View>: View {
     // MARK: - inner state
 
     @State private var grouped = Grouped()
-    @State private var scrollPosition = ScrollPosition()
-    @State private var targetOffset = CGFloat.zero
-    @State private var scrollInfo = ScrollInfo(yOffset: 0, maxOffset: 100)
     @State private var hourLabelsSize: CGSize = .zero
     @State private var hourTextHeight: CGFloat = 0
-    @State private var lastScrolledAnchorDate: Date? = nil
 
     var hoursToFit: CGFloat {
         hoursFittingCurrentZoom ?? customizationParams.hoursToFit
@@ -102,97 +93,41 @@ public struct DayLayout<Content: View>: View {
 
             // events by hour
             GeometryReader { global in
-                ScrollViewReader { proxy in
-                    ScrollView {
-                        HStack(spacing: 0) {
-                            let oneHourHeight = global.size.height / CGFloat(hoursToFit)
+                ScrollView {
+                    HStack(spacing: 0) {
+                        let oneHourHeight = global.size.height / CGFloat(hoursToFit)
 
-                            hourLabels(oneHourHeight)
-                                .padding(.horizontal, horizontalPadding)
-                                .sizeGetter($hourLabelsSize)
+                        hourLabels(oneHourHeight)
+                            .padding(.horizontal, horizontalPadding)
+                            .sizeGetter($hourLabelsSize)
 
-                            ZStack(alignment: .top) {
-                                separatorsView(oneHourHeight)
-                                if anchorDate.getDateWithoutTime() == Date().getDateWithoutTime() {
-                                    nowLine(oneHourHeight)
-                                }
-                                dayEventsAndRemindersView(availableWidth: max(0, global.size.width - hourLabelsSize.width), oneHourHeight: oneHourHeight)
+                        ZStack(alignment: .top) {
+                            separatorsView(oneHourHeight)
+                            if anchorDate.getDateWithoutTime() == Date().getDateWithoutTime() {
+                                nowLine(oneHourHeight)
                             }
-                            .padding(.top, hourTextHeight + 8)
+                            dayEventsAndRemindersView(availableWidth: max(0, global.size.width - hourLabelsSize.width), oneHourHeight: oneHourHeight)
                         }
-                    }
-                    .contentMargins(.trailing, horizontalPadding, for: .scrollIndicators)
-                    .scrollDisabled(isScrollDisabled)
-                    .onChange(of: hoursFittingCurrentZoom) { oldZoom, newZoom in
-                        guard isScrollDisabled else { return }
-                        var t = Transaction()
-                        t.disablesAnimations = true
-                        withTransaction(t) {
-                            let focalY = max(0, min(global.size.height, pinchAnchor * global.size.height))
-                            let centerY = scrollInfo.yOffset + focalY
-                            let gridTop = hourTextHeight
-                            let hoursOld = oldZoom ?? customizationParams.hoursToFit
-                            let hoursNew = newZoom ?? customizationParams.hoursToFit
-                            let oneHourOld = global.size.height / max(3.0, min(12.0, hoursOld))
-                            let oneHourNew = global.size.height / max(3.0, min(12.0, hoursNew))
-                            let hourIndexAtFocal = max(0, min(24, (centerY - gridTop) / oneHourOld))
-                            let newCenterY = hourIndexAtFocal * oneHourNew + gridTop
-                            let desiredOffset = max(0, min(newCenterY - focalY, scrollInfo.maxOffset))
-                            targetOffset = desiredOffset.rounded()
-                            scrollPosition.scrollTo(y: targetOffset)
-                        }
-                    }
-                    .onChange(of: scrollInfo) {
-                        if isScrollDisabled {
-                            let clamped = max(0, min(targetOffset, scrollInfo.maxOffset))
-                            if clamped != targetOffset {
-                                targetOffset = clamped
-                            }
-                        }
-                    }
-                    .scrollPosition($scrollPosition, anchor: .topLeading)
-                    .onScrollGeometryChange(for: ScrollInfo.self) { geo in
-                        ScrollInfo(
-                            yOffset: geo.contentOffset.y + geo.contentInsets.top,
-                            maxOffset: geo.contentSize.height - geo.containerSize.height
-                        )
-                    } action: { _, newVal in
-                        scrollInfo = newVal
-                    }
-                    .onScrollPhaseChange { _, newVal in
-                        isCalendarScrolling = newVal != .idle
-                    }
-                    .task(id: targetOffset) {
-                        if !isCalendarScrolling && targetOffset != scrollInfo.yOffset {
-                            var t = Transaction()
-                            t.disablesAnimations = true
-                            withTransaction(t) {
-                                scrollPosition.scrollTo(y: targetOffset)
-                            }
-                        }
-                    }
-                    .task(id: scrollInfo) {
-                        if isCalendarScrolling {
-                            let yOffset = max(0, min(scrollInfo.yOffset.rounded(), scrollInfo.maxOffset))
-                            if yOffset != targetOffset {
-                                targetOffset = yOffset
-                            }
-                        }
-                    }
-                    .task(id: GroupingKey(events: events, reminders: reminders, anchorDate: anchorDate, daysCount: daysCount)) {
-                        let newGrouped = Grouped.compute(events: events, reminders: reminders, anchorDate: anchorDate, daysCount: daysCount)
-                        grouped = newGrouped
-                        if lastScrolledAnchorDate != anchorDate {
-                            let firstHour = newGrouped.nonAllDayEvents.map { $0.startDate.getHour() }.min() ?? 0
-                            proxy.scrollTo(firstHour, anchor: .top)
-                            lastScrolledAnchorDate = anchorDate
-                        }
+                        .padding(.top, hourTextHeight + 8)
                     }
                 }
+                .contentMargins(.trailing, horizontalPadding, for: .scrollIndicators)
+                .scrollDisabled(isScrollDisabled)
+                .modifier(DayScrollModifier(
+                    isCalendarScrolling: $isCalendarScrolling,
+                    isScrollDisabled: isScrollDisabled,
+                    pinchAnchor: pinchAnchor,
+                    hourTextHeight: hourTextHeight,
+                    containerHeight: global.size.height,
+                    anchorDate: anchorDate
+                ))
             }
         }
         .onChange(of: hourLabelsSize) {
             hoursLabelsInset = hourLabelsSize.width + 2 * horizontalPadding
+        }
+        .task(id: GroupingKey(events: events, reminders: reminders, anchorDate: anchorDate, daysCount: daysCount)) {
+            grouped = Grouped.compute(events: events, reminders: reminders, anchorDate: anchorDate, daysCount: daysCount)
         }
     }
 
@@ -312,6 +247,94 @@ public struct DayLayout<Content: View>: View {
         CGFloat((date.getHour() * 60 + date.getMinute())) / CGFloat(60)
     }
 }
+
+// MARK: - Scroll modifier
+
+private struct DayScrollModifier: ViewModifier {
+    struct ScrollInfo: Equatable {
+        let yOffset: CGFloat
+        let maxOffset: CGFloat
+    }
+
+    @Environment(\.hoursFittingCurrentZoom) var hoursFittingCurrentZoom
+    @Environment(\.calendarCustomizationParams) var customizationParams
+
+    @Binding var isCalendarScrolling: Bool
+
+    var isScrollDisabled: Bool
+    var pinchAnchor: CGFloat
+    var hourTextHeight: CGFloat
+    var containerHeight: CGFloat
+    var anchorDate: Date
+
+    @State private var scrollPosition = ScrollPosition()
+    @State private var targetOffset = CGFloat.zero
+    @State private var scrollInfo = ScrollInfo(yOffset: 0, maxOffset: 100)
+
+    func body(content: Content) -> some View {
+        content
+            .scrollPosition($scrollPosition, anchor: .topLeading)
+            .onScrollGeometryChange(for: ScrollInfo.self) { geo in
+                ScrollInfo(
+                    yOffset: geo.contentOffset.y + geo.contentInsets.top,
+                    maxOffset: geo.contentSize.height - geo.containerSize.height
+                )
+            } action: { _, newVal in
+                scrollInfo = newVal
+            }
+            .onScrollPhaseChange { _, newVal in
+                isCalendarScrolling = newVal != .idle
+            }
+            .onChange(of: hoursFittingCurrentZoom) { oldZoom, newZoom in
+                guard isScrollDisabled else { return }
+                var t = Transaction()
+                t.disablesAnimations = true
+                withTransaction(t) {
+                    let focalY = max(0, min(containerHeight, pinchAnchor * containerHeight))
+                    let centerY = scrollInfo.yOffset + focalY
+                    let hoursOld = oldZoom ?? customizationParams.hoursToFit
+                    let hoursNew = newZoom ?? customizationParams.hoursToFit
+                    let oneHourOld = containerHeight / max(3.0, min(12.0, hoursOld))
+                    let oneHourNew = containerHeight / max(3.0, min(12.0, hoursNew))
+                    let hourIndexAtFocal = max(0, min(24, (centerY - hourTextHeight) / oneHourOld))
+                    let newCenterY = hourIndexAtFocal * oneHourNew + hourTextHeight
+                    targetOffset = max(0, min(newCenterY - focalY, scrollInfo.maxOffset)).rounded()
+                    scrollPosition.scrollTo(y: targetOffset)
+                }
+            }
+            .onChange(of: scrollInfo) {
+                if isScrollDisabled {
+                    let clamped = max(0, min(targetOffset, scrollInfo.maxOffset))
+                    if clamped != targetOffset {
+                        targetOffset = clamped
+                    }
+                }
+            }
+            .task(id: targetOffset) {
+                if !isCalendarScrolling && targetOffset != scrollInfo.yOffset {
+                    var t = Transaction()
+                    t.disablesAnimations = true
+                    withTransaction(t) {
+                        scrollPosition.scrollTo(y: targetOffset)
+                    }
+                }
+            }
+            .task(id: scrollInfo) {
+                if isCalendarScrolling {
+                    let yOffset = max(0, min(scrollInfo.yOffset.rounded(), scrollInfo.maxOffset))
+                    if yOffset != targetOffset {
+                        targetOffset = yOffset
+                    }
+                }
+            }
+            .task(id: anchorDate) {
+                scrollPosition.scrollTo(y: 0)
+                targetOffset = 0
+            }
+    }
+}
+
+// MARK: - Extensions
 
 extension Sequence where Element == CalendarEvent {
     func groupedByDay() -> [Date: [CalendarEvent]] {
