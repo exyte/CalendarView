@@ -9,7 +9,7 @@ import SwiftUI
 
 public extension CalendarView where WeekSwitcherDay == EmptyView {
     init(
-        providers: [CalendarsProvider] = [],
+        providers: [CalendarsProvider] = CalendarDefaults.defaultProviders,
         dayEventBuilder: @escaping (_ calendarEvent: any CalendarEntity) -> DayEvent = {
             DefaultDayEventView(entity: $0)
         },
@@ -30,7 +30,7 @@ public extension CalendarView where WeekSwitcherDay == EmptyView {
 
 public extension CalendarView where Header == DefaultHeaderView {
     init(
-        providers: [CalendarsProvider] = [],
+        providers: [CalendarsProvider] = CalendarDefaults.defaultProviders,
         dayEventBuilder: @escaping (_ calendarEvent: any CalendarEntity) -> DayEvent = {
             DefaultDayEventView(entity: $0)
         },
@@ -51,7 +51,7 @@ public extension CalendarView where Header == DefaultHeaderView {
 
 public extension CalendarView where WeekSwitcherDay == EmptyView, Header == DefaultHeaderView {
     init(
-        providers: [CalendarsProvider] = [],
+        providers: [CalendarsProvider] = CalendarDefaults.defaultProviders,
         dayEventBuilder: @escaping (_ calendarEvent: any CalendarEntity) -> DayEvent = {
             DefaultDayEventView(entity: $0)
         },

@@ -9,11 +9,8 @@ import SwiftUI
 import CalendarView
 
 struct SimpleCalendar: View {
-    
-    private static let today = Date().startOfDay
-    
     var body: some View {
-        CalendarView(providers: CalendarDefaults.defaultProviders)
+        CalendarView()
             .headerBackground {
                 GeometryReader { geo in
                     ZStack(alignment: .top) {

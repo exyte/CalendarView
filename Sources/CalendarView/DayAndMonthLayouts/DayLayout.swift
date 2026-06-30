@@ -119,7 +119,8 @@ public struct DayLayout<Content: View>: View {
                     pinchAnchor: pinchAnchor,
                     hourTextHeight: hourTextHeight,
                     containerHeight: global.size.height,
-                    anchorDate: anchorDate
+                    anchorDate: anchorDate,
+                    firstEventHour: events.filter { !$0.isAllDay }.map { $0.startDate.getHour() }.min()
                 ))
             }
         }
@@ -266,6 +267,7 @@ private struct DayScrollModifier: ViewModifier {
     var hourTextHeight: CGFloat
     var containerHeight: CGFloat
     var anchorDate: Date
+    var firstEventHour: Int?
 
     @State private var scrollPosition = ScrollPosition()
     @State private var targetOffset = CGFloat.zero
@@ -328,14 +330,10 @@ private struct DayScrollModifier: ViewModifier {
                 }
             }
             .task(id: anchorDate) {
-                // needs to scroll to first visible event when first opening this date
-//                if let firstOccupiedHour = newGrouped.nonAllDayEvents.map { $0.startDate.getHour() }.min() {
-//                    //scrollPosition set to firstOccupiedHour
-//                    proxy.scrollTo(firstOccupiedHour, anchor: .top)
-//                } else {
-//                    scrollPosition.scrollTo(y: 0)
-//                    //targetOffset = 0
-//                }
+                let hoursToFit = hoursFittingCurrentZoom ?? customizationParams.hoursToFit
+                let oneHourHeight = containerHeight / CGFloat(hoursToFit)
+                let y = CGFloat(firstEventHour ?? 0) * oneHourHeight
+                targetOffset = max(0, min(y, scrollInfo.maxOffset))
             }
     }
 }
