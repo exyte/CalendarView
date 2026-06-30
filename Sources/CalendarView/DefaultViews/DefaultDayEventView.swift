@@ -26,7 +26,7 @@ public struct DefaultDayEventView: View {
                 RoundedRectangle.styled(8, event.calendarColor.opacity(0.3))
 
                 Text(event.title)
-                    .systemFont(13, .semibold, theme.day.eventText)
+                    .libraryFont(13, .semibold, theme.day.eventText)
                     .padding(8, 4)
             }
         } else {
@@ -50,7 +50,7 @@ public struct DefaultDayEventView: View {
                     }
 
                     Text(entity.title)
-                        .systemFont(13, .semibold, theme.day.eventText)
+                        .libraryFont(13, .semibold, theme.day.eventText)
 
                     Spacer()
                 }

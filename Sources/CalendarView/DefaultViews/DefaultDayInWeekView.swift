@@ -37,7 +37,7 @@ public struct DefaultDayInWeekView: View {
         theme.week.background
 
         let weekdayLabel = Text(params.day.formatted("EEE"))
-            .systemFont(15, isWeekend ? theme.week.weekendText : theme.week.text)
+            .libraryFont(15, isWeekend ? theme.week.weekendText : theme.week.text)
             .lineLimit(1)
 
         VStack(spacing: 10) {
@@ -48,8 +48,8 @@ public struct DefaultDayInWeekView: View {
             } else {
                 weekdayLabel
 
-                Text(params.day.formatted("d")).font(.system(size: 17, weight: .semibold))
-                    .systemFont(17, .semibold, textColor)
+                Text(params.day.formatted("d"))
+                    .libraryFont(17, .semibold, textColor)
                     .lineLimit(1)
                     .padding(8)
                     .background(Circle().foregroundStyle(bgColor))

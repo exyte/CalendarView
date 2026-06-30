@@ -47,7 +47,7 @@ struct CloseSaveHeaderView: View {
             }
 
             Text(title)
-                .systemFont(17, .semibold, theme.main.text)
+                .libraryFont(17, .semibold, theme.main.text)
         }
         .padding(10, 16)
         .applyIf(showDraggingCapsule) {

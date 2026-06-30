@@ -136,7 +136,7 @@ public struct DayLayout<Content: View>: View {
         VStack(alignment: .trailing, spacing: 0) {
             ForEach(0..<25, id: \.self) { i in
                 Text(Date().setHour(to: i).setMinute(to: 0).formatted(customizationParams.hourLabelFormat))
-                    .systemFont(13, theme.day.hourText)
+                    .libraryFont(13, theme.day.hourText)
                     .maxHeightGetter($hourTextHeight)
                     .frame(height: oneHourHeight, alignment: .top)
                     .id(i)
@@ -204,7 +204,7 @@ public struct DayLayout<Content: View>: View {
         // can't be a part of layout to be able to align 3-day view correctly
         .overlay(alignment: .topLeading) {
             Text("all-day")
-                .systemFont(13, theme.day.hourText)
+                .libraryFont(13, theme.day.hourText)
                 .padding(8, 4)
         }
     }

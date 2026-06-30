@@ -42,7 +42,7 @@ public struct FilterCalendarsView: View {
     func calendarsSection(_ section: String, _ calendars: [ProviderCalendar]) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(section)
-                .systemFont(13, .semibold, theme.main.secondaryText)
+                .libraryFont(13, .semibold, theme.main.secondaryText)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             ForEach(calendars) { calendar in
@@ -59,7 +59,7 @@ public struct FilterCalendarsView: View {
                             }
                         }
                         Text(calendar.title)
-                            .systemFont(14, theme.main.text)
+                            .libraryFont(14, theme.main.text)
                         Spacer()
                     }
                 }

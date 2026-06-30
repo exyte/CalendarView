@@ -65,7 +65,7 @@ struct EntityDetailsView<Entity: CalendarEntity>: View {
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Text("\(entity.typeString) Details")
-                        .systemFont(17, .semibold)
+                        .libraryFont(17, .semibold)
                 }
 
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -76,7 +76,7 @@ struct EntityDetailsView<Entity: CalendarEntity>: View {
                             Image(systemName: "chevron.left")
 
                             Text(entity.startDate.shortDateFormat)
-                                .systemFont(17)
+                                .libraryFont(17)
                         }
                         .opacity(0.6)
                     }
@@ -91,7 +91,7 @@ struct EntityDetailsView<Entity: CalendarEntity>: View {
                                 await viewModel.update(editedEntity, oldStartDate: entity.startDate)
                             }
                         }
-                        .foregroundStyle(theme.button.accent)
+                        .libraryFont(17, theme.main.text)
                     }
                     .removeSharedBackground()
                 }
@@ -111,14 +111,14 @@ struct EntityDetailsView<Entity: CalendarEntity>: View {
     private var headerView: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(entity.title)
-                .systemFont(20, .semibold)
+                .libraryFont(20, .semibold)
 
             headerDateTextView
-                .systemFont(13)
+                .libraryFont(13)
                 .opacity(0.6)
 
             Text("Repeats \(entity.repeatType.rawValue)")
-                .systemFont(13)
+                .libraryFont(13)
         }
     }
 
@@ -148,7 +148,7 @@ struct EntityDetailsView<Entity: CalendarEntity>: View {
     private var calendarFieldView: some View {
         HStack {
             Text("Calendar")
-                .systemFont(17)
+                .libraryFont(17)
 
             Spacer()
 
@@ -157,7 +157,7 @@ struct EntityDetailsView<Entity: CalendarEntity>: View {
                 .cornerRadius(8)
 
             Text(entity.calendarName)
-                .systemFont(17)
+                .libraryFont(17)
                 .opacity(0.6)
         }
     }
@@ -165,11 +165,11 @@ struct EntityDetailsView<Entity: CalendarEntity>: View {
     private var descriptionFieldView: some View {
         VStack(alignment: .leading) {
             Text("Description")
-                .systemFont(17)
+                .libraryFont(17)
                 .padding(.top, 6)
 
             Text(entity.notes)
-                .systemFont(15)
+                .libraryFont(15)
                 .padding(.vertical, 6)
         }
     }
@@ -179,7 +179,7 @@ struct EntityDetailsView<Entity: CalendarEntity>: View {
             showDeleteAlert = true
         } label: {
             Text("Delete \(entity.typeString)")
-                .systemFont(15, theme.main.deleteText)
+                .libraryFont(15, theme.main.deleteText)
                 .frame(maxWidth: .infinity)
         }
         .padding(.top, 12)

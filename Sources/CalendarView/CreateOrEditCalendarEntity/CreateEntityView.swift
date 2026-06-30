@@ -75,7 +75,7 @@ struct ButtonsSwitcher<Enum: Hashable & CaseIterable>: View {
                 }
             }
         }
-        .systemFont(14, .semibold)
+        .libraryFont(14, .semibold)
         .greedyWidth()
         .padding(2)
         .background {

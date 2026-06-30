@@ -48,7 +48,7 @@ struct DayInMonthSwitcher<MonthDay: View>: View {
                 VStack(alignment: .leading, spacing: 0) {
                     let monthDate = fullscreenDate.startOfMonth.adding(.month, value: item)
                     let isCurrentMonth = monthDate.startOfMonth == today.startOfMonth
-                    Text(monthDate.formatted("MMMM, y")).systemFont(32, .semibold, isCurrentMonth ? theme.year.todayText : theme.year.monthText)
+                    Text(monthDate.formatted("MMMM, y")).libraryFont(32, .semibold, isCurrentMonth ? theme.year.todayText : theme.year.monthText)
                         .padding(16, 10)
 
                     MonthLayout(date: monthDate, viewModel: model, monthDayBuilder: monthDayBuilder) { day in

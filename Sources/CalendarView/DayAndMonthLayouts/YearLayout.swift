@@ -19,7 +19,7 @@ struct YearLayout: View {
     var body: some View {
         VStack(alignment: .leading) {
             let isCurrentYear = date.getYear() == today.getYear()
-            Text(date.formatted("y")).systemFont(32, .semibold, isCurrentYear ? theme.year.todayText : theme.year.monthText)
+            Text(date.formatted("y")).libraryFont(32, .semibold, isCurrentYear ? theme.year.todayText : theme.year.monthText)
 
             LazyVGrid(columns: columns, spacing: 16) {
                 ForEach(0..<12) { i in
@@ -62,7 +62,7 @@ struct YearMonthLayout: View, Identifiable {
     var body: some View {
         VStack(alignment: .leading) {
             Text(date.formatted("MMM"))
-                .systemFont(20, .semibold, isCurrentMonth ? theme.year.todayText : theme.year.monthText)
+                .libraryFont(20, .semibold, isCurrentMonth ? theme.year.todayText : theme.year.monthText)
 
             LazyVGrid(columns: columns, spacing: 4) {
                 let maxMonthDay = date.maxMonthDay
@@ -76,7 +76,7 @@ struct YearMonthLayout: View, Identifiable {
                         let isToday = isCurrentMonth && day == today.getDay()
 
                         Text("\(day)")
-                            .systemFont(8, isToday ? .white : theme.year.dateText)
+                            .libraryFont(8, isToday ? .white : theme.year.dateText)
                             .applyIf(isToday) {
                                 $0
                                     .frame(width: 14, height: 14)

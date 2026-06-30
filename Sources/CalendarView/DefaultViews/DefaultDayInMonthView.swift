@@ -27,7 +27,7 @@ public struct DefaultDayInMonthView: View {
 
             let isToday = params.date.startOfDay == Self.today
             Text("\(params.date.getDay())")
-                .systemFont(17, .semibold, isToday ? theme.month.todayText : theme.month.dateText)
+                .libraryFont(17, .semibold, isToday ? theme.month.todayText : theme.month.dateText)
                 .applyIf(isToday) {
                     $0.padding(4)
                         .background(theme.month.todayBackground)
@@ -64,7 +64,7 @@ public struct DefaultDayInMonthView: View {
                     DefaultMonthEventView(entity: events[$0])
                 }
                 Text("+\(events.count - (maxEvents - 1))")
-                    .systemFont(11, theme.month.plusMoreEventsText)
+                    .libraryFont(11, theme.month.plusMoreEventsText)
             }
         }
         .padding(.horizontal, 1)
@@ -85,7 +85,7 @@ public struct DefaultMonthEventView: View {
                 }
 
                 Text(entity.title)
-                    .systemFont(11, .semibold, theme.month.eventText)
+                    .libraryFont(11, .semibold, theme.month.eventText)
                     .lineLimit(1)
                     .padding(2, 1)
 

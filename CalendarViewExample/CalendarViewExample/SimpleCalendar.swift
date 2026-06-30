@@ -11,6 +11,7 @@ import CalendarView
 struct SimpleCalendar: View {
     var body: some View {
         CalendarView()
+            .customFont("Georgia")
             .headerBackground {
                 GeometryReader { geo in
                     ZStack(alignment: .top) {

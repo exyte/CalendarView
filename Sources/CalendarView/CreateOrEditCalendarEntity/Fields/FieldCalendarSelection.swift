@@ -18,10 +18,10 @@ struct FieldCalendarSelection: View {
         HStack {
             HStack(alignment: .top, spacing: 0) {
                 Text("Calendar")
-                    .systemFont(17, theme.main.secondaryText)
+                    .libraryFont(17, theme.main.secondaryText)
 
                 Text("*")
-                    .systemFont(17, .red)
+                    .libraryFont(17, .red)
                     .padding(.leading, 4)
 
                 Spacer()
@@ -31,16 +31,17 @@ struct FieldCalendarSelection: View {
 
             if let title = selectedCalendar?.title {
                 Text(title)
+                    .libraryFont(17, theme.main.text)
                     .padding(12, 4)
                     .background(Color(selectedCalendar?.color ?? .clear).opacity(0.3))
                     .cornerRadius(17)
             } else {
                 Text("Not selected")
-                    .systemFont(17, theme.main.secondaryText.opacity(0.6))
+                    .libraryFont(17, theme.main.secondaryText.opacity(0.6))
             }
 
             Image(systemName: "chevron.right")
-                .systemFont(15, .semibold, theme.main.tertiaryText.opacity(0.3))
+                .libraryFont(15, .semibold, theme.main.tertiaryText.opacity(0.3))
         }
         .contentShape(Rectangle())
         .onTapGesture {
@@ -65,7 +66,7 @@ struct CalendarSelectionSheetView: View {
     var body: some View {
         VStack(spacing: 20) {
             Text("Select calendar")
-                .systemFont(17, .semibold, theme.main.text)
+                .libraryFont(17, .semibold, theme.main.text)
 
             ForEach(viewModel.calendars) { calendar in
                 HStack {
@@ -74,6 +75,7 @@ struct CalendarSelectionSheetView: View {
                         .size(10)
 
                     Text(calendar.title)
+                        .libraryFont(17, theme.main.text)
 
                     Spacer()
                 }

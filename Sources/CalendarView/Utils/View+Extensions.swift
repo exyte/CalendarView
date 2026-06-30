@@ -56,28 +56,6 @@ extension View {
     }
 }
 
-extension View {
-    func systemFont(_ size: CGFloat, _ weight: Font.Weight = .regular, _ color: Color = .black) -> some View {
-        self.font(.system(size: size, weight: weight))
-            .foregroundStyle(color)
-    }
-
-    func systemFont(_ size: CGFloat, _ weight: Font.Weight = .regular, _ colorResource: ColorResource, _ opacity: Double = 1) -> some View {
-        self.font(.system(size: size, weight: weight))
-            .foregroundStyle(Color(colorResource).opacity(opacity))
-    }
-
-    func systemFont(_ size: CGFloat, _ color: Color = .black) -> some View {
-        self.font(.system(size: size))
-            .foregroundStyle(color)
-    }
-
-    func systemFont(_ size: CGFloat, _ colorResource: ColorResource, _ opacity: Double = 1) -> some View {
-        self.font(.system(size: size))
-            .foregroundStyle(Color(colorResource).opacity(opacity))
-    }
-}
-
 public extension ToolbarContent {
     @ToolbarContentBuilder
     func removeSharedBackground() -> some ToolbarContent {

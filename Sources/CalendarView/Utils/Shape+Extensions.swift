@@ -28,10 +28,4 @@ extension Image {
     func recolor(_ color: Color) -> some View {
         self.renderingMode(.template).foregroundStyle(color)
     }
-
-    func iconStyle(size: CGFloat, color: ColorResource, opacity: Double = 1) -> some View {
-        self
-            .font(.system(size: size))
-            .foregroundStyle(Color(color).opacity(opacity))
-    }
 }

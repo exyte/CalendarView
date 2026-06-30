@@ -44,14 +44,14 @@ struct EditEntityFieldsView<Entity: CalendarEntity>: View {
             VStack(spacing: 16) {
                 HStack(spacing: 4) {
                     Text("Title")
-                        .systemFont(15, theme.main.secondaryText.opacity(0.6))
+                        .libraryFont(15, theme.main.secondaryText.opacity(0.6))
                     Text("*")
-                        .systemFont(15, .red)
+                        .libraryFont(15, .red)
                     Spacer()
                 }
 
                 TextField("\(entity.typeString) title...", text: $entity.title)
-                    .systemFont(20, .semibold, theme.main.secondaryText)
+                    .libraryFont(20, .semibold, theme.main.secondaryText)
 
                 separatorView
 

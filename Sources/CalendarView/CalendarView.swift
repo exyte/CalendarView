@@ -113,6 +113,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
         } content: {
             FilterCalendarsView()
                 .environment(viewModel)
+                .environment(\.calendarCustomizationParams, customizationParams)
         }
 
         .sheet(isPresented: $showCreateEvent) {
@@ -122,6 +123,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                 await viewModel.add(entity)
             }
             .environment(viewModel)
+            .environment(\.calendarCustomizationParams, customizationParams)
         }
 
         .fullScreenCover(item: $displayedEventDetails) {
@@ -130,10 +132,12 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
             if let event = wrappedEntity.entity as? CalendarEvent {
                 EntityDetailsView(entity: event)
                     .environment(viewModel)
+                    .environment(\.calendarCustomizationParams, customizationParams)
             }
             if let reminder = wrappedEntity.entity as? CalendarReminder {
                 EntityDetailsView(entity: reminder)
                     .environment(viewModel)
+                    .environment(\.calendarCustomizationParams, customizationParams)
             }
         }
     }

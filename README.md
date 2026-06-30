@@ -29,7 +29,9 @@ CalendarView()
 `headerBackground` - Background for the header: `.none`, `.color(Color, cornerRadius)`, or `.view(AnyView)`. Use the `headerBackground(viewBuilder:)` overload to pass a SwiftUI view directly.    
 `isDayInWeekSwitcherPagingEnabled` - Swipe just one week at a time or several at once in the week switcher     
 `eventDetailsClosure` - Closure called when the user taps an event, receives the tapped entity    
-`idForUpdate` - Pass a new UUID value to trigger a calendar data refresh
+`idForUpdate` - Pass a new UUID value to trigger a calendar data refresh    
+`customFont` - Use a custom font family by name. All font sizes and colors defined in the library are preserved. Weight variants are determined by the font itself.    
+`useDynamicType` - When `true`, all font sizes scale with the system-wide Dynamic Type accessibility setting (Settings → Accessibility → Display & Text Size → Larger Text)
 
 ### UI Customization - builders
 `dayEventBuilder` - In day display modes, a view for one event. Must have a greedy size to stretch according to available space. Height depends on event duration, width on how many events overlap. `ViewThatFits` is a good approach here. Also consider applying `.clipped()` so short events don't overflow into neighboring slots.     

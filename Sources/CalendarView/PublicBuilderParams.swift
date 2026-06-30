@@ -18,6 +18,9 @@ public struct CalendarViewCustomizationParams {
 
     public var headerBackground: HeaderBackground = .color(Color(.appAccentLight), 10)
     public var eventDetailsClosure: ((any CalendarEntity)->())?
+
+    public var customFontName: String? = nil
+    public var useDynamicType: Bool = false
 }
 
 public struct CalendarDefaults {

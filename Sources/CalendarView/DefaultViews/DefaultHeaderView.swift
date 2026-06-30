@@ -49,7 +49,7 @@ public struct DefaultHeaderView: View {
             } label: {
                 HStack {
                     Text(params.anchorDate.wrappedValue.formatted("MMMM, yyyy"))
-                        .systemFont(15, .semibold, theme.header.text)
+                        .libraryFont(15, .semibold, theme.header.text)
                     Image(systemName: "chevron.down")
                         .foregroundStyle(theme.header.text)
                 }
@@ -86,11 +86,11 @@ public struct DefaultHeaderView: View {
     var dateAndEventsCountView: some View {
         HStack {
             Text(params.fullscreenDate.wrappedValue.formatted("d MMMM yyyy"))
-                .systemFont(13, theme.main.text)
+                .libraryFont(13, theme.main.text)
 
             if params.fullscreenDate.wrappedValue.startOfDay == Self.today {
                 Text("(Today)")
-                    .systemFont(13, .semibold, theme.main.text)
+                    .libraryFont(13, .semibold, theme.main.text)
             }
 
             Spacer()
@@ -100,7 +100,7 @@ public struct DefaultHeaderView: View {
                 .foregroundStyle(theme.main.accent)
 
             Text("\(viewModel.getEventsAndRemindersCount(from: params.fullscreenDate.wrappedValue, displayMode: params.displayMode.wrappedValue, fullscreenDate: params.fullscreenDate.wrappedValue)) Events")
-                .systemFont(13, .semibold, theme.main.accent)
+                .libraryFont(13, .semibold, theme.main.accent)
         }
         .padding(16)
         .background {

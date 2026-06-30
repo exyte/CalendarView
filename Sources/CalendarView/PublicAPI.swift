@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 extension CalendarView {
 
@@ -59,6 +60,20 @@ extension CalendarView {
     public func isDayInWeekSwitcherPagingEnabled(_ value: Bool) -> CalendarView {
         var copy = self
         copy.customizationParams.isDayInWeekSwitcherPagingEnabled = value
+        return copy
+    }
+
+    /// Use a custom font family by name. Font sizes and colors defined in the library are preserved.
+    public func customFont(_ name: String) -> CalendarView {
+        var copy = self
+        copy.customizationParams.customFontName = name
+        return copy
+    }
+
+    /// Scale all fonts with the system-wide Dynamic Type accessibility setting.
+    public func useDynamicType(_ enabled: Bool) -> CalendarView {
+        var copy = self
+        copy.customizationParams.useDynamicType = enabled
         return copy
     }
 }

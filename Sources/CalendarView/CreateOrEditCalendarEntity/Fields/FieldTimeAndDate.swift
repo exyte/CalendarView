@@ -21,12 +21,12 @@ struct FieldTimeAndDate: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
                 Text("Time and Date")
-                    .systemFont(17, theme.main.secondaryText)
+                    .libraryFont(17, theme.main.secondaryText)
 
                 Spacer()
 
                 Text("All day")
-                    .systemFont(17, theme.main.secondaryText.opacity(0.6))
+                    .libraryFont(17, theme.main.secondaryText.opacity(0.6))
 
                 CustomToggle(isOn: $isAllDay, onColor: theme.main.accent, offColor: theme.main.fieldBackground)
             }
@@ -93,7 +93,7 @@ struct TimeAndDateRow: View {
         VStack {
             HStack {
                 Text(label)
-                    .systemFont(17, theme.main.secondaryText)
+                    .libraryFont(17, theme.main.secondaryText)
 
                 Spacer()
 
@@ -142,7 +142,7 @@ struct TimeAndDateRow: View {
             .padding(12, 6)
             .background(theme.main.fieldBackground)
             .clipShape(Capsule())
-            .systemFont(17, theme.main.accent)
+            .libraryFont(17, theme.main.accent)
             .onTapGesture {
                 withAnimation(.easeInOut) {
                     onTap()

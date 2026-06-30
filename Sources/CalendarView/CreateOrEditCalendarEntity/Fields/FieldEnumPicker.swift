@@ -16,15 +16,15 @@ struct FieldEnumPicker<E: PickerEnum>: View {
     var body: some View {
         HStack {
             Text(E.title)
-                .systemFont(17, theme.main.secondaryText)
+                .libraryFont(17, theme.main.secondaryText)
 
             Spacer()
 
             Text(selection.stringValue)
-                .systemFont(17, theme.main.secondaryText.opacity(0.6))
+                .libraryFont(17, theme.main.secondaryText.opacity(0.6))
 
             Image(systemName: "chevron.right")
-                .systemFont(15, .semibold, theme.main.tertiaryText.opacity(0.3))
+                .libraryFont(15, .semibold, theme.main.tertiaryText.opacity(0.3))
         }
         .contentShape(Rectangle())
         .onTapGesture {
@@ -47,11 +47,12 @@ struct SelectionPopupView<E: PickerEnum>: View {
     var body: some View {
         VStack(spacing: 20) {
             Text(E.title)
-                .systemFont(17, .semibold, theme.main.text)
+                .libraryFont(17, .semibold, theme.main.text)
 
             ForEach(E.allCases, id: \.self) { value in
                 HStack {
                     Text(value.stringValue)
+                        .libraryFont(17, theme.main.text)
 
                     Spacer()
                 }
