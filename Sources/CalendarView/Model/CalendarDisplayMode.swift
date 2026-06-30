@@ -40,7 +40,7 @@ public enum CalendarDisplayMode: Int, Sendable, CaseIterable, Hashable {
         }
     }
 
-    var title: String {
+    public var title: String {
         switch self {
         case .day:
             return "Day"

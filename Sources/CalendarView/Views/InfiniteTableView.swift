@@ -16,7 +16,8 @@ public enum InfiniteScrollLayout {
 }
 
 public enum InfiniteScrollMode {
-    case free(CGFloat? = nil), paged(CGFloat)
+    case free(CGFloat? = nil)
+    case paged(CGFloat)
 }
 
 public struct InfiniteTableViewCustomizationParams {
@@ -140,6 +141,18 @@ public struct InfiniteTableView<Data, UpdatableModel, Content, UpdatableContent>
 
     public func updateUIView(_ uiView: UITableView, context: Context) {
         context.coordinator.parent = self
+
+        switch params.scrollMode {
+        case let .free(cellSize):
+            if let cellSize {
+                uiView.rowHeight = cellSize
+                uiView.estimatedRowHeight = cellSize
+            }
+        case let .paged(cellSize):
+            uiView.rowHeight = cellSize
+            uiView.estimatedRowHeight = cellSize
+        }
+
         let oldData = context.coordinator.data
         let newData = data
 

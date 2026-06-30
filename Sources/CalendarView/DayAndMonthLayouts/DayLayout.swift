@@ -328,8 +328,14 @@ private struct DayScrollModifier: ViewModifier {
                 }
             }
             .task(id: anchorDate) {
-                scrollPosition.scrollTo(y: 0)
-                targetOffset = 0
+                // needs to scroll to first visible event when first opening this date
+//                if let firstOccupiedHour = newGrouped.nonAllDayEvents.map { $0.startDate.getHour() }.min() {
+//                    //scrollPosition set to firstOccupiedHour
+//                    proxy.scrollTo(firstOccupiedHour, anchor: .top)
+//                } else {
+//                    scrollPosition.scrollTo(y: 0)
+//                    //targetOffset = 0
+//                }
             }
     }
 }

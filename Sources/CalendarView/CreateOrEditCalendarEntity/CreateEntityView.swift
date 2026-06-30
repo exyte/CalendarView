@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct CreateEntityView: View {
+    @Environment(\.calendarTheme) var theme
     @Environment(\.dismiss) private var dismiss
 
     var shouldSave: (any CalendarEntity) async -> ()
@@ -46,27 +47,31 @@ struct CreateEntityView: View {
                 EditEntityFieldsView(entity: $reminder)
             }
         }
+        .background(theme.main.background)
     }
 }
 
 struct ButtonsSwitcher<Enum: Hashable & CaseIterable>: View {
     @Environment(\.calendarTheme) var theme
+
     @Binding var selection: Enum
     var additionalActionClosure: () -> () = {}
 
     var body: some View {
         HStack(spacing: 8) {
             ForEach(Array(Enum.allCases), id: \.self) { tab in
-                Button("\(tab)".capitalized) {
+                Button {
                     additionalActionClosure()
                     withAnimation {
                         selection = tab
                     }
-                }
-                .greedyWidth()
-                .padding(10, 8)
-                .background {
-                    Capsule().foregroundStyle(selection == tab ? theme.main.cardBackground : Color.clear)
+                } label: {
+                    Text("\(tab)".capitalized)
+                        .padding(10, 8)
+                        .greedyWidth()
+                        .background {
+                            Capsule().foregroundStyle(selection == tab ? theme.main.switcherSelectedBackground : .clear)
+                        }
                 }
             }
         }

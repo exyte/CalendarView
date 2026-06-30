@@ -25,7 +25,7 @@ struct CloseSaveHeaderView: View {
                     Image(.cross)
                 }
                 .frame(width: 44, height: 44)
-                .background(Circle().styled(theme.button.background))
+                .background(Circle().foregroundStyle(theme.button.background))
 
                 Spacer()
 

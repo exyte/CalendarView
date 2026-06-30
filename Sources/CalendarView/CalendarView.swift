@@ -8,82 +8,21 @@
 import SwiftUI
 import AnchoredPopup
 
-public struct CalendarDefaults {
-    public static let defaultProviders: [CalendarsProvider] = [AppleCalendarsProvider(), LocalCalendarsProvider()]
-}
-
-public struct MonthDayBuilderParams {
-    public var date: Date
-    public var events: [any CalendarEntity]
-    public var viewHeight: CGFloat
-}
-
-public struct WeekSwitcherDayBuilderParams {
-    public var day: Date
-    public var monthDisplayMode: Bool
-    public var fullscreenDate: Date
-}
-
-/// `fullscreenDate` - date displayed in DayLayout (leftmost one in 2-3 days mode)
-///  note: makes little sense for month mode, since selecting any date there leads to .day mode, with selected date as fullscreenDate
-/// `anchorDate` - date around which current time interval is calculated
-/// - e.g. mode = .month, anchorDate = March 3rd, displayed time interval = March 1st - March 31st
-/// - e.g. mode = .3days, anchorDate = March 3rd, displayed time interval = March 3st - March 5th
-public struct HeaderBuilderParams {
-    public var fullscreenDate: Binding<Date>
-    public var anchorDate: Binding<Date>
-    public var displayMode: Binding<CalendarDisplayMode>
-    public var tapSelectDisplayModeClosure: ()->()
-    public var tapFilterCalendarsClosure: ()->()
-    public var tapAddEventClosure: ()->()
-
-    @MainActor public func defaultWeekSwitcher() -> some View {
-        DayInWeekSwitcher(
-            fullscreenDate: fullscreenDate,
-            anchorDate: anchorDate,
-            calendarDisplayMode: displayMode.wrappedValue,
-            weekSwitcherDayBuilder: { DefaultDayInWeekView(params: $0) }
-        )
-    }
-}
-
-public struct CalendarViewCustomizationParams {
-    public var hoursToFit: CGFloat = 12
-    public var hourLabelFormat: String = "h a"
-    public var firstDayOfWeek: Int?
-    public var isDayInWeekSwitcherPagingEnabled: Bool = true
-
-    public var horSpacing: CGFloat = 4
-    public var verSpacing: CGFloat = 4
-
-    public var headerBackground: HeaderBackground = .color(Color(.appAccentLight), 10)
-    public var eventDetailsClosure: ((any CalendarEntity)->())?
-}
-
 @MainActor
 public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View, Header: View>: View {
-
-    @State private var viewModel: CalendarViewModel
+    @State var viewModel: CalendarViewModel
 
     @ViewBuilder var dayEventBuilder: (any CalendarEntity) -> DayEvent
     @ViewBuilder var monthDayBuilder: (MonthDayBuilderParams) -> MonthDay
     @ViewBuilder var weekSwitcherDayBuilder: (WeekSwitcherDayBuilderParams) -> WeekSwitcherDay
     @ViewBuilder var headerBuilder: (HeaderBuilderParams) -> Header
 
-    public init(
+    init(
         providers: [CalendarsProvider] = [],
-        dayEventBuilder: @escaping (_ calendarEvent: any CalendarEntity) -> DayEvent = {
-            DefaultDayEventView(entity: $0)
-        },
-        monthDayBuilder: @escaping (_ params: MonthDayBuilderParams) -> MonthDay = {
-            DefaultDayInMonthView(params: $0)
-        },
-        weekSwitcherDayBuilder: @escaping (_ params: WeekSwitcherDayBuilderParams) -> WeekSwitcherDay = {
-            DefaultDayInWeekView(params: $0)
-        },
-        headerBuilder: @escaping (_ params: HeaderBuilderParams) -> Header = {
-            DefaultHeaderView(params: $0)
-        }
+        dayEventBuilder: @escaping (_ calendarEvent: any CalendarEntity) -> DayEvent,
+        monthDayBuilder: @escaping (_ params: MonthDayBuilderParams) -> MonthDay,
+        weekSwitcherDayBuilder: @escaping (WeekSwitcherDayBuilderParams) -> WeekSwitcherDay,
+        headerBuilder: @escaping (_ params: HeaderBuilderParams) -> Header
     ) {
         self._viewModel = State(wrappedValue: CalendarViewModel(providers: providers))
         self.dayEventBuilder = dayEventBuilder
@@ -94,8 +33,8 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
 
     @Environment(\.calendarTheme) var theme
 
-    @BindableValue var fullscreenDate: Date = Date().startOfDay
-    @BindableValue var displayMode: CalendarDisplayMode = .day
+    @BindableValue private var fullscreenDate: Date = Date().startOfDay
+    @BindableValue private var displayMode: CalendarDisplayMode = .day
 
     @State private var anchorDate: Date = Date()
     @State private var showCalendarFilters = false

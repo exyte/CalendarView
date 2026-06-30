@@ -9,8 +9,10 @@
 /* Begin PBXBuildFile section */
 		5B18AA422DAD2BCE00FEECEB /* CalendarView in Frameworks */ = {isa = PBXBuildFile; productRef = 5B18AA412DAD2BCE00FEECEB /* CalendarView */; };
 		5B18AA442DAE573100FEECEB /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B18AA432DAE573100FEECEB /* Utils.swift */; };
+		5B7FDAE52FF2523000A3A679 /* SquareTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B7FDAE42FF2523000A3A679 /* SquareTheme.swift */; };
+		5B7FDAE72FF39E6900A3A679 /* SimpleCalendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B7FDAE62FF39E6000A3A679 /* SimpleCalendar.swift */; };
+		5B7FDAE92FF39EB600A3A679 /* CustomCalendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B7FDAE82FF39EB100A3A679 /* CustomCalendar.swift */; };
 		5BA4A0BF2DACE8EB005EC305 /* CalendarViewExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA4A0BE2DACE8EB005EC305 /* CalendarViewExampleApp.swift */; };
-		5BA4A0C12DACE8EB005EC305 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA4A0C02DACE8EB005EC305 /* ContentView.swift */; };
 		5BA4A0C32DACE8EC005EC305 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5BA4A0C22DACE8EC005EC305 /* Assets.xcassets */; };
 		5BA4A0C62DACE8EC005EC305 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5BA4A0C52DACE8EC005EC305 /* Preview Assets.xcassets */; };
 /* End PBXBuildFile section */
@@ -18,9 +20,11 @@
 /* Begin PBXFileReference section */
 		5B18AA432DAE573100FEECEB /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		5B38FE4F2DB8EC790055C112 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		5B7FDAE42FF2523000A3A679 /* SquareTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SquareTheme.swift; sourceTree = "<group>"; };
+		5B7FDAE62FF39E6000A3A679 /* SimpleCalendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleCalendar.swift; sourceTree = "<group>"; };
+		5B7FDAE82FF39EB100A3A679 /* CustomCalendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCalendar.swift; sourceTree = "<group>"; };
 		5BA4A0BB2DACE8EB005EC305 /* CalendarViewExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CalendarViewExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5BA4A0BE2DACE8EB005EC305 /* CalendarViewExampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarViewExampleApp.swift; sourceTree = "<group>"; };
-		5BA4A0C02DACE8EB005EC305 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		5BA4A0C22DACE8EC005EC305 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		5BA4A0C52DACE8EC005EC305 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		5BA4A0CC2DACE8F8005EC305 /* CalendarView */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = CalendarView; path = ..; sourceTree = "<group>"; };
@@ -68,7 +72,9 @@
 			children = (
 				5B38FE4F2DB8EC790055C112 /* Info.plist */,
 				5BA4A0BE2DACE8EB005EC305 /* CalendarViewExampleApp.swift */,
-				5BA4A0C02DACE8EB005EC305 /* ContentView.swift */,
+				5B7FDAE62FF39E6000A3A679 /* SimpleCalendar.swift */,
+				5B7FDAE82FF39EB100A3A679 /* CustomCalendar.swift */,
+				5B7FDAE42FF2523000A3A679 /* SquareTheme.swift */,
 				5B18AA432DAE573100FEECEB /* Utils.swift */,
 				5BA4A0C22DACE8EC005EC305 /* Assets.xcassets */,
 				5BA4A0C42DACE8EC005EC305 /* Preview Content */,
@@ -156,7 +162,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5BA4A0C12DACE8EB005EC305 /* ContentView.swift in Sources */,
+				5B7FDAE72FF39E6900A3A679 /* SimpleCalendar.swift in Sources */,
+				5B7FDAE52FF2523000A3A679 /* SquareTheme.swift in Sources */,
+				5B7FDAE92FF39EB600A3A679 /* CustomCalendar.swift in Sources */,
 				5BA4A0BF2DACE8EB005EC305 /* CalendarViewExampleApp.swift in Sources */,
 				5B18AA442DAE573100FEECEB /* Utils.swift in Sources */,
 			);

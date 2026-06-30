@@ -44,6 +44,7 @@ public struct CalendarTheme: Sendable {
         public let separator: Color
         public let cardBackground: Color
         public let fieldBackground: Color
+        public let switcherSelectedBackground: Color
         public let draggingCapsule: Color
         public let reminderBorder: Color
         public let deleteText: Color
@@ -58,6 +59,7 @@ public struct CalendarTheme: Sendable {
             separator: Color,
             cardBackground: Color,
             fieldBackground: Color,
+            switcherSelectedBackground: Color,
             draggingCapsule: Color,
             reminderBorder: Color,
             deleteText: Color
@@ -71,6 +73,7 @@ public struct CalendarTheme: Sendable {
             self.separator = separator
             self.cardBackground = cardBackground
             self.fieldBackground = fieldBackground
+            self.switcherSelectedBackground = switcherSelectedBackground
             self.draggingCapsule = draggingCapsule
             self.reminderBorder = reminderBorder
             self.deleteText = deleteText
@@ -87,6 +90,7 @@ public struct CalendarTheme: Sendable {
                 separator: Color(.appGrey4),
                 cardBackground: .white,
                 fieldBackground: Color(.appGrey5),
+                switcherSelectedBackground: .white,
                 draggingCapsule: Color(.appGrey3),
                 reminderBorder: Color(.appGrey2),
                 deleteText: Color(.appRed)
@@ -135,12 +139,12 @@ public struct CalendarTheme: Sendable {
             .init(
                 text: text.resolve(main.background),
                 todayText: todayText.resolve(main.accent),
-                weekendText: todayText.resolve(main.background.opacity(0.5)),
+                weekendText: weekendText.resolve(main.background.opacity(0.5)),
                 selectedText: selectedText.resolve(main.background),
                 todaySelectedText: todaySelectedText.resolve(main.background),
                 background: background.resolve(.clear),
                 todayBackground: todayBackground.resolve(.clear),
-                weekendBackground: todayBackground.resolve(.clear),
+                weekendBackground: weekendBackground.resolve(.clear),
                 selectedBackground: selectedBackground.resolve(main.accent),
                 todaySelectedBackground: todaySelectedBackground.resolve(main.accent)
             )

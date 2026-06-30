@@ -82,10 +82,16 @@ struct DayInMonthSwitcher<MonthDay: View>: View {
                 for item in items {
                     models[item] = MonthCellModel(id: item)
                 }
-                tableUpdateID = UUID()
+                if monthCellSize != nil {
+                    tableUpdateID = UUID()
+                }
                 await viewModel.fetch(DateInterval(start: fullscreenDate.startOfMonth, end: fullscreenDate.startOfMonth.adding(.month, value: 1)))
                 models[0]?.events = viewModel.events
             }
+        }
+        .onChange(of: monthCellSize) { _, newSize in
+            guard newSize != nil else { return }
+            tableUpdateID = UUID()
         }
         .onDisappear {
             viewModel.resetCache()

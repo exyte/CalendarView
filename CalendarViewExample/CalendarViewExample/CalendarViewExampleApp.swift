@@ -11,7 +11,21 @@ import SwiftUI
 struct CalendarViewExampleApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            NavigationView {
+                List {
+                    Section {
+                        NavigationLink("Simple Calendar") {
+                            SimpleCalendar()
+                                .toolbar(.hidden, for: .navigationBar)
+                        }
+
+                        NavigationLink("Custom Calendar") {
+                            CustomCalendar()
+                                .toolbar(.hidden, for: .navigationBar)
+                        }
+                    }
+                }
+            }
         }
     }
 }

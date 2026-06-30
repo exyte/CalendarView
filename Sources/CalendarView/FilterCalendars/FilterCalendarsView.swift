@@ -26,7 +26,7 @@ public struct FilterCalendarsView: View {
                     ForEach(calendarsGroupedBySection, id: \.key) { section, calendars in
                         calendarsSection(section, calendars)
                             .padding(20, 32)
-                            .background(RoundedRectangle.styled(24, .white))
+                            .background(RoundedRectangle.styled(24, theme.main.cardBackground))
                     }
                 }
                 .padding(.horizontal, 16)

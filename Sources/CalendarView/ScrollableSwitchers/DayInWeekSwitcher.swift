@@ -13,7 +13,7 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
     @Environment(\.calendarCustomizationParams) var customizationParams
 
     @Binding var fullscreenDate: Date
-    @Binding var anchorDate: Date // first day of currently on screen week. selectedData could be off screen, so need to track this through another variable
+    @Binding var anchorDate: Date // first day of currently on screen week
 
     var calendarDisplayMode: CalendarDisplayMode
     @ViewBuilder var weekSwitcherDayBuilder: (WeekSwitcherDayBuilderParams) -> WeekSwitcherDay
@@ -27,15 +27,17 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
 
     var body: some View {
         ZStack {
-            MeasuringTrickView(size: $daySize) {
+            FinalMeasuringTrickView(size: $daySize) {
                 weekSwitcherDayBuilder(WeekSwitcherDayBuilderParams(day: fullscreenDate, monthDisplayMode: false, fullscreenDate: fullscreenDate))
             }
 
-            switch calendarDisplayMode {
-            case .day, .twoDays, .threeDays:
-                fullWeekView
-            case .month:
-                weekdaysOnlyView
+            if daySize != nil {
+                switch calendarDisplayMode {
+                case .day, .twoDays, .threeDays:
+                    fullWeekView
+                case .month:
+                    weekdaysOnlyView
+                }
             }
         }
         .onChange(of: fullscreenDate) { _, _ in
@@ -65,6 +67,7 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
             .reloadTrigger(updateID: tableUpdateID)
         }
         .frame(height: daySize?.height)
+        //.frame(height: 64)
     }
 
     @ViewBuilder

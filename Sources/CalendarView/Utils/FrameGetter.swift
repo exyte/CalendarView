@@ -103,13 +103,62 @@ struct MeasuringTrickView<Content: View>: View {
                 GeometryReader { geo in
                     Color.clear
                         .onAppear {
-                            // Only assign once
-                            if size == nil {
+                            if (size == nil || size == .zero) && geo.size != .zero {
                                 size = geo.size
+                            }
+                        }
+                        .onChange(of: geo.size) { _, newSize in
+                            if newSize != .zero {
+                                size = newSize
                             }
                         }
                 }
             )
-            .hidden() // Completely exclude from layout and drawing
+            .hidden() // exclude from drawing
+    }
+}
+
+struct FinalMeasuringTrickView<Content: View>: View {
+    @Binding var size: CGSize?
+    @State private var rawSize: CGSize = .zero
+    var id: String?
+
+    let content: () -> Content
+
+    var body: some View {
+        content()
+            .background(
+                GeometryReader { geo in
+                    Color.clear
+                        .onAppear {
+                            if let id {
+                                print("measuring", id, rawSize, geo.size)
+                            }
+                            if geo.size.height != 0 {
+                                rawSize = geo.size
+                            }
+                        }
+                        .onChange(of: geo.size) { _ , newSize in
+                            if let id {
+                                print("measuring", id, rawSize, newSize)
+                            }
+                            if newSize.height != 0 {
+                                rawSize = newSize
+                            }
+                        }
+                }
+            )
+            .onChange(of: rawSize) { _ , newValue in
+                Task { @MainActor in
+                    try? await Task.sleep(for: .milliseconds(16)) // 1 frame
+                    if let id {
+                        print("measuring", id, "rawSize change", rawSize, newValue)
+                    }
+                    if rawSize == newValue {
+                        size = newValue
+                    }
+                }
+            }
+            .hidden()
     }
 }
