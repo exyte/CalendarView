@@ -272,6 +272,7 @@ private struct DayScrollModifier: ViewModifier {
     @State private var scrollPosition = ScrollPosition()
     @State private var targetOffset = CGFloat.zero
     @State private var scrollInfo = ScrollInfo(yOffset: 0, maxOffset: 100)
+    @State private var needsInitialScroll = false
 
     func body(content: Content) -> some View {
         content
@@ -329,11 +330,23 @@ private struct DayScrollModifier: ViewModifier {
                     }
                 }
             }
-            .task(id: anchorDate) {
+            .onChange(of: firstEventHour) { _, newHour in
+                guard needsInitialScroll, let hour = newHour else { return }
                 let hoursToFit = hoursFittingCurrentZoom ?? customizationParams.hoursToFit
                 let oneHourHeight = containerHeight / CGFloat(hoursToFit)
-                let y = CGFloat(firstEventHour ?? 0) * oneHourHeight
-                targetOffset = max(0, min(y, scrollInfo.maxOffset))
+                targetOffset = max(0, CGFloat(hour) * oneHourHeight)
+                needsInitialScroll = false
+            }
+            .task(id: anchorDate) {
+                needsInitialScroll = true
+                if let hour = firstEventHour {
+                    let hoursToFit = hoursFittingCurrentZoom ?? customizationParams.hoursToFit
+                    let oneHourHeight = containerHeight / CGFloat(hoursToFit)
+                    targetOffset = max(0, CGFloat(hour) * oneHourHeight)
+                    needsInitialScroll = false
+                } else {
+                    targetOffset = 0
+                }
             }
     }
 }
