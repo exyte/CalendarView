@@ -9,9 +9,9 @@ import SwiftUI
 import CalendarView
 
 struct CustomCalendar: View {
+    @Environment(\.dismiss) private var dismiss
 
-    @State private var date = Date().startOfDay
-
+    @State private var fullscreenDate = Date().startOfDay
     private static let today = Date().startOfDay
 
     var body: some View {
@@ -22,7 +22,7 @@ struct CustomCalendar: View {
         } headerBuilder: { params in
             squareHeader(params)
         }
-        .fullscreenDate($date)
+        .fullscreenDate($fullscreenDate)
         .firstDayOfWeek(2)
         .hoursToFit(8)
         .hourLabelFormat("HH:mm")
@@ -136,6 +136,15 @@ struct CustomCalendar: View {
         VStack(spacing: 0) {
             VStack(spacing: 16) {
                 HStack {
+                    Button { dismiss() } label: {
+                        Image(systemName: "plus")
+                            .rotationEffect(Angle(radians: CGFloat.pi * 1/4))
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(Color.sqCard)
+                            .frame(width: 32, height: 32)
+                            .background(Color.sqOlive)
+                    }
+
                     Text(params.anchorDate.wrappedValue.formatted("MMMM yyyy"))
                         .font(.system(size: 17, weight: .semibold))
                         .foregroundStyle(Color.sqDark)

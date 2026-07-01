@@ -51,7 +51,7 @@ public struct DefaultDayInWeekView: View {
                 Text(params.day.formatted("d"))
                     .libraryFont(17, .semibold, textColor)
                     .lineLimit(1)
-                    .padding(8)
+                    .padding(12)
                     .background(Circle().foregroundStyle(bgColor))
             }
         }

@@ -9,6 +9,7 @@ import SwiftUI
 import AnchoredPopup
 
 public struct DefaultHeaderView: View {
+    @Environment(\.dismiss) private var dismiss
     @Environment(\.calendarTheme) var theme
     @Environment(\.calendarCustomizationParams) var customizationParams
     @Environment(CalendarViewModel.self) var viewModel
@@ -44,6 +45,15 @@ public struct DefaultHeaderView: View {
 
     var monthAndButtonsView: some View {
         HStack {
+            Button {
+                dismiss()
+            } label: {
+                Image(.add)
+                    .rotationEffect(Angle(radians: CGFloat.pi * 1/4))
+            }
+            .styleLikeButton()
+            .padding(.trailing, 6)
+
             Button {
                 showMonthPicker = true
             } label: {
