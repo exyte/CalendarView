@@ -138,7 +138,7 @@ struct CustomCalendar: View {
                 HStack {
                     Button { dismiss() } label: {
                         Image(systemName: "plus")
-                            .rotationEffect(Angle(radians: CGFloat.pi * 1/4))
+                            .rotationEffect(Angle(radians: .pi * 1/4))
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundStyle(Color.sqCard)
                             .frame(width: 32, height: 32)

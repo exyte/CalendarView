@@ -19,11 +19,8 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
     @ViewBuilder var weekSwitcherDayBuilder: (WeekSwitcherDayBuilderParams) -> WeekSwitcherDay
 
     @State private var daySize: CGSize?
-    @State private var items = Array(-5...5)
-    @State private var pageItems = Array(-1...1)
+    @State private var weekItems = [0]
     @State private var tableUpdateID = UUID()
-
-    private var calendar: Calendar { Calendar.current }
 
     var body: some View {
         ZStack {
@@ -31,43 +28,46 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
                 weekSwitcherDayBuilder(WeekSwitcherDayBuilderParams(day: fullscreenDate, monthDisplayMode: false, fullscreenDate: fullscreenDate))
             }
 
-            if daySize != nil {
-                switch calendarDisplayMode {
-                case .day, .twoDays, .threeDays:
-                    fullWeekView
-                case .month:
-                    weekdaysOnlyView
+            Group {
+                if daySize != nil {
+                    switch calendarDisplayMode {
+                    case .day, .twoDays, .threeDays:
+                        fullWeekView
+                    case .month:
+                        weekdaysOnlyView
+                    }
                 }
             }
+            .frame(height: daySize?.height)
         }
         .onChange(of: fullscreenDate) { _, _ in
-            pageItems = Array(-1...1)
-            items = Array(-5...5)
+            weekItems = [0]
             tableUpdateID = UUID()
         }
     }
 
     @ViewBuilder
     var fullWeekView: some View {
-        GeometryReader { g in
-            createSimpleInfiniteTableView(items: customizationParams.isDayInWeekSwitcherPagingEnabled ? $pageItems : $items) { item in
-                HStack(spacing: 0) {
-                    let startOfWeek = fullscreenDate.startOfWeek(customizationParams.firstDayOfWeek).startOfDay.adding(.day, value: item*7)
-                    ForEach(0..<7, id: \.self) { i in
-                        dayView(startDay: startOfWeek, index: i, monthDisplayMode: false)
-                    }
+        EndlessPager(items: $weekItems, onNeedMore: { edge in
+            switch edge {
+            case .leading:
+                guard let first = weekItems.first else { return }
+                weekItems.insert(contentsOf: (1...2).map { first - $0 }.reversed(), at: 0)
+            case .trailing:
+                guard let last = weekItems.last else { return }
+                weekItems.append(contentsOf: (1...2).map { last + $0 })
+            }
+        }, onItemChanged: { item in
+            anchorDate = fullscreenDate.startOfWeek(customizationParams.firstDayOfWeek).startOfDay.adding(.day, value: item * 7)
+        }) { item in
+            HStack(spacing: 0) {
+                let startOfWeek = fullscreenDate.startOfWeek(customizationParams.firstDayOfWeek).startOfDay.adding(.day, value: item * 7)
+                ForEach(0..<7, id: \.self) { i in
+                    dayView(startDay: startOfWeek, index: i, monthDisplayMode: false)
                 }
             }
-            .scrollLayout(.horizontal)
-            .scrollMode(scrollMode: .paged(g.size.width))
-            .isPagingEnabled(customizationParams.isDayInWeekSwitcherPagingEnabled)
-            .willDisplayItem { item in
-                anchorDate = fullscreenDate.startOfWeek(customizationParams.firstDayOfWeek).startOfDay.adding(.day, value: item*7)
-            }
-            .reloadTrigger(updateID: tableUpdateID)
         }
-        .frame(height: daySize?.height)
-        //.frame(height: 64)
+        .id(tableUpdateID)
     }
 
     @ViewBuilder
@@ -79,7 +79,6 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
                     .greedyWidth()
             }
         }
-        .frame(height: daySize?.height)
     }
 
     @ViewBuilder

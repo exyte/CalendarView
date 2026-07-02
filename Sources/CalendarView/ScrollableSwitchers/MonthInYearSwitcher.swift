@@ -44,22 +44,25 @@ struct MonthInYearSwitcher: View {
             }
             .padding(.horizontal, 16)
 
-            createSimpleInfiniteTableView(items: $items) { item in
-                let yearDate = date.startOfYear.adding(.year, value: item)
-                YearLayout(date: yearDate) { month in
-                    didSelectMonth(yearDate.setMonth(to: month))
+            if let yearCellSize {
+                createSimpleInfiniteTableView(items: $items) { item in
+                    let yearDate = date.startOfYear.adding(.year, value: item)
+                    YearLayout(date: yearDate) { month in
+                        didSelectMonth(yearDate.setMonth(to: month))
+                    }
+                    .padding(16)
+                    .background(theme.year.background)
                 }
-                .padding(16)
-                .background(theme.year.background)
+                .loadMoreParameters(threshold: 2, pageSize: 4)
+                .reloadTrigger(updateID: tableUpdateID)
+                .scrollMode(scrollMode: .free(yearCellSize.height))
             }
-            .loadMoreParameters(threshold: 2, pageSize: 4)
-            .reloadTrigger(updateID: tableUpdateID)
-            .scrollMode(scrollMode: .free(yearCellSize?.height))
         }
         .background(theme.year.background)
         .background {
-            MeasuringTrickView(size: $yearCellSize) {
+            FinalMeasuringTrickView(size: $yearCellSize, id: "year") {
                 YearLayout(date: Date(), didSelectMonth: {_ in})
+                    .padding(16)
             }
         }
     }

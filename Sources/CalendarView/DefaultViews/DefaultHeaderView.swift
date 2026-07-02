@@ -49,7 +49,7 @@ public struct DefaultHeaderView: View {
                 dismiss()
             } label: {
                 Image(.add)
-                    .rotationEffect(Angle(radians: CGFloat.pi * 1/4))
+                    .rotationEffect(Angle(radians: .pi * 1/4))
             }
             .styleLikeButton()
             .padding(.trailing, 6)

@@ -66,13 +66,12 @@ struct YearMonthLayout: View, Identifiable {
 
             LazyVGrid(columns: columns, spacing: 4) {
                 let maxMonthDay = date.maxMonthDay
-                let totalCount = inset + maxMonthDay
 
-                ForEach(0..<totalCount, id: \.self) { index in
-                    if index < inset {
+                ForEach(0..<42, id: \.self) { index in
+                    let day = index - inset + 1
+                    if index < inset || day > maxMonthDay {
                         Color.clear
                     } else {
-                        let day = index - inset + 1
                         let isToday = isCurrentMonth && day == today.getDay()
 
                         Text("\(day)")

@@ -11,17 +11,12 @@ public enum InfiniteScrollDirection {
     case backward, forward
 }
 
-public enum InfiniteScrollLayout {
-    case vertical, horizontal
-}
-
 public enum InfiniteScrollMode {
     case free(CGFloat? = nil)
     case paged(CGFloat)
 }
 
 public struct InfiniteTableViewCustomizationParams {
-    var scrollLayout: InfiniteScrollLayout = .vertical
     var scrollMode: InfiniteScrollMode = .free()
     var isPagingEnabled: Bool = false
     var threshold: Int = 0
@@ -30,12 +25,6 @@ public struct InfiniteTableViewCustomizationParams {
 }
 
 extension InfiniteTableView {
-    func scrollLayout(_ layout: InfiniteScrollLayout) -> InfiniteTableView {
-        var copy = self
-        copy.params.scrollLayout = layout
-        return copy
-    }
-
     func scrollMode(scrollMode: InfiniteScrollMode) -> InfiniteTableView {
         var copy = self
         copy.params.scrollMode = scrollMode
@@ -111,7 +100,6 @@ public struct InfiniteTableView<Data, UpdatableModel, Content, UpdatableContent>
     @ViewBuilder var content: (Data) -> Content
     @ViewBuilder var updatableContent: (Data, UpdatableModel) -> UpdatableContent
 
-    @State private var prevUpdateID: UUID?
     var params = InfiniteTableViewCustomizationParams()
 
     public func makeCoordinator() -> Coordinator {
@@ -126,31 +114,21 @@ public struct InfiniteTableView<Data, UpdatableModel, Content, UpdatableContent>
         tableView.isPagingEnabled = params.isPagingEnabled
         tableView.showsVerticalScrollIndicator = false
         tableView.separatorStyle = .none
-        if case let .paged(cellSize) = params.scrollMode {
-            tableView.rowHeight = cellSize
-            tableView.estimatedRowHeight = cellSize
-        } else if case let .free(cellSize) = params.scrollMode {
-            tableView.rowHeight = cellSize ?? UITableView.automaticDimension
-            tableView.estimatedRowHeight = cellSize ?? UITableView.automaticDimension
-        }
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
         tableView.backgroundColor = .clear
-        tableView.transform = CGAffineTransform(rotationAngle: (params.scrollLayout == .horizontal ? -.pi/2.0 : 0))
         return tableView
     }
 
-    public func updateUIView(_ uiView: UITableView, context: Context) {
+    public func updateUIView(_ tableView: UITableView, context: Context) {
         context.coordinator.parent = self
 
         switch params.scrollMode {
         case let .free(cellSize):
-            if let cellSize {
-                uiView.rowHeight = cellSize
-                uiView.estimatedRowHeight = cellSize
-            }
+            tableView.rowHeight = cellSize ?? UITableView.automaticDimension
+            tableView.estimatedRowHeight = cellSize ?? UITableView.automaticDimension
         case let .paged(cellSize):
-            uiView.rowHeight = cellSize
-            uiView.estimatedRowHeight = cellSize
+            tableView.rowHeight = cellSize
+            tableView.estimatedRowHeight = cellSize
         }
 
         let oldData = context.coordinator.data
@@ -159,14 +137,12 @@ public struct InfiniteTableView<Data, UpdatableModel, Content, UpdatableContent>
         guard !newData.isEmpty else { return }
 
         // completely new data, just reload the whole table and scroll to the middle
-        if prevUpdateID != params.updateID {
-            DispatchQueue.main.async {
-                self.prevUpdateID = params.updateID
-                context.coordinator.data = newData
-                context.coordinator.cellModels = cellModels
-                uiView.reloadData()
-                uiView.scrollToRow(at: IndexPath(row: newData.count/2, section: 0), at: .middle, animated: false)
-            }
+        if context.coordinator.prevUpdateID != params.updateID {
+            context.coordinator.prevUpdateID = params.updateID
+            context.coordinator.data = newData
+            context.coordinator.cellModels = cellModels
+
+            reloadAndCenter(tableView, newData.count)
             return
         }
 
@@ -187,45 +163,51 @@ public struct InfiniteTableView<Data, UpdatableModel, Content, UpdatableContent>
             }
         }
 
-        if insertedCount > 0, let firstVisibleIndex = uiView.indexPathsForVisibleRows?.first {
-            let firstVisibleCellFrame = uiView.rectForRow(at: firstVisibleIndex)
-            let currentOffsetY = uiView.contentOffset.y
+        if insertedCount > 0 {
+            prependKeepingStable(tableView, insertedCount)
+        } else {
+            tableView.reloadData()
+        }
+    }
+
+    func reloadAndCenter(_ tableView: UITableView, _ count: Int) {
+        tableView.reloadData()
+        tableView.setNeedsLayout()
+        tableView.layoutIfNeeded()
+
+        let middleIndex = count / 2
+        if case let .paged(cellSize) = params.scrollMode {
+            tableView.contentOffset = CGPoint(x: 0, y: CGFloat(middleIndex) * cellSize)
+        } else {
+            tableView.scrollToRow(at: IndexPath(row: middleIndex, section: 0), at: .top, animated: false)
+        }
+    }
+
+    func prependKeepingStable(_ tableView: UITableView, _ insertedCount: Int) {
+        if let firstVisibleIndex = tableView.indexPathsForVisibleRows?.first {
+            let firstVisibleCellFrame = tableView.rectForRow(at: firstVisibleIndex)
+            let currentOffsetY = tableView.contentOffset.y
 
             UIView.performWithoutAnimation {
-                DispatchQueue.main.async {
-                    context.coordinator.isBusy = true
-                    uiView.reloadData()
-                    uiView.setNeedsLayout()
-                    uiView.layoutIfNeeded()
+                tableView.reloadData()
+                tableView.setNeedsLayout()
+                tableView.layoutIfNeeded()
 
-                    let updatedVisibleIndex = IndexPath(row: insertedCount + firstVisibleIndex.row, section: 0)
-                    let updatedVisibleCellFrame = uiView.rectForRow(at: updatedVisibleIndex)
-                    let deltaY = updatedVisibleCellFrame.minY - firstVisibleCellFrame.minY
-                    uiView.contentOffset.y = currentOffsetY + deltaY
-                    context.coordinator.isBusy = false
-                }
+                let updatedVisibleIndex = IndexPath(row: insertedCount + firstVisibleIndex.row, section: 0)
+                let updatedVisibleCellFrame = tableView.rectForRow(at: updatedVisibleIndex)
+                let deltaY = updatedVisibleCellFrame.minY - firstVisibleCellFrame.minY
+                tableView.contentOffset.y = currentOffsetY + deltaY
             }
-        } else {
-            uiView.reloadData()
         }
     }
 
     public class Coordinator: NSObject, UITableViewDataSource, UITableViewDelegate {
         var data: [Data] = []
         var cellModels: [Data: UpdatableModel] = [:]
-        var isBusy = false
+        var isUserScrolling = false
+        var prevUpdateID: UUID?
 
         var parent: InfiniteTableView
-
-        private var pagedCellSize: CGFloat? {
-            if case let .paged(size) = parent.params.scrollMode {
-                return size
-            }
-            if case let .free(size) = parent.params.scrollMode {
-                return size
-            }
-            return nil
-        }
 
         init(_ parent: InfiniteTableView) {
             self.parent = parent
@@ -241,20 +223,13 @@ public struct InfiniteTableView<Data, UpdatableModel, Content, UpdatableContent>
 
             if let item = data[safe: indexPath.row] {
                 cell.contentConfiguration = UIHostingConfiguration {
-                    Group {
+                    ZStack {
                         if parent.hasUpdatableModels, let model = parent.cellModels[item] {
                             parent.updatableContent(item, model)
                         } else {
                             parent.content(item)
                         }
                     }
-                    .applyIf(parent.params.scrollLayout == .horizontal) {
-                        $0.applyIfLet(pagedCellSize) { view, size in
-                            view.frame(width: size)
-                        }
-                    }
-                    .frame(maxHeight: .infinity)
-                    .rotationEffect(Angle(radians: (parent.params.scrollLayout == .horizontal ? .pi/2.0 : 0)))
                 }
                 .margins(.all, 0)
                 .background(.clear)
@@ -264,21 +239,41 @@ public struct InfiniteTableView<Data, UpdatableModel, Content, UpdatableContent>
         }
 
         public func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-            guard !isBusy else { return }
+            guard isUserScrolling else { return }
             if let item = self.data[safe: indexPath.row] {
                 self.parent.willDisplayItem?(item)
             }
             let count = data.count
-            if indexPath.row >= count - parent.params.threshold - 1 {
-                parent.loadMore?(.forward, parent.params.pageSize)
-            } else if indexPath.row <= parent.params.threshold {
-                parent.loadMore?(.backward, parent.params.pageSize)
+            let threshold = parent.params.threshold
+            let pageSize = parent.params.pageSize
+            let loadMore = parent.loadMore
+            if indexPath.row >= count - threshold - 1 {
+                DispatchQueue.main.async { loadMore?(.forward, pageSize) }
+            } else if indexPath.row <= threshold {
+                DispatchQueue.main.async { loadMore?(.backward, pageSize) }
             }
+        }
+
+        public func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+            isUserScrolling = true
+        }
+
+        public func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+            if !decelerate {
+                isUserScrolling = false
+            }
+        }
+
+        public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+            isUserScrolling = false
+        }
+
+        public func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
+            isUserScrolling = false
         }
 
         public func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
             guard case let .paged(cellSize) = parent.params.scrollMode, !parent.params.isPagingEnabled else { return }
-            isBusy = true
             let targetY = targetContentOffset.pointee.y
 
             // Compute the intended offset
@@ -287,7 +282,6 @@ public struct InfiniteTableView<Data, UpdatableModel, Content, UpdatableContent>
 
             DispatchQueue.main.async {
                 scrollView.setContentOffset(CGPoint(x: 0, y: newOffsetY), animated: true)
-                self.isBusy = false
 
                 let targetIndex = Int(newOffsetY/cellSize + 0.5)
                 if let item = self.data[safe: targetIndex] {
