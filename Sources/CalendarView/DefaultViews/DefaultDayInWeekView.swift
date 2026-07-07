@@ -12,7 +12,7 @@ public struct DefaultDayInWeekView: View {
 
     var params: WeekSwitcherDayBuilderParams
 
-    static let today = Date().startOfDay
+    private static let today = Date().startOfDay
 
     public init(params: WeekSwitcherDayBuilderParams) {
         self.params = params
@@ -39,15 +39,12 @@ public struct DefaultDayInWeekView: View {
         let weekdayLabel = Text(params.day.formatted("EEE"))
             .libraryFont(15, isWeekend ? theme.week.weekendText : theme.week.text)
             .lineLimit(1)
+            .greedyWidth()
 
         VStack(spacing: 10) {
-            if params.monthDisplayMode {
-                Spacer()
-                weekdayLabel
-                    .padding(.bottom, 10)
-            } else {
-                weekdayLabel
+            weekdayLabel
 
+            if !params.monthDisplayMode {
                 Text(params.day.formatted("d"))
                     .libraryFont(17, .semibold, textColor)
                     .lineLimit(1)
@@ -57,7 +54,10 @@ public struct DefaultDayInWeekView: View {
                             .foregroundStyle(bgColor)
                             .aspectRatio(1, contentMode: .fill)
                     }
+                    .transition(.opacity)
             }
         }
+        .padding(.bottom, params.monthDisplayMode ? 8 : 0)
+        .animation(.default, value: params.monthDisplayMode)
     }
 }

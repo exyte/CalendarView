@@ -67,6 +67,8 @@ public struct DefaultHeaderView: View {
 
             Spacer()
 
+            goToTodayButton
+
             displayModeSwitcher
 
             Button {
@@ -84,6 +86,7 @@ public struct DefaultHeaderView: View {
             .padding(8)
             .background(Circle().styled(theme.button.accent))
         }
+        .animation(.default, value: params.fullscreenDate.wrappedValue.startOfDay)
         .sheet(isPresented: $showMonthPicker) {
             MonthInYearSwitcher(date: params.fullscreenDate.wrappedValue.startOfYear) { month in
                 params.fullscreenDate.wrappedValue = month
@@ -119,6 +122,28 @@ public struct DefaultHeaderView: View {
         }
     }
 
+    @ViewBuilder
+    var goToTodayButton: some View {
+        let showInDay =
+        params.displayMode.wrappedValue != .month &&
+        params.fullscreenDate.wrappedValue != Self.today
+
+        let showInMonth =
+        params.displayMode.wrappedValue == .month &&
+        params.anchorDate.wrappedValue.startOfMonth != Self.today.startOfMonth
+
+        if showInDay || showInMonth {
+            Button {
+                params.fullscreenDate.wrappedValue = DefaultHeaderView.today
+            } label: {
+                Text("Today")
+                    .libraryFont(15, theme.header.text)
+            }
+            .styleLikeButton()
+            .transition(.opacity)
+        }
+    }
+
     var displayModeSwitcher: some View {
         Image(params.displayMode.wrappedValue.icon)
             .recolor(theme.header.text)
@@ -134,6 +159,7 @@ public struct DefaultHeaderView: View {
             } customize: {
                 $0.position(.anchorRelative(.topLeading))
                     .closeOnTapOutside(true)
+                    .animation(.easeOut)
             }
     }
 
@@ -146,7 +172,7 @@ public struct DefaultHeaderView: View {
                 Text(mode.title)
             }
         }
-        .foregroundStyle(params.displayMode.wrappedValue == mode ? theme.main.text : theme.main.secondaryText)
+        .foregroundStyle(params.displayMode.wrappedValue == mode ? theme.main.text : theme.main.reminderBorder)
     }
 }
 
@@ -156,7 +182,8 @@ fileprivate struct LikeButtonStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding(8)
-            .background(Circle().styled(theme.header.buttonBackground, border: theme.header.buttonBorder, 0.5))
+            .foregroundStyle(.white)
+            .background(Capsule().styled(theme.header.buttonBackground, border: theme.header.buttonBorder, 0.5))
     }
 }
 

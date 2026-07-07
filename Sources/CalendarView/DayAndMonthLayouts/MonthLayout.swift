@@ -16,8 +16,7 @@ public struct MonthLayout<MonthDay: View>: View {
     @ViewBuilder var monthDayBuilder: (MonthDayBuilderParams) -> MonthDay
     var didSelectDay: (Date)->()
 
-    let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
-    let today = Date()
+    private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
 
     var startOfMonth: Date {
         date.startOfMonth

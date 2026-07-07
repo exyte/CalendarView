@@ -23,7 +23,7 @@ struct DayInMonthSwitcher<MonthDay: View>: View {
 
     @State private var monthCellSize: CGSize?
 
-    let today = Date()
+    private let today = Date().startOfMonth
 
     var body: some View {
         GeometryReader { g in
@@ -47,7 +47,7 @@ struct DayInMonthSwitcher<MonthDay: View>: View {
             } content: { item, model in
                 VStack(alignment: .leading, spacing: 0) {
                     let monthDate = fullscreenDate.startOfMonth.adding(.month, value: item)
-                    let isCurrentMonth = monthDate.startOfMonth == today.startOfMonth
+                    let isCurrentMonth = monthDate.startOfMonth == today
                     Text(monthDate.formatted("MMMM, y")).libraryFont(32, .semibold, isCurrentMonth ? theme.year.todayText : theme.year.monthText)
                         .padding(16, 10)
 

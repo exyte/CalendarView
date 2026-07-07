@@ -14,7 +14,7 @@ public struct DefaultDayInMonthView: View {
 
     @State private var monthEventSize: CGSize?
 
-    static let today = Date().startOfDay
+    private static let today = Date().startOfDay
 
     public init(params: MonthDayBuilderParams) {
         self.params = params

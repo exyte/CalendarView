@@ -13,12 +13,12 @@ struct YearLayout: View {
     var date: Date // Jan 1st of some year
     var didSelectMonth: (Int)->()
 
-    let columns = Array(repeating: GridItem(.flexible(), spacing: 16), count: 3)
-    let today = Date()
+    private let columns = Array(repeating: GridItem(.flexible(), spacing: 16), count: 3)
+    private static let today = Date().startOfMonth
 
     var body: some View {
         VStack(alignment: .leading) {
-            let isCurrentYear = date.getYear() == today.getYear()
+            let isCurrentYear = date.getYear() == Self.today.getYear()
             Text(date.formatted("y")).libraryFont(32, .semibold, isCurrentYear ? theme.year.todayText : theme.year.monthText)
 
             LazyVGrid(columns: columns, spacing: 16) {
@@ -28,7 +28,7 @@ struct YearLayout: View {
                     } label: {
                         YearMonthLayout(
                             date: date.adding(.month, value: i),
-                            isCurrentMonth: isCurrentYear && (i+1 == today.getMonth())
+                            isCurrentMonth: isCurrentYear && (i+1 == Self.today.getMonth())
                         )
                         .frame(maxHeight: .infinity, alignment: .top)
                     }
@@ -46,8 +46,8 @@ struct YearMonthLayout: View, Identifiable {
     var date: Date // 1st of some month
     var isCurrentMonth: Bool = false
 
-    private let today = Date()
-    let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
+    private let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
+    private static let today = Date().startOfMonth
 
     // number of empty spaces for days of week before 1st of the month
     var inset: Int {
@@ -72,7 +72,7 @@ struct YearMonthLayout: View, Identifiable {
                     if index < inset || day > maxMonthDay {
                         Color.clear
                     } else {
-                        let isToday = isCurrentMonth && day == today.getDay()
+                        let isToday = isCurrentMonth && day == Self.today.getDay()
 
                         Text("\(day)")
                             .libraryFont(8, isToday ? .white : theme.year.dateText)

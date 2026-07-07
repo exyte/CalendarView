@@ -19,26 +19,37 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
     @ViewBuilder var weekSwitcherDayBuilder: (WeekSwitcherDayBuilderParams) -> WeekSwitcherDay
 
     @State private var daySize: CGSize?
+    @State private var monthDaySize: CGSize?
+    @State private var contentHeight: CGFloat?
     @State private var weekItems = [0]
     @State private var tableUpdateID = UUID()
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .top) {
             FinalMeasuringTrickView(size: $daySize) {
                 weekSwitcherDayBuilder(WeekSwitcherDayBuilderParams(day: fullscreenDate, monthDisplayMode: false, fullscreenDate: fullscreenDate))
             }
 
-            Group {
-                if daySize != nil {
-                    switch calendarDisplayMode {
-                    case .day, .twoDays, .threeDays:
-                        fullWeekView
-                    case .month:
-                        weekdaysOnlyView
-                    }
-                }
+            FinalMeasuringTrickView(size: $monthDaySize) {
+                weekSwitcherDayBuilder(WeekSwitcherDayBuilderParams(day: fullscreenDate, monthDisplayMode: true, fullscreenDate: fullscreenDate))
             }
-            .frame(height: daySize?.height)
+
+            if daySize != nil {
+                mainWeekView
+            }
+        }
+        .frame(height: contentHeight)
+        .clipped()
+        .onChange(of: calendarDisplayMode) { _, newMode in
+            withAnimation(.default) {
+                contentHeight = newMode == .month ? (monthDaySize?.height ?? daySize?.height) : daySize?.height
+            }
+        }
+        .onChange(of: daySize) { _, newSize in
+            contentHeight = calendarDisplayMode == .month ? (monthDaySize?.height ?? newSize?.height) : newSize?.height
+        }
+        .onChange(of: monthDaySize) { _, newSize in
+            contentHeight = calendarDisplayMode == .month ? (newSize?.height ?? daySize?.height) : daySize?.height
         }
         .onChange(of: fullscreenDate) { _, _ in
             weekItems = [0]
@@ -47,7 +58,7 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
     }
 
     @ViewBuilder
-    var fullWeekView: some View {
+    var mainWeekView: some View {
         EndlessPager(items: $weekItems, onNeedMore: { edge in
             switch edge {
             case .leading:
@@ -63,36 +74,26 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
             HStack(spacing: 0) {
                 let startOfWeek = fullscreenDate.startOfWeek(customizationParams.firstDayOfWeek).startOfDay.adding(.day, value: item * 7)
                 ForEach(0..<7, id: \.self) { i in
-                    dayView(startDay: startOfWeek, index: i, monthDisplayMode: false)
+                    dayView(startDay: startOfWeek, index: i)
                 }
             }
         }
         .id(tableUpdateID)
+        .allowsHitTesting(calendarDisplayMode != .month)
     }
 
     @ViewBuilder
-    var weekdaysOnlyView: some View {
-        let startOfWeek = Date().startOfWeek(customizationParams.firstDayOfWeek)
-        HStack(spacing: 8) {
-            ForEach(0..<7, id: \.self) { i in
-                dayView(startDay: startOfWeek, index: i, monthDisplayMode: true)
-                    .greedyWidth()
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func dayView(startDay: Date, index: Int, monthDisplayMode: Bool) -> some View {
+    private func dayView(startDay: Date, index: Int) -> some View {
         let day = startDay.adding(.day, value: index)
+        let monthDisplayMode = calendarDisplayMode == .month
 
         weekSwitcherDayBuilder(WeekSwitcherDayBuilderParams(day: day, monthDisplayMode: monthDisplayMode, fullscreenDate: fullscreenDate))
             .greedyWidth()
-            .applyIf(!monthDisplayMode) {
-                $0.simultaneousGesture(
-                    TapGesture().onEnded {
-                        self.fullscreenDate = day
-                    }
-                )
-            }
+            .simultaneousGesture(
+                TapGesture().onEnded {
+                    guard !monthDisplayMode else { return }
+                    self.fullscreenDate = day
+                }
+            )
     }
 }
