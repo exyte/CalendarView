@@ -7,12 +7,21 @@
 
 import SwiftUI
 
+@Observable
+final class MonthScrollCoordinator {
+    fileprivate(set) var scrollToTodayToken = 0
+
+    func scrollToToday() { scrollToTodayToken += 1 }
+}
+
 /// Select a day from a month, scroll between months
 struct DayInMonthSwitcher<MonthDay: View>: View {
     @Environment(\.calendarTheme) var theme
     @Environment(CalendarViewModel.self) var viewModel
+    @Environment(MonthScrollCoordinator.self) var monthCoordinator
 
     @Binding var fullscreenDate: Date
+    @Binding var anchorDate: Date
     @Binding var calendarDisplayMode: CalendarDisplayMode
     @ViewBuilder var monthDayBuilder: (MonthDayBuilderParams) -> MonthDay
 
@@ -22,6 +31,11 @@ struct DayInMonthSwitcher<MonthDay: View>: View {
     @State private var tableUpdateID = UUID()
 
     @State private var monthCellSize: CGSize?
+
+    // Reference type so the flag is visible immediately in UIKit callbacks
+    // without waiting for a SwiftUI render cycle.
+    private final class ScrollResetGuard { var active = false }
+    @State private var resetGuard = ScrollResetGuard()
 
     private let today = Date().startOfMonth
 
@@ -74,8 +88,47 @@ struct DayInMonthSwitcher<MonthDay: View>: View {
                     dateInterval = interval
                 }
             }
+            .onScrollChange { scrollView in
+                guard let cellHeight = monthCellSize?.height, cellHeight > 0 else { return }
+                let centerY = scrollView.contentOffset.y + scrollView.bounds.height / 2
+                let rowIndex = max(0, min(items.count - 1, Int(centerY / cellHeight)))
+                guard let item = items[safe: rowIndex] else { return }
+                let visibleMonth = fullscreenDate.startOfMonth.adding(.month, value: item).startOfMonth
+
+                if resetGuard.active {
+                    // Unblock once the table has re-centered on the target month.
+                    // Use fullscreenDate (not anchorDate) as the target — the scroll can
+                    // overwrite anchorDate, but fullscreenDate is only written by the button.
+                    if visibleMonth == fullscreenDate.startOfMonth {
+                        resetGuard.active = false
+                        if anchorDate.startOfMonth != visibleMonth {
+                            anchorDate = visibleMonth
+                        }
+                    }
+                    return
+                }
+
+                if anchorDate.startOfMonth != visibleMonth {
+                    anchorDate = visibleMonth
+                }
+            }
         }
         .onChange(of: fullscreenDate, initial: true) {
+            Task {
+                items = Array(-3...3)
+                models.removeAll()
+                for item in items {
+                    models[item] = MonthCellModel(id: item)
+                }
+                if monthCellSize != nil {
+                    tableUpdateID = UUID()
+                }
+                await viewModel.fetch(DateInterval(start: fullscreenDate.startOfMonth, end: fullscreenDate.startOfMonth.adding(.month, value: 1)))
+                models[0]?.events = viewModel.events
+            }
+        }
+        .onChange(of: monthCoordinator.scrollToTodayToken) {
+            resetGuard.active = true
             Task {
                 items = Array(-3...3)
                 models.removeAll()

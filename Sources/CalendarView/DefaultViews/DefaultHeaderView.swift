@@ -87,6 +87,7 @@ public struct DefaultHeaderView: View {
             .background(Circle().styled(theme.button.accent))
         }
         .animation(.default, value: params.fullscreenDate.wrappedValue.startOfDay)
+        .animation(.default, value: params.anchorDate.wrappedValue.startOfMonth)
         .sheet(isPresented: $showMonthPicker) {
             MonthInYearSwitcher(date: params.fullscreenDate.wrappedValue.startOfYear) { month in
                 params.fullscreenDate.wrappedValue = month
@@ -134,7 +135,7 @@ public struct DefaultHeaderView: View {
 
         if showInDay || showInMonth {
             Button {
-                params.fullscreenDate.wrappedValue = DefaultHeaderView.today
+                params.tapGoToTodayClosure()
             } label: {
                 Text("Today")
                     .libraryFont(15, theme.header.text)

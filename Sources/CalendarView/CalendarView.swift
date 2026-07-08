@@ -37,6 +37,7 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
     @BindableValue private var displayMode: CalendarDisplayMode = .day
 
     @State private var anchorDate: Date = Date()
+    @State private var monthCoordinator = MonthScrollCoordinator()
     @State private var showCalendarFilters = false
     @State private var showCreateEvent = false
     @State private var showEditEvent = false
@@ -71,6 +72,11 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
                 },
                 tapAddEventClosure: {
                     showCreateEvent = true
+                },
+                tapGoToTodayClosure: {
+                    fullscreenDate = Date().startOfDay
+                    anchorDate = Date()
+                    monthCoordinator.scrollToToday()
                 }
             ))
             .zIndex(1)
@@ -78,13 +84,14 @@ public struct CalendarView<DayEvent: View, MonthDay: View, WeekSwitcherDay: View
             if displayMode != .month {
                 dayLayoutView
             } else {
-                DayInMonthSwitcher(fullscreenDate: $fullscreenDate, calendarDisplayMode: $displayMode, monthDayBuilder: monthDayBuilder)
+                DayInMonthSwitcher(fullscreenDate: $fullscreenDate, anchorDate: $anchorDate, calendarDisplayMode: $displayMode, monthDayBuilder: monthDayBuilder)
                     .padding(.top, 8)
                     .background(theme.month.background)
             }
         }
         .background(theme.main.background)
         .environment(viewModel)
+        .environment(monthCoordinator)
         .environment(\.calendarCustomizationParams, customizationParams)
         .environment(\.hoursFittingCurrentZoom, hoursFittingCurrentZoom)
         .environment(\.showEventDetailsClosure) { (entity: any CalendarEntity) in

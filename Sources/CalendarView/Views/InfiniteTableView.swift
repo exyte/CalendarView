@@ -101,6 +101,7 @@ public struct InfiniteTableView<Data, UpdatableModel, Content, UpdatableContent>
     @ViewBuilder var updatableContent: (Data, UpdatableModel) -> UpdatableContent
 
     var params = InfiniteTableViewCustomizationParams()
+    var scrollDidChange: ((UIScrollView) -> Void)?
 
     public func makeCoordinator() -> Coordinator {
         Coordinator(self)
@@ -254,6 +255,10 @@ public struct InfiniteTableView<Data, UpdatableModel, Content, UpdatableContent>
             }
         }
 
+        public func scrollViewDidScroll(_ scrollView: UIScrollView) {
+            parent.scrollDidChange?(scrollView)
+        }
+
         public func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
             isUserScrolling = true
         }
@@ -296,5 +301,11 @@ public struct InfiniteTableView<Data, UpdatableModel, Content, UpdatableContent>
         var view = self
         view.willDisplayItem = closure
         return view
+    }
+
+    func onScrollChange(_ closure: @escaping (UIScrollView) -> Void) -> InfiniteTableView {
+        var copy = self
+        copy.scrollDidChange = closure
+        return copy
     }
 }

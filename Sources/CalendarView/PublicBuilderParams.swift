@@ -51,6 +51,7 @@ public struct HeaderBuilderParams {
     public var tapSelectDisplayModeClosure: ()->()
     public var tapFilterCalendarsClosure: ()->()
     public var tapAddEventClosure: ()->()
+    public var tapGoToTodayClosure: ()->() = {}
 
     @MainActor public func defaultWeekSwitcher() -> some View {
         DayInWeekSwitcher(
