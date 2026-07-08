@@ -11,6 +11,7 @@ import SwiftUI
 struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
     @Environment(\.calendarTheme) var theme
     @Environment(\.calendarCustomizationParams) var customizationParams
+    @Environment(MonthScrollCoordinator.self) var monthCoordinator
 
     @Binding var fullscreenDate: Date
     @Binding var anchorDate: Date // first day of currently on screen week
@@ -52,6 +53,10 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
             contentHeight = calendarDisplayMode == .month ? (newSize?.height ?? daySize?.height) : daySize?.height
         }
         .onChange(of: fullscreenDate) { _, _ in
+            weekItems = [0]
+            tableUpdateID = UUID()
+        }
+        .onChange(of: monthCoordinator.scrollToTodayToken) {
             weekItems = [0]
             tableUpdateID = UUID()
         }

@@ -30,7 +30,7 @@ struct DayInMonthSwitcher<MonthDay: View>: View {
     @State private var dateInterval = DateInterval(start: Date(), end: Date())
     @State private var tableUpdateID = UUID()
 
-    @State private var monthCellSize: CGSize?
+    @State private var containerHeight: CGFloat = 0
 
     // Reference type so the flag is visible immediately in UIKit callbacks
     // without waiting for a SwiftUI render cycle.
@@ -74,7 +74,7 @@ struct DayInMonthSwitcher<MonthDay: View>: View {
                 .background(theme.month.background)
             }
             .reloadTrigger(updateID: tableUpdateID)
-            .scrollMode(scrollMode: .free(monthCellSize?.height))
+            .scrollMode(scrollMode: .free(g.size.height > 0 ? g.size.height : nil))
             .willDisplayItem { item in
                 Task { @MainActor in
                     let monthDate = fullscreenDate.startOfMonth.adding(.month, value: item)
@@ -89,7 +89,8 @@ struct DayInMonthSwitcher<MonthDay: View>: View {
                 }
             }
             .onScrollChange { scrollView in
-                guard let cellHeight = monthCellSize?.height, cellHeight > 0 else { return }
+                let cellHeight = g.size.height
+                guard cellHeight > 0 else { return }
                 let centerY = scrollView.contentOffset.y + scrollView.bounds.height / 2
                 let rowIndex = max(0, min(items.count - 1, Int(centerY / cellHeight)))
                 guard let item = items[safe: rowIndex] else { return }
@@ -112,6 +113,7 @@ struct DayInMonthSwitcher<MonthDay: View>: View {
                     anchorDate = visibleMonth
                 }
             }
+            .onChange(of: g.size.height, initial: true) { _, h in containerHeight = h }
         }
         .onChange(of: fullscreenDate, initial: true) {
             Task {
@@ -120,7 +122,7 @@ struct DayInMonthSwitcher<MonthDay: View>: View {
                 for item in items {
                     models[item] = MonthCellModel(id: item)
                 }
-                if monthCellSize != nil {
+                if containerHeight > 0 {
                     tableUpdateID = UUID()
                 }
                 await viewModel.fetch(DateInterval(start: fullscreenDate.startOfMonth, end: fullscreenDate.startOfMonth.adding(.month, value: 1)))
@@ -135,26 +137,22 @@ struct DayInMonthSwitcher<MonthDay: View>: View {
                 for item in items {
                     models[item] = MonthCellModel(id: item)
                 }
-                if monthCellSize != nil {
+                if containerHeight > 0 {
                     tableUpdateID = UUID()
                 }
+                anchorDate = fullscreenDate.startOfMonth
                 await viewModel.fetch(DateInterval(start: fullscreenDate.startOfMonth, end: fullscreenDate.startOfMonth.adding(.month, value: 1)))
                 models[0]?.events = viewModel.events
             }
         }
-        .onChange(of: monthCellSize) { _, newSize in
-            guard newSize != nil else { return }
+        .onChange(of: containerHeight) { _, h in
+            guard h > 0 else { return }
             tableUpdateID = UUID()
         }
         .onDisappear {
             viewModel.resetCache()
             items.removeAll()
             models.removeAll()
-        }
-        .background {
-            MeasuringTrickView(size: $monthCellSize) {
-                MonthLayout(date: Date(), viewModel: MonthCellModel(id: 0), monthDayBuilder: monthDayBuilder, didSelectDay: {_ in})
-            }
         }
     }
 
