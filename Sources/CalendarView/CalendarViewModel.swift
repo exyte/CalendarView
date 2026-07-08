@@ -196,13 +196,13 @@ class CalendarViewModel {
         }
     }
 
-    func update<E: CalendarEntity>(_ entity: E, oldStartDate: Date) async {
+    func update<E: CalendarEntity>(_ entity: E, oldCalendarID: String, oldStartDate: Date) async {
         await withProvider { provider in
             switch entity {
             case let event as CalendarEvent:
-                try await provider.updateEvent(event, oldStartDate: oldStartDate)
+                try await provider.updateEvent(event, oldCalendarID: oldCalendarID, oldStartDate: oldStartDate)
             case let reminder as CalendarReminder:
-                try await provider.updateReminder(reminder, oldStartDate: oldStartDate)
+                try await provider.updateReminder(reminder, oldCalendarID: oldCalendarID, oldStartDate: oldStartDate)
             default:
                 assertionFailure("Unsupported CalendarEntity type: \(type(of: entity))")
             }

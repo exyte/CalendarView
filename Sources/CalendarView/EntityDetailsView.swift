@@ -87,8 +87,9 @@ struct EntityDetailsView<Entity: CalendarEntity>: View {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         NavigationLink("Edit") {
                             EditEntityView(entity: entity) { editedEntity in
+                                let oldEntity = entity
                                 self.entity = editedEntity
-                                await viewModel.update(editedEntity, oldStartDate: entity.startDate)
+                                await viewModel.update(editedEntity, oldCalendarID: oldEntity.calendarID, oldStartDate: oldEntity.startDate)
                             }
                         }
                         .libraryFont(17, theme.main.text)

@@ -139,19 +139,19 @@ public final actor CalendarEntityStore<T: CalendarEntity> {
     /// Updates an existing entity by ID using its original startDate to locate the chunk.
     /// If the new startDate falls in a different month, removes from the old chunk
     /// and inserts into the new one.
-    public func update(_ updated: T, oldStartDate: Date) async throws {
+    public func update(_ updated: T, oldCalendarID: String, oldStartDate: Date) async throws {
         let oldMonth = monthKey(for: oldStartDate)
         let newMonth = monthKey(for: updated.startDate)
-        if oldMonth == newMonth {
+        if oldMonth == newMonth, oldCalendarID == updated.calendarID {
             var chunk = try await getChunk(calendarID: updated.calendarID, month: oldStartDate)
             guard let index = chunk.firstIndex(where: { $0.id == updated.id }) else { return }
             chunk[index] = updated
             try await saveChunk(chunk, calendarID: updated.calendarID, month: oldStartDate)
             return
         }
-        var oldChunk = try await getChunk(calendarID: updated.calendarID, month: oldStartDate)
+        var oldChunk = try await getChunk(calendarID: oldCalendarID, month: oldStartDate)
         oldChunk.removeAll { $0.id == updated.id }
-        try await saveChunk(oldChunk, calendarID: updated.calendarID, month: oldStartDate)
+        try await saveChunk(oldChunk, calendarID: oldCalendarID, month: oldStartDate)
         var newChunk = try await getChunk(calendarID: updated.calendarID, month: updated.startDate)
         newChunk.append(updated)
         try await saveChunk(newChunk, calendarID: updated.calendarID, month: updated.startDate)

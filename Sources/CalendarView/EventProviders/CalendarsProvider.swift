@@ -21,6 +21,6 @@ protocol EditableCalendarsProvider: CalendarsProvider {
     func deleteEvent(_ event: CalendarEvent) async throws
     func deleteReminder(_ reminder: CalendarReminder) async throws
 
-    func updateEvent(_ event: CalendarEvent, oldStartDate: Date) async throws
-    func updateReminder(_ reminder: CalendarReminder, oldStartDate: Date) async throws
+    func updateEvent(_ event: CalendarEvent, oldCalendarID: String, oldStartDate: Date) async throws
+    func updateReminder(_ reminder: CalendarReminder, oldCalendarID: String, oldStartDate: Date) async throws
 }

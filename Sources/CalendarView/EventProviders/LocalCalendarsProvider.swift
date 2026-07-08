@@ -48,11 +48,11 @@ public final class LocalCalendarsProvider: EditableCalendarsProvider, @unchecked
         try await reminderStore.delete(id: reminder.id, calendarID: reminder.calendarID, from: reminder.startDate)
     }
 
-    public func updateEvent(_ event: CalendarEvent, oldStartDate: Date) async throws {
-        try await eventStore.update(event, oldStartDate: oldStartDate)
+    public func updateEvent(_ event: CalendarEvent, oldCalendarID: String, oldStartDate: Date) async throws {
+        try await eventStore.update(event, oldCalendarID: oldCalendarID, oldStartDate: oldStartDate)
     }
 
-    public func updateReminder(_ reminder: CalendarReminder, oldStartDate: Date) async throws {
-        try await reminderStore.update(reminder, oldStartDate: oldStartDate)
+    public func updateReminder(_ reminder: CalendarReminder, oldCalendarID: String, oldStartDate: Date) async throws {
+        try await reminderStore.update(reminder, oldCalendarID: oldCalendarID, oldStartDate: oldStartDate)
     }
 }
