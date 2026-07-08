@@ -3,9 +3,9 @@
 <a href="https://exyte.com/"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/exyte/media/master/common/our-site-dark.png" width="80" height="16"><img src="https://raw.githubusercontent.com/exyte/media/master/common/our-site-light.png" width="80" height="16"></picture></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://twitter.com/exyteHQ"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/exyte/media/master/common/twitter-dark.png" width="74" height="16"><img src="https://raw.githubusercontent.com/exyte/media/master/common/twitter-light.png" width="74" height="16">
 </picture></a> <a href="https://exyte.com/contacts"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/exyte/media/master/common/get-in-touch-dark.png" width="128" height="24" align="right"><img src="https://raw.githubusercontent.com/exyte/media/master/common/get-in-touch-light.png" width="128" height="24" align="right"></picture></a>
 
-<img width="200" src="https://github.com/user-attachments/assets/69bef65b-24de-4775-8a4f-f92478b2144e" />
-<img width="200" src="https://github.com/user-attachments/assets/4a5718d8-eb7c-4ba7-a227-645c1ca15795" />
+<img width="200" src="https://github.com/user-attachments/assets/0a710d26-8d1f-4c02-aafe-cd06d0e3e7a2" />
 <img width="200" src="https://github.com/user-attachments/assets/37e41800-6e57-4067-85e7-99ee677efde9" />
+<img width="200" src="https://github.com/user-attachments/assets/4a5718d8-eb7c-4ba7-a227-645c1ca15795" />
 <img width="200" src="https://github.com/user-attachments/assets/f04a5b6a-566b-4703-bc9b-6c1ab1010252" />
 
 <p><h1 align="left">Calendar View</h1></p>
