@@ -26,6 +26,30 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
     @State private var tableUpdateID = UUID()
 
     var body: some View {
+        weekContentView
+            .frame(height: contentHeight)
+            .clipped()
+            .onChange(of: calendarDisplayMode) { _, newMode in
+                withAnimation(.default) {
+                    contentHeight = height(for: newMode, daySize: daySize, monthDaySize: monthDaySize)
+                }
+            }
+            .onChange(of: daySize) { _, newSize in
+                contentHeight = height(for: calendarDisplayMode, daySize: newSize, monthDaySize: monthDaySize)
+            }
+            .onChange(of: monthDaySize) { _, newSize in
+                contentHeight = height(for: calendarDisplayMode, daySize: daySize, monthDaySize: newSize)
+            }
+            .onChange(of: fullscreenDate) { _, _ in
+                resetWeekTable()
+            }
+            .onChange(of: monthCoordinator.scrollToTodayToken) {
+                resetWeekTable()
+            }
+    }
+
+    @ViewBuilder
+    var weekContentView: some View {
         ZStack(alignment: .top) {
             FinalMeasuringTrickView(size: $daySize) {
                 weekSwitcherDayBuilder(WeekSwitcherDayBuilderParams(day: fullscreenDate, monthDisplayMode: false, fullscreenDate: fullscreenDate))
@@ -39,27 +63,15 @@ struct DayInWeekSwitcher<WeekSwitcherDay: View>: View {
                 mainWeekView
             }
         }
-        .frame(height: contentHeight)
-        .clipped()
-        .onChange(of: calendarDisplayMode) { _, newMode in
-            withAnimation(.default) {
-                contentHeight = newMode == .month ? (monthDaySize?.height ?? daySize?.height) : daySize?.height
-            }
-        }
-        .onChange(of: daySize) { _, newSize in
-            contentHeight = calendarDisplayMode == .month ? (monthDaySize?.height ?? newSize?.height) : newSize?.height
-        }
-        .onChange(of: monthDaySize) { _, newSize in
-            contentHeight = calendarDisplayMode == .month ? (newSize?.height ?? daySize?.height) : daySize?.height
-        }
-        .onChange(of: fullscreenDate) { _, _ in
-            weekItems = [0]
-            tableUpdateID = UUID()
-        }
-        .onChange(of: monthCoordinator.scrollToTodayToken) {
-            weekItems = [0]
-            tableUpdateID = UUID()
-        }
+    }
+
+    private func height(for mode: CalendarDisplayMode, daySize: CGSize?, monthDaySize: CGSize?) -> CGFloat? {
+        mode == .month ? (monthDaySize?.height ?? daySize?.height) : daySize?.height
+    }
+
+    private func resetWeekTable() {
+        weekItems = [0]
+        tableUpdateID = UUID()
     }
 
     @ViewBuilder

@@ -175,7 +175,7 @@ struct CustomCalendar: View {
                 }
                 .padding(.horizontal, 4)
             }
-            .padding(.top, 12)
+            .padding(.top, 12 + calendarMinimumTopSafeAreaPadding())
             .padding(.bottom, 10)
             .background(Color.sqCream)
 

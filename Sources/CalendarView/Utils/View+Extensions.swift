@@ -6,6 +6,20 @@
 //
 
 import SwiftUI
+import UIKit
+
+// CalendarView is typically pushed below a NavigationView/NavigationStack, which already
+// consumes/reports the top safe area as zero to anything nested inside it, regardless of the
+// device's real value - so that can't be used to detect devices with a genuinely zero top safe
+// area (e.g. the iPhone Duo foldable, whose status bar sits beside a camera island rather than
+// across the top edge). Reading the real window directly works reliably instead.
+@MainActor
+public func calendarMinimumTopSafeAreaPadding(_ minimum: CGFloat = 8) -> CGFloat {
+    let realTopInset = UIApplication.shared.connectedScenes
+        .compactMap { ($0 as? UIWindowScene)?.windows.first(where: \.isKeyWindow) }
+        .first?.safeAreaInsets.top ?? 0
+    return realTopInset == 0 ? minimum : 0
+}
 
 extension View {
     func greedyWidth() -> some View {

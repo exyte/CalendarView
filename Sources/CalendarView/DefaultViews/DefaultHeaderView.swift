@@ -32,6 +32,7 @@ public struct DefaultHeaderView: View {
                 params.defaultWeekSwitcher()
                     .padding(.horizontal, 4)
             }
+            .padding(.top, calendarMinimumTopSafeAreaPadding())
             .padding(.bottom, 10)
             .background {
                 HeaderBackgroundView(background: customizationParams.headerBackground)
